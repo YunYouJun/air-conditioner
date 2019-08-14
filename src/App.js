@@ -6,20 +6,23 @@ import Link from '@material-ui/core/Link';
 
 import './App.css';
 import ProTip from './Protip';
+import AirConditioner from './components/AirConditioner';
 
 function Copyright() {
   return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://github.com/ElpsyCN/summer-gadgets">
-        Summer Gadgets
-      </Link>
-      {' - '}
-      <Link color="inherit" href="https://github.com/YunYouJun">
-        YunYouJun
-      </Link>{' '}
-      {new Date().getFullYear()}
-    </Typography>
+    <Box my={4}>
+      <Typography variant="body2" color="textSecondary" align="center">
+        {'Copyright © '}
+        <Link color="inherit" href="https://github.com/ElpsyCN/summer-gadgets">
+          Summer Gadgets
+        </Link>
+        {' - '}
+        <Link color="inherit" href="https://github.com/YunYouJun">
+          YunYouJun
+        </Link>{' '}
+        {new Date().getFullYear()}
+      </Typography>
+    </Box> 
   );
 }
 
@@ -31,6 +34,7 @@ function App() {
           夏日小工具
         </Typography>
         <ProTip />
+        <AirConditioner />
         <Copyright />
       </Box>
     </Container>
