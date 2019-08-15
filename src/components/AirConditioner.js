@@ -6,7 +6,7 @@ import logo from '../logo.svg';
 const acColor = {
   border: "#e0e0e0",
   display: "#cccccc"
-}
+};
 
 const useStyles = makeStyles(theme => ({
   acBorder: {
@@ -40,7 +40,7 @@ function AcBorder(props) {
       {...props}
     >
     </Box>
-  )
+  );
 }
 
 function AcDisplay(props) {
@@ -53,7 +53,7 @@ function AcDisplay(props) {
         { props.temperature + '°'}
       </Typography>
     </Box>
-  )
+  );
 }
 
 function AcLogo(props) {
@@ -61,14 +61,14 @@ function AcLogo(props) {
     <Box align="center" mt={12}>
       <img className={props.className} src={logo} alt="logo" />
     </Box>
-  )
+  );
 }
 
 function AirOutlet() {
   return (
     <Box mt={1} border={1} borderColor={acColor.border}>
     </Box>
-  )
+  );
 }
 
 function AcStatus(props) {
@@ -85,22 +85,39 @@ function AcStatus(props) {
       right={10}
     >
     </Box>
+  );
+}
+
+function textLabel(num, color, size, mx, my=0) {
+  const titleLength = [...new Array(num).keys()];
+  const titleLabel = titleLength.map((n) => 
+    <Box key={n} mx={mx} my={my} width={size} height={size} borderRadius="50%" bgcolor={color}></Box>
+  );
+  return (
+    <Box display="flex" justifyContent="center">{titleLabel}</Box>
   )
 }
 
 function EnergyLabel(props) {
   return (
     <Box className={props.className} position="absolute" top={10} left={10} height={70} width={50} borderRadius={2} p={0.5}>
+      {textLabel(6, 'white', 4, 0.25)}
       <Box my={0.5} px={1} py={0.25} height={28} width="100%" bgcolor="background.paper">
         <Box bgcolor="green" height={3} width="40%"></Box>
         <Box mt={0.25} bgcolor="lightGreen" height={3} width="50%"></Box>
-        <Box mt={0.25} bgcolor="yellow" height={3} width="60%"></Box>
-        <Box mt={0.25} bgcolor="secondary.main" height={3} width="70%"></Box>
-        <Box mt={0.25} bgcolor="error.main" height={3} width="80%"></Box>
+        <Box mt={0.25} bgcolor="#ffc107" height={3} width="60%"></Box>
+        <Box mt={0.25} bgcolor="orange" height={3} width="70%"></Box>
+        <Box mt={0.25} bgcolor="red" height={3} width="80%"></Box>
       </Box>
-      <Box height={20} width="100%" bgcolor="background.paper"></Box>
+      <Box mb={0.25} pt={0.5} height={20} width="100%" bgcolor="background.paper">
+        {textLabel(11, 'black', 2, 0.1)}
+        <Box my={0.1} bgcolor="black" height={0.1} width="100%"></Box>
+        {textLabel(9, 'black', 1.5, 0.1, 0.25)}
+        {textLabel(10, 'black', 1.2, 0.1, 0.25)}
+      </Box>
+      {textLabel(8, 'white', 2, 0.1)}
     </Box>
-  )
+  );
 }
 
 export default function AirConditioner() {
@@ -111,7 +128,7 @@ export default function AirConditioner() {
       <AcLogo className={classes.acLogo} />
       <AirOutlet />
       <AcStatus status="work" />
-      <EnergyLabel className={classes.energyLabel} />
+      <EnergyLabel className={classes.energyLabel} titleLength={6} />
     </AcBorder>
   );
 }

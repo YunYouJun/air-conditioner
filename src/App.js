@@ -13,7 +13,7 @@ function Copyright() {
     <Box my={4}>
       <Typography variant="body2" color="textSecondary" align="center">
         {'Copyright © '}
-        <Link color="inherit" href="https://github.com/ElpsyCN/summer-gadgets">
+        <Link color="inherit" href="https://github.com/YunYouJun/summer-gadgets">
           Summer Gadgets
         </Link>
         {' - '}
