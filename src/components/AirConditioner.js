@@ -78,8 +78,8 @@ function AcStatus(props) {
     <Box
       className={classes.acStatus}
       position="absolute"
-      height={5}
-      width={5}
+      height={4}
+      width={4}
       borderRadius="50%"
       top={130}
       right={10}
@@ -109,22 +109,22 @@ function EnergyLabel(props) {
         <Box mt={0.25} bgcolor="orange" height={3} width="70%"></Box>
         <Box mt={0.25} bgcolor="red" height={3} width="80%"></Box>
       </Box>
-      <Box mb={0.25} pt={0.5} height={20} width="100%" bgcolor="background.paper">
-        {textLabel(11, 'black', 2, 0.1)}
-        <Box my={0.1} bgcolor="black" height={0.1} width="100%"></Box>
+      <Box mb={0.25} pt={0.1} height={20} width="100%" bgcolor="background.paper">
+        {textLabel(11, 'black', 2, 0.1, 0.25)}
+        <Box my={0.1} borderTop={1} height={0} width="100%"></Box>
         {textLabel(9, 'black', 1.5, 0.1, 0.25)}
-        {textLabel(10, 'black', 1.2, 0.1, 0.25)}
+        {textLabel(10, 'black', 1.2, 0.1, 0)}
       </Box>
       {textLabel(8, 'white', 2, 0.1)}
     </Box>
   );
 }
 
-export default function AirConditioner() {
+export default function AirConditioner(props) {
   const classes = useStyles();
   return (
     <AcBorder className={classes.acBorder}>
-      <AcDisplay className={classes.acDisplay} temperature="16"/>
+      <AcDisplay className={classes.acDisplay} temperature={props.temperature}/>
       <AcLogo className={classes.acLogo} />
       <AirOutlet />
       <AcStatus status="work" />

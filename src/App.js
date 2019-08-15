@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
@@ -7,6 +7,8 @@ import Link from '@material-ui/core/Link';
 import './App.css';
 import ProTip from './Protip';
 import AirConditioner from './components/AirConditioner';
+import RemoteControl from './components/RemoteControl';
+
 
 function Copyright() {
   return (
@@ -27,6 +29,7 @@ function Copyright() {
 }
 
 function App() {
+  const [temperature, setTemperature] = useState(16);
   return (
     <Container maxWidth="sm">
       <Box my={4}>
@@ -34,7 +37,8 @@ function App() {
           夏日小工具
         </Typography>
         <ProTip />
-        <AirConditioner />
+        <AirConditioner temperature={temperature}/>
+        <RemoteControl temperature={temperature} setTemperature={setTemperature}/>
         <Copyright />
       </Box>
     </Container>
