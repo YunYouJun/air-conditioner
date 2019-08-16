@@ -30,5 +30,8 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "https://yunyoujun.cn/summer-gadgets"
+  "homepage": "https://yunyoujun.cn/summer-gadgets",
+  "devDependencies": {
+    "eslint-plugin-react-hooks": "^1.7.0"
+  }
 }

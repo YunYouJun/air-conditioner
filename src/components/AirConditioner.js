@@ -15,6 +15,7 @@ const useStyles = makeStyles(theme => ({
   },
   acDisplay: {
     textShadow: '0px 0px 2px rgba(0, 0, 0, 0.3)',
+    visibility: props => props.visibility,
   },
   acLogo: {
     width: 12,
@@ -44,8 +45,10 @@ function AcBorder(props) {
 }
 
 function AcDisplay(props) {
+  const display = { visibility: props.status ? 'visible' : 'hidden' };
+  const classes = useStyles(display);
   return (
-    <Box className={props.className} position="absolute" top={25} right={30} color={acColor.display}>
+    <Box className={classes.acDisplay} position="absolute" top={25} right={30} color={acColor.display}>
       <Typography align="left" variant="subtitle2">
         <span>❄</span>️
       </Typography>
@@ -72,7 +75,7 @@ function AirOutlet() {
 }
 
 function AcStatus(props) {
-  const led = { backgroundColor: props.status === 'work' ? '#38F709' : 'red' };
+  const led = { backgroundColor: props.status ? '#38F709' : acColor.border };
   const classes = useStyles(led);
   return (
     <Box
@@ -124,10 +127,10 @@ export default function AirConditioner(props) {
   const classes = useStyles();
   return (
     <AcBorder className={classes.acBorder}>
-      <AcDisplay className={classes.acDisplay} temperature={props.temperature}/>
+      <AcDisplay status={props.status} temperature={props.temperature}/>
       <AcLogo className={classes.acLogo} />
       <AirOutlet />
-      <AcStatus status="work" />
+      <AcStatus status={props.status} />
       <EnergyLabel className={classes.energyLabel} titleLength={6} />
     </AcBorder>
   );
