@@ -1,11 +1,12 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography, Fade } from '@material-ui/core';
 import logo from '../logo.svg';
 
 const acColor = {
   border: "#e0e0e0",
-  display: "#cccccc"
+  display: "#cccccc",
+  wind: "#bbbbbb"
 };
 
 const useStyles = makeStyles(theme => ({
@@ -45,10 +46,8 @@ function AcBorder(props) {
 }
 
 function AcDisplay(props) {
-  const display = { visibility: props.status ? 'visible' : 'hidden' };
-  const classes = useStyles(display);
   return (
-    <Box className={classes.acDisplay} position="absolute" top={25} right={30} color={acColor.display}>
+    <Box {...props} position="absolute" top={25} right={30} color={acColor.display}>
       <Typography align="left" variant="subtitle2">
         <span>❄</span>️
       </Typography>
@@ -123,15 +122,32 @@ function EnergyLabel(props) {
   );
 }
 
+function WindEffect(props) {
+  return (
+    <Box {...props} mt={3} display="flex" justifyContent="center">
+      <Box css={{ transform: 'rotate(10deg)' }} bgcolor={acColor.wind} width={5} height={40}></Box>
+      <Box mx={10} bgcolor={acColor.wind} width={5} height={40}></Box>
+      <Box css={{ transform: 'rotate(-10deg)' }} bgcolor={acColor.wind} width={5} height={40}></Box>
+    </Box>
+  )
+}
+
 export default function AirConditioner(props) {
   const classes = useStyles();
   return (
-    <AcBorder className={classes.acBorder}>
-      <AcDisplay status={props.status} temperature={props.temperature}/>
-      <AcLogo className={classes.acLogo} />
-      <AirOutlet />
-      <AcStatus status={props.status} />
-      <EnergyLabel className={classes.energyLabel} titleLength={6} />
-    </AcBorder>
+    <Box>
+      <AcBorder className={classes.acBorder}>
+        <Fade in={props.status}>
+          <AcDisplay temperature={props.temperature}/>
+        </Fade>
+        <AcLogo className={classes.acLogo} />
+        <AirOutlet />
+        <AcStatus status={props.status} />
+        <EnergyLabel className={classes.energyLabel} titleLength={6} />
+      </AcBorder>
+      <Fade in={props.status} timeout={{enter: 2500, exit: 1500}}>
+        <WindEffect />
+      </Fade>
+    </Box>
   );
 }
