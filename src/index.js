@@ -7,6 +7,10 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import theme from './theme';
 
+import ReactGA from 'react-ga';
+ReactGA.initialize('UA-121354150-10');
+ReactGA.pageview(window.location.pathname + window.location.search);
+
 ReactDOM.render(
   <ThemeProvider theme={theme}>
     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}

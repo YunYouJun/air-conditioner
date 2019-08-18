@@ -52,7 +52,8 @@ function AcDisplay(props) {
         <span>❄</span>️
       </Typography>
       <Typography variant="h4" align="center">
-        { props.temperature + '°'}
+        { props.temperature }
+        <small>°C</small>
       </Typography>
     </Box>
   );
