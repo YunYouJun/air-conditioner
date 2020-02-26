@@ -1,30 +1,32 @@
-import React, { useState } from 'react';
-import Container from '@material-ui/core/Container';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
-import Link from '@material-ui/core/Link';
+import React, { useState } from "react";
+import Container from "@material-ui/core/Container";
+import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
+import Link from "@material-ui/core/Link";
 
-import './App.css';
-import ProTip from './Protip';
-import AirConditioner from './components/AirConditioner';
-import RemoteControl from './components/RemoteControl';
-
+import "./App.css";
+import ProTip from "./components/Protip";
+import AirConditioner from "./components/AirConditioner";
+import RemoteControl from "./components/RemoteControl";
 
 function Copyright() {
   return (
     <Box>
       <Typography variant="body2" color="textSecondary" align="center">
-        {'Copyright © '}
-        <Link color="inherit" href="https://github.com/YunYouJun/summer-gadgets">
+        {"Copyright © "}
+        <Link
+          color="inherit"
+          href="https://github.com/YunYouJun/summer-gadgets"
+        >
           Summer Gadgets
         </Link>
-        {' - '}
+        {" - "}
         <Link color="inherit" href="https://github.com/YunYouJun">
           YunYouJun
-        </Link>{' '}
+        </Link>{" "}
         {new Date().getFullYear()}
       </Typography>
-    </Box> 
+    </Box>
   );
 }
 
@@ -38,7 +40,7 @@ function App() {
           夏日小工具
         </Typography>
         <ProTip />
-        <AirConditioner status={status} temperature={temperature}/>
+        <AirConditioner status={status} temperature={temperature} />
         <RemoteControl
           status={status}
           setStatus={setStatus}
