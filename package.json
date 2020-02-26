@@ -8,7 +8,7 @@
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-ga": "^2.7.0",
-    "react-scripts": "3.4.0"
+    "react-scripts": "^3.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
