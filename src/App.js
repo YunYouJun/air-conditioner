@@ -16,14 +16,15 @@ function Copyright() {
         {"Copyright © "}
         <Link
           color="inherit"
-          href="https://github.com/YunYouJun/summer-gadgets"
+          href="https://github.com/YunYouJun/air-conditioner"
         >
-          Summer Gadgets
+          Yun Air Conditioner
         </Link>
         {" - "}
         <Link color="inherit" href="https://github.com/YunYouJun">
           YunYouJun
-        </Link>{" "}
+        </Link>
+        {" 2019 -  "}
         {new Date().getFullYear()}
       </Typography>
     </Box>
@@ -37,7 +38,7 @@ function App() {
     <Container maxWidth="sm">
       <Box my={4}>
         <Typography align="center" variant="h4" component="h1" gutterBottom>
-          夏日小工具
+          便携小空调
         </Typography>
         <ProTip />
         <AirConditioner status={status} temperature={temperature} />
