@@ -33,6 +33,7 @@ function Copyright() {
 
 function App() {
   const [status, setStatus] = useState(false);
+  const [mode, setMode] = useState("cold");
   const [temperature, setTemperature] = useState(16);
   return (
     <Container maxWidth="sm">
@@ -41,10 +42,12 @@ function App() {
           便携小空调
         </Typography>
         <ProTip />
-        <AirConditioner status={status} temperature={temperature} />
+        <AirConditioner status={status} mode={mode} temperature={temperature} />
         <RemoteControl
           status={status}
           setStatus={setStatus}
+          mode={mode}
+          setMode={setMode}
           temperature={temperature}
           setTemperature={setTemperature}
         />

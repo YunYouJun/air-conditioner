@@ -6,14 +6,16 @@ import { Box, Fab } from "@material-ui/core";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
+import AcUnitIcon from "@material-ui/icons/AcUnit";
+import WbSunnyIcon from "@material-ui/icons/WbSunny";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   margin: {
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
   },
   extendedIcon: {
-    marginRight: theme.spacing(1)
-  }
+    marginRight: theme.spacing(1),
+  },
 }));
 
 function RCButton(props) {
@@ -42,13 +44,13 @@ function playWorkSound() {
 function increaseTemperature(props) {
   props.temperature < 31
     ? props.setTemperature(props.temperature + 1)
-    : console.log("Max!");
+    : console.log("已经是最大温度啦！");
 }
 
 function decreaseTemperature(props) {
   props.temperature > 16
     ? props.setTemperature(props.temperature - 1)
-    : console.log("Min!");
+    : console.log("已经是最小温度啦！");
 }
 
 function toggleAC(props) {
@@ -60,6 +62,18 @@ function toggleAC(props) {
   props.setStatus(!props.status);
 }
 
+/**
+ * 切换模式 cold | hot
+ * @param {*} mode
+ */
+function toggleMode(props, mode) {
+  props.setMode(mode);
+}
+
+/**
+ * 遥控
+ * @param {*} props
+ */
 export default function RemoteControl(props) {
   const classes = useStyles();
   return (
@@ -74,16 +88,39 @@ export default function RemoteControl(props) {
         src={process.env.PUBLIC_URL + "/assets/audio/ac-work.wav"}
         preload="auto"
       ></audio>
-      <RCButton
-        color="secondary"
-        aria-label="add"
-        className={classes.margin}
-        onClick={() => {
-          toggleAC(props);
-        }}
-      >
-        <PowerSettingsNewIcon />
-      </RCButton>
+      <div>
+        {" "}
+        <RCButton
+          color="primary"
+          aria-label="cold"
+          className={classes.margin}
+          onClick={() => {
+            toggleMode(props, "cold");
+          }}
+        >
+          <AcUnitIcon />
+        </RCButton>
+        <RCButton
+          color="secondary"
+          aria-label="add"
+          className={classes.margin}
+          onClick={() => {
+            toggleAC(props);
+          }}
+        >
+          <PowerSettingsNewIcon />
+        </RCButton>
+        <RCButton
+          aria-label="hot"
+          className={classes.margin}
+          style={{ backgroundColor: "orange", color: "white" }}
+          onClick={() => {
+            toggleMode(props, "hot");
+          }}
+        >
+          <WbSunnyIcon />
+        </RCButton>
+      </div>
       <RCButton
         aria-label="add"
         className={classes.margin}
