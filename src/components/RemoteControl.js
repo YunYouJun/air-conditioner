@@ -1,5 +1,9 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import {
+  createMuiTheme,
+  makeStyles,
+  ThemeProvider,
+} from "@material-ui/core/styles";
 import { Box, Fab } from "@material-ui/core";
 // import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 // import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
@@ -8,6 +12,8 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import AcUnitIcon from "@material-ui/icons/AcUnit";
 import WbSunnyIcon from "@material-ui/icons/WbSunny";
+
+import { green } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -70,6 +76,12 @@ function toggleMode(props, mode) {
   props.setMode(mode);
 }
 
+const theme = createMuiTheme({
+  palette: {
+    primary: green,
+  },
+});
+
 /**
  * 遥控
  * @param {*} props
@@ -100,16 +112,19 @@ export default function RemoteControl(props) {
         >
           <AcUnitIcon />
         </RCButton>
-        <RCButton
-          color="secondary"
-          aria-label="add"
-          className={classes.margin}
-          onClick={() => {
-            toggleAC(props);
-          }}
-        >
-          <PowerSettingsNewIcon />
-        </RCButton>
+        <ThemeProvider theme={theme}>
+          <RCButton
+            color={props.status ? "secondary" : "primary"}
+            aria-label="add"
+            className={classes.margin}
+            onClick={() => {
+              toggleAC(props);
+            }}
+            style={{ color: "white" }}
+          >
+            <PowerSettingsNewIcon />
+          </RCButton>
+        </ThemeProvider>
         <RCButton
           aria-label="hot"
           className={classes.margin}
