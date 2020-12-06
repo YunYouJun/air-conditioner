@@ -13,10 +13,23 @@
 - 低功耗（使用 HTML CSS 而非 Canvas 绘制）
 - 静音
 - 操作简单
+- 安装便捷
 
 ### 劣势
 
 - 没有风
+
+## 安装
+
+### iframe
+
+```html
+<iframe height="666" src="https://www.yunyoujun.cn/air-conditioner/"></iframe>
+```
+
+您可以快速为您的网站安装空调。
+
+样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/)
 
 ## Todo
 
