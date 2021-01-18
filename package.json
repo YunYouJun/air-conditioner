@@ -2,22 +2,18 @@
   "name": "air-conditioner",
   "version": "0.1.1",
   "private": true,
-  "dependencies": {
-    "@material-ui/core": "^4.11.2",
-    "@material-ui/icons": "^4.11.2",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-ga": "^3.3.0",
-    "react-scripts": "^4.0.1"
-  },
   "scripts": {
     "start": "react-scripts start",
+    "dev": "yarn start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [
@@ -32,7 +28,22 @@
     ]
   },
   "homepage": "https://yunyoujun.github.io/air-conditioner",
-  "devDependencies": {
-    "eslint-plugin-react-hooks": "^4.2.0"
-  }
+  "dependencies": {
+    "@material-ui/core": "^4.11.2",
+    "@material-ui/icons": "^4.11.2",
+    "@testing-library/jest-dom": "^5.11.9",
+    "@testing-library/react": "^11.2.3",
+    "@testing-library/user-event": "^12.6.0",
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.21",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-ga": "^3.3.0",
+    "react-scripts": "^4.0.1",
+    "typescript": "^4.0.3",
+    "web-vitals": "^1.1.0"
+  },
+  "devDependencies": {}
 }

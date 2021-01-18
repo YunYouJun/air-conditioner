@@ -16,20 +16,20 @@ const useStyles = makeStyles((theme) => ({
   },
   acDisplay: {
     textShadow: "0px 0px 2px rgba(0, 0, 0, 0.3)",
-    visibility: (props) => props.visibility,
+    // visibility: (props) => props.visibility,
   },
   acLogo: {
     width: 12,
   },
   acStatus: {
-    backgroundColor: (props) => props.backgroundColor,
+    // backgroundColor: (props) => props.backgroundColor,
   },
   energyLabel: {
     backgroundColor: "#4ea5f5",
   },
 }));
 
-function AcBorder(props) {
+function AcBorder(props: any) {
   return (
     <Box
       bgcolor="background.paper"
@@ -44,7 +44,11 @@ function AcBorder(props) {
   );
 }
 
-function AcDisplay(props) {
+/**
+ * 显示屏（温度/图标）
+ * @param props
+ */
+function AcDisplay(props: any) {
   return (
     <Box
       {...props}
@@ -64,9 +68,14 @@ function AcDisplay(props) {
   );
 }
 
-function AcLogo(props) {
+/**
+ * 空调 Logo
+ * @param props
+ */
+function AcLogo(props: any) {
   return (
-    <Box align="center" mt={12}>
+    // <Box align="center" mt={12}>
+    <Box textAlign="center" mt={12}>
       <img className={props.className} src={logo} alt="logo" />
     </Box>
   );
@@ -76,7 +85,11 @@ function AirOutlet() {
   return <Box mt={1} border={1} borderColor={acColor.border}></Box>;
 }
 
-function AcStatus(props) {
+/**
+ * 空调状态
+ * @param props
+ */
+function AcStatus(props: any) {
   const led = { backgroundColor: props.status ? "#38F709" : acColor.border };
   const classes = useStyles(led);
   return (
@@ -92,7 +105,21 @@ function AcStatus(props) {
   );
 }
 
-function textLabel(num, color, size, mx, my = 0) {
+/**
+ * 文本标签（黑色小点点）
+ * @param num
+ * @param color
+ * @param size
+ * @param mx
+ * @param my
+ */
+function textLabel(
+  num: number,
+  color: string,
+  size: number,
+  mx: number,
+  my = 0
+) {
   const titleLength = [...new Array(num).keys()];
   const titleLabel = titleLength.map((n) => (
     <Box
@@ -112,7 +139,11 @@ function textLabel(num, color, size, mx, my = 0) {
   );
 }
 
-function EnergyLabel(props) {
+/**
+ * 功耗标签
+ * @param props
+ */
+function EnergyLabel(props: any) {
   return (
     <Box
       className={props.className}
@@ -156,18 +187,22 @@ function EnergyLabel(props) {
   );
 }
 
-function WindEffect(props) {
+/**
+ * 风特效
+ * @param props
+ */
+function WindEffect(props: any) {
   return (
     <Box {...props} mt={3} display="flex" justifyContent="center">
       <Box
-        css={{ transform: "rotate(10deg)" }}
+        style={{ transform: "rotate(10deg)" }}
         bgcolor={acColor.wind}
         width={5}
         height={40}
       ></Box>
       <Box mx={10} bgcolor={acColor.wind} width={5} height={40}></Box>
       <Box
-        css={{ transform: "rotate(-10deg)" }}
+        style={{ transform: "rotate(-10deg)" }}
         bgcolor={acColor.wind}
         width={5}
         height={40}
@@ -176,7 +211,11 @@ function WindEffect(props) {
   );
 }
 
-export default function AirConditioner(props) {
+/**
+ * 空调
+ * @param props
+ */
+export default function AirConditioner(props: any) {
   const classes = useStyles();
   return (
     <Box>

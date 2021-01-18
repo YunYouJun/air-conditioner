@@ -5,8 +5,6 @@ import {
   ThemeProvider,
 } from "@material-ui/core/styles";
 import { Box, Fab } from "@material-ui/core";
-// import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
-// import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
@@ -24,55 +22,81 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function RCButton(props) {
+/**
+ * 遥控器按钮
+ * @param props
+ */
+function RCButton(props: any) {
   return (
     <Fab
       {...props}
       onClick={() => {
-        playDi();
+        playDi(props);
         props.onClick();
       }}
     ></Fab>
   );
 }
 
-function playDi() {
-  let di = document.getElementById("di");
-  di.play();
+/**
+ * 播放「嘀」的音效
+ */
+function playDi(props: any) {
+  const di = document.getElementById("di");
+  if (di) {
+    (di as HTMLAudioElement).play();
+  }
 }
 
+/**
+ * 播放工作声音
+ */
 function playWorkSound() {
-  let acWork = document.getElementById("ac-work");
+  const acWork = document.getElementById("ac-work") as HTMLAudioElement;
   acWork.load();
   acWork.play();
 }
 
-function increaseTemperature(props) {
+/**
+ * 增加温度
+ * @param {*} props
+ */
+function increaseTemperature(props: any) {
   props.temperature < 31
     ? props.setTemperature(props.temperature + 1)
     : console.log("已经是最大温度啦！");
 }
 
-function decreaseTemperature(props) {
+/**
+ * 降低温度
+ * @param {*} props
+ */
+function decreaseTemperature(props: any) {
   props.temperature > 16
     ? props.setTemperature(props.temperature - 1)
     : console.log("已经是最小温度啦！");
 }
 
-function toggleAC(props) {
+/**
+ * 切换空调工作状态
+ * @param {*} props
+ */
+function toggleAC(props: any) {
   if (props.status) {
-    document.getElementById("ac-work").load();
+    (document.getElementById("ac-work") as HTMLAudioElement).load();
   } else {
     playWorkSound();
   }
   props.setStatus(!props.status);
 }
 
+type AcMode = "cold" | "hot";
+
 /**
  * 切换模式 cold | hot
  * @param {*} mode
  */
-function toggleMode(props, mode) {
+function toggleMode(props: any, mode: AcMode) {
   props.setMode(mode);
 }
 
@@ -86,7 +110,7 @@ const theme = createMuiTheme({
  * 遥控
  * @param {*} props
  */
-export default function RemoteControl(props) {
+export default function RemoteControl(props: any) {
   const classes = useStyles();
   return (
     <Box my={4} display="flex" flexDirection="column" alignItems="center">
