@@ -105,8 +105,18 @@ const theme = createMuiTheme({
   },
 });
 
-const SOUND_DI_PATH = "/assets/audio/di.mp3";
-const SOUND_AC_WORK_PATH = "/assets/audio/ac-work.mp3";
+const jsdelivrCDN =
+  "https://cdn.jsdelivr.net/gh/YunYouJun/air-conditioner/public";
+
+const SOUND_DI_PATH =
+  (process.env.NODE_ENV === "production"
+    ? jsdelivrCDN
+    : process.env.PUBLIC_URL) + "/assets/audio/di.mp3";
+
+const SOUND_AC_WORK_PATH =
+  (process.env.NODE_ENV === "production"
+    ? jsdelivrCDN
+    : process.env.PUBLIC_URL) + "/assets/audio/ac-work.mp3";
 
 /**
  * 遥控
@@ -116,16 +126,8 @@ export default function RemoteControl(props: any) {
   const classes = useStyles();
   return (
     <Box my={4} display="flex" flexDirection="column" alignItems="center">
-      <audio
-        id="di"
-        src={process.env.PUBLIC_URL + SOUND_DI_PATH}
-        preload="auto"
-      ></audio>
-      <audio
-        id="ac-work"
-        src={process.env.PUBLIC_URL + SOUND_AC_WORK_PATH}
-        preload="auto"
-      ></audio>
+      <audio id="di" src={SOUND_DI_PATH} preload="auto"></audio>
+      <audio id="ac-work" src={SOUND_AC_WORK_PATH} preload="auto"></audio>
       <div>
         {" "}
         <RCButton
