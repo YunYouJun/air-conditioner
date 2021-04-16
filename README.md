@@ -31,6 +31,13 @@
 
 样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/)
 
+## Dev
+
+```bash
+yarn start
+# http://localhost:3000/air-conditioner/
+```
+
 ## Todo
 
 - [x] 空调

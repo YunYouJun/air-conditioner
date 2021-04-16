@@ -1,3 +1,4 @@
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box, Typography, Fade } from "@material-ui/core";
 import logo from "../logo.svg";
@@ -10,6 +11,7 @@ const acColor = {
 
 const useStyles = makeStyles((theme) => ({
   acBorder: {
+    borderRadius: 10,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -47,10 +49,11 @@ function AcBorder(props: any) {
  * 显示屏（温度/图标）
  * @param props
  */
-function AcDisplay(props: any) {
+const AcDisplay = React.forwardRef((props: any, ref) => {
   return (
     <Box
       {...props}
+      ref={ref}
       position="absolute"
       top={25}
       right={30}
@@ -65,7 +68,7 @@ function AcDisplay(props: any) {
       </Typography>
     </Box>
   );
-}
+});
 
 /**
  * 空调 Logo
@@ -190,9 +193,9 @@ function EnergyLabel(props: any) {
  * 风特效
  * @param props
  */
-function WindEffect(props: any) {
+const WindEffect = React.forwardRef((props, ref) => {
   return (
-    <Box {...props} mt={3} display="flex" justifyContent="center">
+    <Box {...props} ref={ref} mt={3} display="flex" justifyContent="center">
       <Box
         style={{ transform: "rotate(10deg)" }}
         bgcolor={acColor.wind}
@@ -208,7 +211,7 @@ function WindEffect(props: any) {
       ></Box>
     </Box>
   );
-}
+});
 
 /**
  * 空调
