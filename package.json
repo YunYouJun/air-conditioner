@@ -1,7 +1,13 @@
 {
   "name": "air-conditioner",
+  "description": "云空调，便携小空调",
   "version": "0.1.2",
   "private": true,
+  "author": {
+    "url": "https://www.yunyoujun.cn",
+    "email": "me@yunyoujun.cn",
+    "name": "YunYouJun"
+  },
   "scripts": {
     "start": "react-scripts start",
     "dev": "yarn start",
@@ -26,6 +32,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YunYouJun/air-conditioner"
   },
   "homepage": "https://yunyoujun.github.io/air-conditioner",
   "dependencies": {

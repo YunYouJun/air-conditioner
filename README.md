@@ -2,7 +2,7 @@
 
 [![Github Pages](https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg)](https://github.com/YunYouJun/air-conditioner/actions)
 
-便携小空调，为你的夏日带去清凉！
+云空调，便携小空调，为你的夏日带去清凉！
 
 ## Features
 
@@ -34,8 +34,12 @@
 ## Dev
 
 ```bash
+# yarn dev
 yarn start
 # http://localhost:3000/air-conditioner/
+
+yarn build
+# ./build
 ```
 
 ## Todo

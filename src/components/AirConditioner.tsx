@@ -3,6 +3,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Box, Typography, Fade } from "@material-ui/core";
 import logo from "../logo.svg";
 
+import * as pkg from "../../package.json";
+
 const acColor = {
   border: "#e0e0e0",
   display: "#cccccc",
@@ -78,7 +80,14 @@ function AcLogo(props: any) {
   return (
     // <Box align="center" mt={12}>
     <Box textAlign="center" mt={12}>
-      <img className={props.className} src={logo} alt="logo" />
+      <a
+        href={pkg.repository.url}
+        title={pkg.description}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        <img className={props.className} src={logo} alt="logo" />
+      </a>
     </Box>
   );
 }

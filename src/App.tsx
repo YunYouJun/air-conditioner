@@ -13,20 +13,19 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "./theme";
 
+import * as pkg from "../package.json";
+
 function Copyright() {
   return (
     <Box>
       <Typography variant="body2" color="textSecondary" align="center">
         {"Copyright © "}
-        <Link
-          color="inherit"
-          href="https://github.com/YunYouJun/air-conditioner"
-        >
+        <Link color="inherit" href={pkg.repository.url}>
           Yun Air Conditioner
         </Link>
         {" - "}
-        <Link color="inherit" href="https://github.com/YunYouJun">
-          YunYouJun
+        <Link color="inherit" href={pkg.author.url}>
+          {pkg.author.name}
         </Link>
         {" 2019 -  "}
         {new Date().getFullYear()}
