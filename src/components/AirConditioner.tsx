@@ -178,7 +178,6 @@ function EnergyLabel(props: any) {
         <Grid container>
           <Box bgcolor="green" height={3} width="40%"></Box>
           <Box height={3} marginLeft="40%" style={{
-            borderStyle: "solid",
             borderTop: 1.5,
             borderRight: 2,
             borderBottom: 1.5,
@@ -187,6 +186,7 @@ function EnergyLabel(props: any) {
             borderRightColor: "green",
             borderBottomColor: "transparent",
             borderLeftColor: "transparent",
+            borderStyle: "solid",
           }}></Box>
           <Box bgcolor="green" height={3} width="10%"></Box>
         </Grid>
