@@ -1,6 +1,6 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Box, Typography, Fade } from "@material-ui/core";
+import { Box, Grid, Typography, Fade } from "@material-ui/core";
 import logo from "../logo.svg";
 
 import * as pkg from "../../package.json";
@@ -175,7 +175,21 @@ function EnergyLabel(props: any) {
         width="100%"
         bgcolor="background.paper"
       >
-        <Box bgcolor="green" height={3} width="40%"></Box>
+        <Grid container>
+          <Box bgcolor="green" height={3} width="40%"></Box>
+          <Box height={3} marginLeft="40%" style={{
+            borderStyle: "solid",
+            borderTop: 1.5,
+            borderRight: 2,
+            borderBottom: 1.5,
+            borderLeft: 0,
+            borderTopColor: "transparent",
+            borderRightColor: "green",
+            borderBottomColor: "transparent",
+            borderLeftColor: "transparent",
+          }}></Box>
+          <Box bgcolor="green" height={3} width="10%"></Box>
+        </Grid>
         <Box mt={0.25} bgcolor="lightGreen" height={3} width="50%"></Box>
         <Box mt={0.25} bgcolor="#ffc107" height={3} width="60%"></Box>
         <Box mt={0.25} bgcolor="orange" height={3} width="70%"></Box>
