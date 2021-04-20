@@ -30,8 +30,10 @@ function Copyright() {
         <Link color="inherit" href={pkg.author.url}>
           {pkg.author.name}
         </Link>
-        {" 2019 -  "}
-        {new Date().getFullYear()}
+        <span>
+          {" 2019 -  "}
+          {new Date().getFullYear()}
+        </span>
       </Typography>
     </Box>
   );
@@ -39,6 +41,7 @@ function Copyright() {
 
 function App() {
   const ac = useAppSelector((state: RootState) => state.ac);
+
   return (
     <ThemeProvider theme={theme}>
       {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
@@ -49,7 +52,11 @@ function App() {
             便携小空调
           </Typography>
           <ProTip />
-          <AirConditioner status={ac.status} temperature={ac.temperature} />
+          <AirConditioner
+            status={ac.status}
+            temperature={ac.temperature}
+            mode={ac.mode}
+          />
           <RemoteControl />
           <Copyright />
         </Box>

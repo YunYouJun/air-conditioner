@@ -38,7 +38,7 @@ function RCButton(props: any) {
     <Fab
       {...props}
       onClick={() => {
-        playDi(props);
+        playDi();
         props.onClick();
       }}
     ></Fab>
@@ -48,7 +48,7 @@ function RCButton(props: any) {
 /**
  * 播放「嘀」的音效
  */
-function playDi(props: any) {
+function playDi() {
   const di = document.getElementById("di");
   if (di) {
     (di as HTMLAudioElement).play();
@@ -101,7 +101,7 @@ const SOUND_AC_WORK_PATH =
  * 遥控
  * @param {*} props
  */
-export default function RemoteControl(props: any) {
+export default function RemoteControl() {
   const classes = useStyles();
   const ac = useAppSelector((state: RootState) => state.ac);
   const dispatch = useAppDispatch();
@@ -123,7 +123,7 @@ export default function RemoteControl(props: any) {
         </RCButton>
         <ThemeProvider theme={theme}>
           <RCButton
-            color={props.status ? "secondary" : "primary"}
+            color={ac.status ? "secondary" : "primary"}
             aria-label="add"
             className={classes.margin}
             onClick={() => {

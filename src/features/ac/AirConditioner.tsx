@@ -8,7 +8,6 @@ import * as pkg from "../../../package.json";
 import "./AirConditioner.scss";
 import { useAppSelector } from "../../app/hooks";
 
-import { RootState } from "../../app/store";
 import { AcMode, selectTemperature } from "./acSlice";
 
 const acColor = {
@@ -31,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     width: 12,
   },
   acStatus: {
-    // backgroundColor: (props) => props.backgroundColor,
+    backgroundColor: (props?: any) => props.backgroundColor || "transparent",
   },
   energyLabel: {
     backgroundColor: "#4ea5f5",
@@ -109,6 +108,10 @@ function AcLogo(props: any) {
   );
 }
 
+/**
+ * 出风口线
+ * @returns
+ */
 function AirOutlet() {
   return <Box mt={1} border={1} borderColor={acColor.border}></Box>;
 }
@@ -117,7 +120,8 @@ function AirOutlet() {
  * 空调状态
  * @param props
  */
-function AcStatus(props: any) {
+function AcStatus(props: { status: boolean }) {
+  // 空调状态小灯
   const led = { backgroundColor: props.status ? "#38F709" : acColor.border };
   const classes = useStyles(led);
   return (
@@ -259,26 +263,25 @@ const WindEffect = React.forwardRef((props, ref) => {
 
 /**
  * 空调
- * @param props
  */
-export default function AirConditioner(props: any) {
-  const classes = useStyles();
-
-  const ac = useAppSelector((state: RootState) => {
-    return state.ac;
-  });
+export default function AirConditioner(props: {
+  mode: AcMode;
+  status: boolean;
+  temperature: number;
+}) {
+  const classes = useStyles(props);
   return (
     <Box>
       <AcBorder className={classes.acBorder}>
-        <Fade in={ac.status}>
-          <AcDisplay mode={ac.mode} />
+        <Fade in={props.status}>
+          <AcDisplay mode={props.mode} />
         </Fade>
         <AcLogo className={classes.acLogo} />
         <AirOutlet />
-        <AcStatus status={ac.status} />
+        <AcStatus status={props.status} />
         <EnergyLabel className={classes.energyLabel} titleLength={6} />
       </AcBorder>
-      <Fade in={ac.status} timeout={{ enter: 2500, exit: 1500 }}>
+      <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>
         <WindEffect />
       </Fade>
     </Box>
