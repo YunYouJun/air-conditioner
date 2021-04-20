@@ -20,22 +20,23 @@ import { RootState } from "./app/store";
 
 function Copyright() {
   return (
-    <Box>
+    <div>
+      <Box>
+        <Typography variant="body2" color="textSecondary" align="center">
+          {"© "}
+          <Link color="inherit" href={pkg.repository.url}>
+            Yun Air Conditioner
+          </Link>
+          {" - "}
+          <Link color="inherit" href={pkg.author.url}>
+            {pkg.author.name}
+          </Link>
+        </Typography>
+      </Box>
       <Typography variant="body2" color="textSecondary" align="center">
-        {"Copyright © "}
-        <Link color="inherit" href={pkg.repository.url}>
-          Yun Air Conditioner
-        </Link>
-        {" - "}
-        <Link color="inherit" href={pkg.author.url}>
-          {pkg.author.name}
-        </Link>
-        <span>
-          {" 2019 -  "}
-          {new Date().getFullYear()}
-        </span>
+        {" 2019 - " + new Date().getFullYear()}
       </Typography>
-    </Box>
+    </div>
   );
 }
 

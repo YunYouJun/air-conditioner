@@ -22,7 +22,7 @@ export type AcMode = "cold" | "hot";
 const initialState: AcState = {
   status: false,
   mode: "cold",
-  temperature: 16,
+  temperature: 20,
 };
 
 const maxTemperature = 31;
