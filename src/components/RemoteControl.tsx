@@ -11,6 +11,14 @@ import AcUnitIcon from "@material-ui/icons/AcUnit";
 import WbSunnyIcon from "@material-ui/icons/WbSunny";
 
 import { green } from "@material-ui/core/colors";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import {
+  decreaseTemperature,
+  increaseTemperature,
+  setMode,
+  toggleStatus,
+} from "../features/ac/acSlice";
+import { RootState } from "../app/store";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -57,46 +65,17 @@ function playWorkSound() {
 }
 
 /**
- * 增加温度
- * @param {*} props
- */
-function increaseTemperature(props: any) {
-  props.temperature < 31
-    ? props.setTemperature(props.temperature + 1)
-    : console.log("已经是最大温度啦！");
-}
-
-/**
- * 降低温度
- * @param {*} props
- */
-function decreaseTemperature(props: any) {
-  props.temperature > 16
-    ? props.setTemperature(props.temperature - 1)
-    : console.log("已经是最小温度啦！");
-}
-
-/**
  * 切换空调工作状态
  * @param {*} props
  */
-function toggleAC(props: any) {
-  if (props.status) {
+function toggleAC(status: boolean, dispatch: any) {
+  if (status) {
     (document.getElementById("ac-work") as HTMLAudioElement).load();
   } else {
     playWorkSound();
   }
-  props.setStatus(!props.status);
-}
 
-type AcMode = "cold" | "hot";
-
-/**
- * 切换模式 cold | hot
- * @param {*} mode
- */
-function toggleMode(props: any, mode: AcMode) {
-  props.setMode(mode);
+  dispatch(toggleStatus());
 }
 
 const theme = createMuiTheme({
@@ -124,6 +103,8 @@ const SOUND_AC_WORK_PATH =
  */
 export default function RemoteControl(props: any) {
   const classes = useStyles();
+  const ac = useAppSelector((state: RootState) => state.ac);
+  const dispatch = useAppDispatch();
   return (
     <Box my={4} display="flex" flexDirection="column" alignItems="center">
       <audio id="di" src={SOUND_DI_PATH} preload="auto"></audio>
@@ -135,7 +116,7 @@ export default function RemoteControl(props: any) {
           aria-label="cold"
           className={classes.margin}
           onClick={() => {
-            toggleMode(props, "cold");
+            dispatch(setMode("cold"));
           }}
         >
           <AcUnitIcon />
@@ -146,7 +127,7 @@ export default function RemoteControl(props: any) {
             aria-label="add"
             className={classes.margin}
             onClick={() => {
-              toggleAC(props);
+              toggleAC(ac.status, dispatch);
             }}
             style={{ color: "white" }}
           >
@@ -158,7 +139,7 @@ export default function RemoteControl(props: any) {
           className={classes.margin}
           style={{ backgroundColor: "orange", color: "white" }}
           onClick={() => {
-            toggleMode(props, "hot");
+            dispatch(setMode("hot"));
           }}
         >
           <WbSunnyIcon />
@@ -168,7 +149,7 @@ export default function RemoteControl(props: any) {
         aria-label="add"
         className={classes.margin}
         onClick={() => {
-          increaseTemperature(props);
+          dispatch(increaseTemperature());
         }}
       >
         <ExpandLessIcon />
@@ -177,7 +158,7 @@ export default function RemoteControl(props: any) {
         aria-label="reduce"
         className={classes.margin}
         onClick={() => {
-          decreaseTemperature(props);
+          dispatch(decreaseTemperature());
         }}
       >
         <ExpandMoreIcon />

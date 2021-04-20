@@ -1,19 +1,22 @@
-import React, { useState } from "react";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import Link from "@material-ui/core/Link";
 
-import "./App.css";
+import "./App.scss";
 import ProTip from "./components/Protip";
-import AirConditioner from "./components/AirConditioner";
 import RemoteControl from "./components/RemoteControl";
+
+import AirConditioner from "./features/ac/AirConditioner";
+import Toast from "./features/toast/Toast";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "./theme";
 
 import * as pkg from "../package.json";
+import { useAppSelector } from "./app/hooks";
+import { RootState } from "./app/store";
 
 function Copyright() {
   return (
@@ -35,9 +38,7 @@ function Copyright() {
 }
 
 function App() {
-  const [status, setStatus] = useState(false);
-  const [mode, setMode] = useState("cold");
-  const [temperature, setTemperature] = useState(16);
+  const ac = useAppSelector((state: RootState) => state.ac);
   return (
     <ThemeProvider theme={theme}>
       {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
@@ -48,21 +49,11 @@ function App() {
             便携小空调
           </Typography>
           <ProTip />
-          <AirConditioner
-            status={status}
-            mode={mode}
-            temperature={temperature}
-          />
-          <RemoteControl
-            status={status}
-            setStatus={setStatus}
-            mode={mode}
-            setMode={setMode}
-            temperature={temperature}
-            setTemperature={setTemperature}
-          />
+          <AirConditioner status={ac.status} temperature={ac.temperature} />
+          <RemoteControl />
           <Copyright />
         </Box>
+        <Toast />
       </Container>
     </ThemeProvider>
   );

@@ -1,9 +1,15 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box, Grid, Typography, Fade } from "@material-ui/core";
-import logo from "../logo.svg";
+import logo from "../../logo.svg";
 
-import * as pkg from "../../package.json";
+import * as pkg from "../../../package.json";
+
+import "./AirConditioner.scss";
+import { useAppSelector } from "../../app/hooks";
+
+import { RootState } from "../../app/store";
+import { AcMode, selectTemperature } from "./acSlice";
 
 const acColor = {
   border: "#e0e0e0",
@@ -48,10 +54,24 @@ function AcBorder(props: any) {
 }
 
 /**
+ * 空调温度
+ * @returns
+ */
+function AcTemperature() {
+  const temperature = useAppSelector(selectTemperature);
+  return (
+    <Typography variant="h4" align="center">
+      <span className="font-digit ac-temperature">{temperature}</span>
+      <small className="font-digit">°C</small>
+    </Typography>
+  );
+}
+
+/**
  * 显示屏（温度/图标）
  * @param props
  */
-const AcDisplay = React.forwardRef((props: any, ref) => {
+const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
   return (
     <Box
       {...props}
@@ -64,10 +84,7 @@ const AcDisplay = React.forwardRef((props: any, ref) => {
       <Typography align="left" variant="subtitle2">
         <span>{props.mode === "cold" ? "❄" : "☀️"}</span>️️
       </Typography>
-      <Typography variant="h4" align="center">
-        {props.temperature}
-        <small>°C</small>
-      </Typography>
+      <AcTemperature />
     </Box>
   );
 });
@@ -177,17 +194,21 @@ function EnergyLabel(props: any) {
       >
         <Grid container>
           <Box bgcolor="green" height={3} width="40%"></Box>
-          <Box height={3} marginLeft="40%" style={{
-            borderTop: 1.5,
-            borderRight: 2,
-            borderBottom: 1.5,
-            borderLeft: 0,
-            borderTopColor: "transparent",
-            borderRightColor: "green",
-            borderBottomColor: "transparent",
-            borderLeftColor: "transparent",
-            borderStyle: "solid",
-          }}></Box>
+          <Box
+            height={3}
+            marginLeft="40%"
+            style={{
+              borderTop: 1.5,
+              borderRight: 2,
+              borderBottom: 1.5,
+              borderLeft: 0,
+              borderTopColor: "transparent",
+              borderRightColor: "green",
+              borderBottomColor: "transparent",
+              borderLeftColor: "transparent",
+              borderStyle: "solid",
+            }}
+          ></Box>
           <Box bgcolor="green" height={3} width="10%"></Box>
         </Grid>
         <Box mt={0.25} bgcolor="lightGreen" height={3} width="50%"></Box>
@@ -242,18 +263,22 @@ const WindEffect = React.forwardRef((props, ref) => {
  */
 export default function AirConditioner(props: any) {
   const classes = useStyles();
+
+  const ac = useAppSelector((state: RootState) => {
+    return state.ac;
+  });
   return (
     <Box>
       <AcBorder className={classes.acBorder}>
-        <Fade in={props.status}>
-          <AcDisplay mode={props.mode} temperature={props.temperature} />
+        <Fade in={ac.status}>
+          <AcDisplay mode={ac.mode} />
         </Fade>
         <AcLogo className={classes.acLogo} />
         <AirOutlet />
-        <AcStatus status={props.status} />
+        <AcStatus status={ac.status} />
         <EnergyLabel className={classes.energyLabel} titleLength={6} />
       </AcBorder>
-      <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>
+      <Fade in={ac.status} timeout={{ enter: 2500, exit: 1500 }}>
         <WindEffect />
       </Fade>
     </Box>

@@ -4,6 +4,8 @@
 
 云空调，便携小空调，为你的夏日带去清凉！
 
+前世今生：[云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
+
 ## Features
 
 ### 优势
@@ -51,3 +53,7 @@ yarn build
   - [x] 音效
     - [x] 按钮
     - [x] 工作声
+
+## Ref
+
+- 数字字体，[Digital 7](https://www.dafont.com/digital-7.font)，Free for personal use

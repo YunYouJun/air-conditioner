@@ -1,8 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import "./index.css";
+import "./index.scss";
 import App from "./App";
+import { store } from "./app/store";
+import { Provider } from "react-redux";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
 
@@ -12,7 +14,9 @@ import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );
