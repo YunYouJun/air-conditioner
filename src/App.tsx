@@ -10,9 +10,7 @@ import RemoteControl from "./components/RemoteControl";
 import AirConditioner from "./features/ac/AirConditioner";
 import Toast from "./features/toast/Toast";
 
-import CssBaseline from "@material-ui/core/CssBaseline";
-import { ThemeProvider } from "@material-ui/styles";
-import theme from "./theme";
+import { ThemeProvider } from "./theme";
 
 import * as pkg from "../package.json";
 import { useAppSelector } from "./app/hooks";
@@ -44,12 +42,16 @@ function App() {
   const ac = useAppSelector((state: RootState) => state.ac);
 
   return (
-    <ThemeProvider theme={theme}>
-      {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-      <CssBaseline />
+    <ThemeProvider>
       <Container maxWidth="sm">
-        <Box my={4}>
-          <Typography align="center" variant="h4" component="h1" gutterBottom>
+        <Box sx={{ pt: 4 }} bgcolor="transparent">
+          <Typography
+            color="textPrimary"
+            align="center"
+            variant="h4"
+            component="h1"
+            gutterBottom
+          >
             便携小空调
           </Typography>
           <ProTip />
