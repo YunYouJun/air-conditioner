@@ -29,7 +29,7 @@
 ### iframe
 
 ```html
-<iframe height="666" src="https://www.yunyoujun.cn/air-conditioner/"></iframe>
+<iframe height="700" src="https://www.yunyoujun.cn/air-conditioner/"></iframe>
 ```
 
 您可以快速为您的网站安装空调。
