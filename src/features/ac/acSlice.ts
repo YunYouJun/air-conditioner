@@ -19,10 +19,13 @@ export interface AcState {
 
 export type AcMode = "cold" | "hot";
 
+const namespace = "ac-";
+const temperatureKey = namespace + "temperature";
+
 const initialState: AcState = {
   status: false,
   mode: "cold",
-  temperature: 20,
+  temperature: parseInt(localStorage.getItem(temperatureKey) || "") || 20,
 };
 
 const maxTemperature = 31;
@@ -38,6 +41,7 @@ export const acSlice = createSlice({
      */
     increment: (state) => {
       state.temperature += 1;
+      localStorage.setItem(temperatureKey, state.temperature.toString());
     },
 
     /**
@@ -46,6 +50,7 @@ export const acSlice = createSlice({
      */
     decrement: (state) => {
       state.temperature -= 1;
+      localStorage.setItem(temperatureKey, state.temperature.toString());
     },
 
     /**
