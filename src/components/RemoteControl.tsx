@@ -34,10 +34,12 @@ const useStyles = makeStyles((theme) => ({
  * @param props
  */
 function RCButton(props: any) {
+  const ac = useAppSelector((state: RootState) => state.ac);
   return (
     <Fab
       {...props}
       onClick={() => {
+        if (props["aria-label"] !== "add" && !ac.status) return;
         playDi();
         props.onClick();
       }}
