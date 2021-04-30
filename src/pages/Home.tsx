@@ -1,3 +1,4 @@
+import Button from "@material-ui/core/Button";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
@@ -10,12 +11,44 @@ import Toast from "../features/toast/Toast";
 
 import { ThemeProvider } from "../theme";
 
-import { useAppSelector } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { RootState } from "../app/store";
 import Copyright from "../layouts/Copyright";
+import {
+  AcMode,
+  acItemKey,
+  setTemperature,
+  setMode,
+  setStatus,
+} from "../features/ac/acSlice";
+import { useEffect } from "react";
 
 function Home() {
   const ac = useAppSelector((state: RootState) => state.ac);
+
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      // 重复设置相同的键值不会触发该事件
+      switch (e.key) {
+        case acItemKey.status:
+          dispatch(setStatus(e.newValue === "true"));
+          break;
+        case acItemKey.temperature:
+          dispatch(setTemperature(parseInt(e.newValue || "20")));
+          break;
+        case acItemKey.mode:
+          dispatch(setMode((e.newValue || "cold") as AcMode));
+          break;
+        default:
+          break;
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [dispatch]);
 
   return (
     <ThemeProvider>
@@ -36,6 +69,18 @@ function Home() {
             temperature={ac.temperature}
             mode={ac.mode}
           />
+          <div className="text-center">
+            <Box sx={{ mt: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  window.open("/rc", "_blank", "width=300, height=400");
+                }}
+              >
+                独立遥控器
+              </Button>
+            </Box>
+          </div>
           <RemoteControl />
           <Copyright />
         </Box>

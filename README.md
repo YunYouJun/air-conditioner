@@ -6,7 +6,7 @@
 
 前世今生：[云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
 
-- 裸机：<https://www.yunyoujun.cn/air-conditioner/>
+- 裸机：<https://ac.yunyoujun.cn>
 - 样板房：<https://www.yunyoujun.cn/air-conditioner-room/>
 
 ## Features
@@ -29,7 +29,7 @@
 ### iframe
 
 ```html
-<iframe height="700" src="https://www.yunyoujun.cn/air-conditioner/"></iframe>
+<iframe height="700" src="https://ac.yunyoujun.cn"></iframe>
 ```
 
 您可以快速为您的网站安装空调。

@@ -19,13 +19,18 @@ export interface AcState {
 }
 
 const namespace = "ac-";
-const modeKey = namespace + "mode";
-const temperatureKey = namespace + "temperature";
+
+export const acItemKey = {
+  status: namespace + "status",
+  mode: namespace + "mode",
+  temperature: namespace + "temperature",
+};
 
 const initialState: AcState = {
   status: false,
-  mode: (localStorage.getItem(modeKey) as AcMode) || "cold",
-  temperature: parseInt(localStorage.getItem(temperatureKey) || "") || 20,
+  mode: (localStorage.getItem(acItemKey.mode) as AcMode) || "cold",
+  temperature:
+    parseInt(localStorage.getItem(acItemKey.temperature) || "") || 20,
 };
 
 const maxTemperature = 31;
@@ -36,12 +41,28 @@ export const acSlice = createSlice({
   initialState,
   reducers: {
     /**
+     * 设置状态
+     * @param state
+     * @param action
+     */
+    setStatus(state, action: PayloadAction<boolean>) {
+      state.status = action.payload;
+    },
+    /**
+     * 设置温度
+     * @param state
+     * @param action
+     */
+    setTemperature(state, action: PayloadAction<number>) {
+      state.temperature = action.payload;
+    },
+    /**
      * 增加温度
      * @param state
      */
     increment: (state) => {
       state.temperature += 1;
-      localStorage.setItem(temperatureKey, state.temperature.toString());
+      localStorage.setItem(acItemKey.temperature, state.temperature.toString());
     },
 
     /**
@@ -50,7 +71,7 @@ export const acSlice = createSlice({
      */
     decrement: (state) => {
       state.temperature -= 1;
-      localStorage.setItem(temperatureKey, state.temperature.toString());
+      localStorage.setItem(acItemKey.temperature, state.temperature.toString());
     },
 
     /**
@@ -60,6 +81,7 @@ export const acSlice = createSlice({
      */
     setMode(state, action: PayloadAction<AcMode>) {
       state.mode = action.payload;
+      localStorage.setItem(acItemKey.mode, state.mode);
     },
 
     /**
@@ -69,13 +91,21 @@ export const acSlice = createSlice({
      */
     toggleStatus(state) {
       state.status = !state.status;
+      localStorage.setItem(acItemKey.status, state.status.toString());
     },
   },
 });
 
 export const selectTemperature = (state: RootState) => state.ac.temperature;
 
-export const { increment, decrement, setMode, toggleStatus } = acSlice.actions;
+export const {
+  setTemperature,
+  increment,
+  decrement,
+  setMode,
+  toggleStatus,
+  setStatus,
+} = acSlice.actions;
 
 /**
  * 增加温度
