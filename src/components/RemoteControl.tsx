@@ -19,6 +19,7 @@ import {
   toggleStatus,
 } from "../features/ac/acSlice";
 import { RootState } from "../app/store";
+import { getAssetsUrl } from "../assets/utils";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -78,24 +79,14 @@ function toggleAC(status: boolean, dispatch: any) {
   dispatch(toggleStatus());
 }
 
-const theme = createMuiTheme({
+const customTheme = createMuiTheme({
   palette: {
     primary: green,
   },
 });
 
-const jsdelivrCDN =
-  "https://cdn.jsdelivr.net/gh/YunYouJun/air-conditioner/public";
-
-const SOUND_DI_PATH =
-  (process.env.NODE_ENV === "production"
-    ? jsdelivrCDN
-    : process.env.PUBLIC_URL) + "/assets/audio/di.mp3";
-
-const SOUND_AC_WORK_PATH =
-  (process.env.NODE_ENV === "production"
-    ? jsdelivrCDN
-    : process.env.PUBLIC_URL) + "/assets/audio/ac-work.mp3";
+const SOUND_DI_PATH = getAssetsUrl("/assets/audio/di.mp3");
+const SOUND_AC_WORK_PATH = getAssetsUrl("/assets/audio/ac-work.mp3");
 
 /**
  * 遥控
@@ -121,7 +112,7 @@ export default function RemoteControl() {
         >
           <AcUnitIcon />
         </RCButton>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={customTheme}>
           <RCButton
             color={ac.status ? "secondary" : "primary"}
             aria-label="add"

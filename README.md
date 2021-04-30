@@ -41,7 +41,7 @@
 ```bash
 # yarn dev
 yarn start
-# http://localhost:3000/air-conditioner/
+# http://localhost:3000/
 
 yarn build
 # ./build

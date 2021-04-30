@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk, RootState } from "../../app/store";
 import { setMessage, setOpen } from "../toast/toastSlice";
 
+export type AcMode = "cold" | "hot";
 export interface AcState {
   /**
    * 状态
@@ -10,21 +11,20 @@ export interface AcState {
   /**
    * 模式
    */
-  mode: "cold" | "hot";
+  mode: AcMode;
   /**
    * 温度
    */
   temperature: number;
 }
 
-export type AcMode = "cold" | "hot";
-
 const namespace = "ac-";
+const modeKey = namespace + "mode";
 const temperatureKey = namespace + "temperature";
 
 const initialState: AcState = {
   status: false,
-  mode: "cold",
+  mode: (localStorage.getItem(modeKey) as AcMode) || "cold",
   temperature: parseInt(localStorage.getItem(temperatureKey) || "") || 20,
 };
 
