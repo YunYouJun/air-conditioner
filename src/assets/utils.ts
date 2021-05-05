@@ -1,7 +1,7 @@
 /**
  * 是否为生产环境
  */
-export const isProd = process.env.NODE_ENV !== "production";
+export const isProd = process.env.NODE_ENV === "production";
 
 /**
  * 获取资源 URL

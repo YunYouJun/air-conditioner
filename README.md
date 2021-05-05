@@ -60,4 +60,5 @@ yarn build
 
 ## Ref
 
-- 数字字体，[Digital 7](https://www.dafont.com/digital-7.font)，Free for personal use
+- 数字字体: [Digital 7](https://www.dafont.com/digital-7.font)，Free for personal use
+- 空调工作声: [Air Extractor Fan | freesound](https://freesound.org/people/InspectorJ/sounds/403664/)

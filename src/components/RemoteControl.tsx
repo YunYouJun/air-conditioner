@@ -56,13 +56,42 @@ function playDi() {
   }
 }
 
+let timeoutId: any;
+let intervalId: any;
+
 /**
- * 播放工作声音
+ * 播放空调启动声音
+ */
+function playStartSound() {
+  const acStart = document.getElementById("ac-work") as HTMLAudioElement;
+  acStart.load();
+  acStart.play();
+
+  setTimeout(() => {
+    playWorkSound();
+  }, 8000);
+}
+
+// 噪音起始时间
+const noiseStartTime = 2;
+// 噪音持续时间
+const noiseDuration = 56;
+
+/**
+ * 播放空调工作声音
  */
 function playWorkSound() {
-  const acWork = document.getElementById("ac-work") as HTMLAudioElement;
+  const acWork = document.getElementById(
+    "air-extractor-fan"
+  ) as HTMLAudioElement;
   acWork.load();
   acWork.play();
+
+  timeoutId = setTimeout(() => {
+    intervalId = setInterval(() => {
+      acWork.currentTime = noiseStartTime;
+    }, noiseDuration * 1000);
+  }, noiseStartTime * 1000);
 }
 
 /**
@@ -72,8 +101,18 @@ function playWorkSound() {
 function toggleAC(status: boolean, dispatch: any) {
   if (status) {
     (document.getElementById("ac-work") as HTMLAudioElement).load();
+    const acWork = document.getElementById(
+      "air-extractor-fan"
+    ) as HTMLAudioElement;
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    acWork.currentTime = noiseStartTime + noiseDuration;
   } else {
-    playWorkSound();
+    playStartSound();
   }
 
   dispatch(toggleStatus());
@@ -87,6 +126,9 @@ const customTheme = createMuiTheme({
 
 const SOUND_DI_PATH = getAssetsUrl("/assets/audio/di.mp3");
 const SOUND_AC_WORK_PATH = getAssetsUrl("/assets/audio/ac-work.mp3");
+const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
+  "/assets/audio/air-extractor-fan.mp3"
+);
 
 /**
  * 遥控
@@ -100,6 +142,11 @@ export default function RemoteControl() {
     <Box my={4} display="flex" flexDirection="column" alignItems="center">
       <audio id="di" src={SOUND_DI_PATH} preload="auto"></audio>
       <audio id="ac-work" src={SOUND_AC_WORK_PATH} preload="auto"></audio>
+      <audio
+        id="air-extractor-fan"
+        src={SOUND_AIR_EXTRACTOR_FAN_PATH}
+        preload="auto"
+      ></audio>
       <div>
         {" "}
         <RCButton
