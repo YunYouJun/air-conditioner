@@ -50,9 +50,21 @@ function Home() {
     };
   }, [dispatch]);
 
+  /**
+   * 根据模式返回对应的色温
+   * @returns
+   */
+  function getClassByMode() {
+    if (ac.status) {
+      return ac.mode === "hot" ? "hot-color" : "cold-color";
+    } else {
+      return "";
+    }
+  }
+
   return (
     <ThemeProvider>
-      <Container maxWidth="sm">
+      <Container maxWidth="sm" className={getClassByMode()}>
         <Box sx={{ pt: 4 }} bgcolor="transparent">
           <Typography
             color="textPrimary"
