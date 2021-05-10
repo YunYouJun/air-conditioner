@@ -1,3 +1,16 @@
 .ac-temperature {
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
 }
+.windBox {
+  margin-right: 40px;
+  margin-top: 22px;
+  float: right;
+  li {
+    width: 4px;
+    background-color: #006bff85;
+    list-style: none;
+    margin-right: 1px;
+    display: inline-block;
+    vertical-align: bottom;
+  }
+}

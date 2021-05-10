@@ -6,6 +6,9 @@ import {
 import { Box, Fab } from "@material-ui/core";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ArrowLeftIcon from "@material-ui/icons/ArrowBackIos";
+import ArrowRightIcon from "@material-ui/icons/ArrowForwardIos";
+
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import AcUnitIcon from "@material-ui/icons/AcUnit";
 import WbSunnyIcon from "@material-ui/icons/WbSunny";
@@ -15,6 +18,8 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import {
   decreaseTemperature,
   increaseTemperature,
+  increaseWindPower,
+  decreaseWindPower,
   setMode,
   toggleStatus,
 } from "../features/ac/acSlice";
@@ -149,6 +154,16 @@ export default function RemoteControl() {
       ></audio>
       <div>
         {" "}
+        {/* 风力减小按钮 */}
+        <RCButton
+          aria-label="addWind"
+          className={classes.margin}
+          onClick={()=>{
+            dispatch(decreaseWindPower())
+          }}
+        >
+          <ArrowLeftIcon />
+        </RCButton>
         <RCButton
           color="primary"
           aria-label="cold"
@@ -181,6 +196,16 @@ export default function RemoteControl() {
           }}
         >
           <WbSunnyIcon />
+        </RCButton>
+        {/* 风力增加按钮 */}
+        <RCButton
+          aria-label="reduceWind"
+          className={classes.margin}
+          onClick={()=>{
+            dispatch(increaseWindPower())
+          }}
+        >
+          <ArrowRightIcon />
         </RCButton>
       </div>
       <RCButton

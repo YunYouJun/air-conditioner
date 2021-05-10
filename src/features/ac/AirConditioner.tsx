@@ -89,6 +89,24 @@ const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
 });
 
 /**
+ * 风力
+ * @param props 
+ */
+const WindPower = () => {
+  const windLevel: Array<number> = [1, 2, 3, 4, 5]
+  let currentWindpower: number = parseInt(localStorage.getItem('ac-windoPower')!)
+  return (
+    <ul className="windBox">
+      {
+        windLevel.map((item: number) => {
+          return (item <= currentWindpower ? <li style={{ height: item + (2 * 0.5) + item + 'px' }} key={item}></li> : <li key={item}></li>)
+        })
+      }
+    </ul>
+  )
+}
+
+/**
  * 空调 Logo
  * @param props
  */
@@ -274,7 +292,10 @@ export default function AirConditioner(props: {
     <Box>
       <AcBorder className={classes.acBorder}>
         <Fade in={props.status}>
-          <AcDisplay mode={props.mode} />
+          <div>
+            <AcDisplay mode={props.mode} />
+            <WindPower></WindPower>
+          </div>
         </Fade>
         <AcLogo className={classes.acLogo} />
         <AirOutlet />
