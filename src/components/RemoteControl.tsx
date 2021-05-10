@@ -6,6 +6,7 @@ import {
 import { Box, Fab } from "@material-ui/core";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ClearIcon from "@material-ui/icons/Clear";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import AcUnitIcon from "@material-ui/icons/AcUnit";
 import WbSunnyIcon from "@material-ui/icons/WbSunny";
@@ -20,6 +21,7 @@ import {
 } from "../features/ac/acSlice";
 import { RootState } from "../app/store";
 import { getAssetsUrl } from "../assets/utils";
+import { Clear } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -201,6 +203,16 @@ export default function RemoteControl() {
       >
         <ExpandMoreIcon />
       </RCButton>
+        <RCButton
+        aria-label="close"
+        className={classes.margin}
+        onClick={() => {
+          window.close();
+        }}
+      >
+        <ClearIcon />
+      </RCButton>
+
     </Box>
   );
 }
