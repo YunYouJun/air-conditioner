@@ -9,11 +9,11 @@ function Copyright() {
       <Box>
         <Typography variant="body2" color="textSecondary" align="center">
           {"© "}
-          <Link color="inherit" href={pkg.repository.url}>
+          <Link color="inherit" href={pkg.repository.url} target="_blank">
             Yun Air Conditioner
           </Link>
           {" - "}
-          <Link color="inherit" href={pkg.author.url}>
+          <Link color="inherit" href={pkg.author.url} target="_blank">
             {pkg.author.name}
           </Link>
         </Typography>
