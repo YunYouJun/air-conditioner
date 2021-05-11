@@ -56,8 +56,9 @@ function playDi() {
   }
 }
 
-let timeoutId: any;
-let intervalId: any;
+let playStartSoundTimeoutId: any;
+let playWorkSoundTimeoutId: any;
+let playWorkSoundIntervalId: any;
 
 /**
  * 播放空调启动声音
@@ -67,7 +68,7 @@ function playStartSound() {
   acStart.load();
   acStart.play();
 
-  setTimeout(() => {
+  playStartSoundTimeoutId = setTimeout(() => {
     playWorkSound();
   }, 8000);
 }
@@ -87,8 +88,8 @@ function playWorkSound() {
   acWork.load();
   acWork.play();
 
-  timeoutId = setTimeout(() => {
-    intervalId = setInterval(() => {
+  playWorkSoundTimeoutId = setTimeout(() => {
+    playWorkSoundIntervalId = setInterval(() => {
       acWork.currentTime = noiseStartTime;
     }, noiseDuration * 1000);
   }, noiseStartTime * 1000);
@@ -104,11 +105,14 @@ function toggleAC(status: boolean, dispatch: any) {
     const acWork = document.getElementById(
       "air-extractor-fan"
     ) as HTMLAudioElement;
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    if (playStartSoundTimeoutId) {
+      clearTimeout(playStartSoundTimeoutId);
     }
-    if (intervalId) {
-      clearInterval(intervalId);
+    if (playWorkSoundTimeoutId) {
+      clearTimeout(playWorkSoundTimeoutId);
+    }
+    if (playWorkSoundIntervalId) {
+      clearInterval(playWorkSoundIntervalId);
     }
     acWork.currentTime = noiseStartTime + noiseDuration;
   } else {
