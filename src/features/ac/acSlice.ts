@@ -28,7 +28,7 @@ export const acItemKey = {
   status: namespace + "status",
   mode: namespace + "mode",
   temperature: namespace + "temperature",
-  windPower: namespace + "windoPower"
+  windPower: namespace + "windPower"
 };
 
 const initialState: AcState = {

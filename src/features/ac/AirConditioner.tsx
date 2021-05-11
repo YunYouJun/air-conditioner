@@ -94,7 +94,7 @@ const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
  */
 const WindPower = () => {
   const windLevel: Array<number> = [1, 2, 3, 4, 5]
-  let currentWindpower: number = parseInt(localStorage.getItem('ac-windoPower')!)
+  let currentWindpower: number = parseInt(localStorage.getItem('ac-windPower')!)
   return (
     <ul className="wind-box">
       {

@@ -117,8 +117,8 @@ function toggleAC(status: boolean, dispatch: any) {
     }
     acWork.currentTime = noiseStartTime + noiseDuration;
   } else {
-    if(!localStorage.getItem("ac-windoPower")){
-      localStorage.setItem("ac-windoPower",'3')
+    if(!localStorage.getItem("ac-windPower")){
+      localStorage.setItem("ac-windPower",'3')
     }
     playStartSound();
   }
