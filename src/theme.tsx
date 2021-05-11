@@ -13,7 +13,7 @@ export function ThemeProvider(props: any) {
   // A custom theme for this app
   const theme = useMemo(
     () =>
-    createTheme({
+      createTheme({
         palette: {
           mode: preferredMode,
         },
