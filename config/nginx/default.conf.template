@@ -1,0 +1,15 @@
+server {
+    listen       ${AC_NGINX_PORT};
+    server_name  ${AC_NGINX_DOMAIN};
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri /index.html;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
