@@ -39,9 +39,9 @@
   },
   "homepage": "https://ac.yunyoujun.cn/",
   "dependencies": {
-    "@emotion/react": "^11.1.5",
+    "@emotion/react": "^11.4.0",
     "@emotion/styled": "^11.3.0",
-    "@material-ui/core": "^5.0.0-alpha.31",
+    "@material-ui/core": "^5.0.0-alpha.33",
     "@material-ui/icons": "^4.11.2",
     "@reduxjs/toolkit": "^1.5.1",
     "@testing-library/jest-dom": "^5.12.0",
@@ -50,7 +50,7 @@
     "@types/jest": "^26.0.23",
     "@types/node": "^15.0.2",
     "@types/react": "^17.0.5",
-    "@types/react-dom": "^17.0.3",
+    "@types/react-dom": "^17.0.4",
     "@types/react-redux": "^7.1.16",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -60,7 +60,7 @@
     "react-scripts": "^4.0.3",
     "sass": "^1.32.12",
     "typescript": "^4.2.4",
-    "web-vitals": "^1.1.1"
+    "web-vitals": "^1.1.2"
   },
   "devDependencies": {
     "@types/react-router-dom": "^5.1.7"
