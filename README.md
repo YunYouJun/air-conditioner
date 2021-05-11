@@ -36,6 +36,13 @@
 
 样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/)
 
+### Docker
+
+部署时可使用以下环境变量进行配置自定义：
+
+* `AC_NGINX_DOMAIN` 指定域名
+* `AC_NGINX_PORT` 指定监听端口
+
 ## Dev
 
 ```bash

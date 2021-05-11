@@ -1,6 +1,6 @@
 server {
-    listen       80;
-    server_name  localhost;
+    listen       ${AC_NGINX_PORT};
+    server_name  ${AC_NGINX_DOMAIN};
 
     location / {
         root   /usr/share/nginx/html;
