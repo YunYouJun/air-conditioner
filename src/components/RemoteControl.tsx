@@ -38,13 +38,6 @@ function RCButton(props: any) {
   return (
     <Fab
       {...props}
-      onMouseDown={() => {
-        playDi();
-        props.onMouseDown !== undefined && props.onMouseDown();
-      }}
-      onMouseUp={() => {
-        props.onMouseUp !== undefined && props.onMouseUp();
-      }}
       onClick={() => {
         playDi();
         props.onClick();
@@ -65,8 +58,6 @@ function playDi() {
 
 let timeoutId: any;
 let intervalId: any;
-let interval_up: any;
-let interval_down: any;
 
 /**
  * 播放空调启动声音
@@ -195,14 +186,6 @@ export default function RemoteControl() {
       <RCButton
         aria-label="add"
         className={classes.margin}
-        onMouseDown={() => {
-          interval_up = setInterval(() => {
-            dispatch(increaseTemperature());
-          }, 1000);
-        }}
-        onMouseUp={() => {
-          clearInterval(interval_up);
-        }}
         onClick={() => {
           dispatch(increaseTemperature());
         }}
@@ -212,14 +195,6 @@ export default function RemoteControl() {
       <RCButton
         aria-label="reduce"
         className={classes.margin}
-        onMouseDown={() => {
-          interval_down = setInterval(() => {
-            dispatch(increaseTemperature());
-          }, 1000);
-        }}
-        onMouseUp={() => {
-          clearInterval(interval_down);
-        }}
         onClick={() => {
           dispatch(decreaseTemperature());
         }}
