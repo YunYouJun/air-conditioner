@@ -36,7 +36,7 @@ const initialState: AcState = {
   mode: (localStorage.getItem(acItemKey.mode) as AcMode) || "cold",
   temperature:
     parseInt(localStorage.getItem(acItemKey.temperature) || "") || 20,
-  windPower: parseInt(localStorage.getItem(acItemKey.windPower) || "") || 5,
+  windPower: parseInt(localStorage.getItem(acItemKey.windPower) || "") || 3,
 };
 
 const maxTemperature = 31;
@@ -168,11 +168,10 @@ export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
   */
 export const increaseWindPower = (): AppThunk => (dispatch, getState) => {
   const currentValue = selectWindPower(getState());
-  console.log(currentValue)
   if (currentValue < maxWindPower) {
     dispatch(incrementWind());
   } else {
-    dispatch(setMessage("已经是最大风力啦!"));
+    dispatch(setMessage("已经是最大风力啦! "));
     dispatch(setOpen(true));
   }
 }
@@ -184,11 +183,10 @@ export const increaseWindPower = (): AppThunk => (dispatch, getState) => {
   */
 export const decreaseWindPower = (): AppThunk => (dispatch, getState) => {
   const currentValue = selectWindPower(getState());
-  console.log(currentValue)
   if (currentValue > minWindPower) {
     dispatch(decrementWind());
   } else {
-    dispatch(setMessage("已经是最小风力啦!"));
+    dispatch(setMessage("已经是最小风力啦! "));
     dispatch(setOpen(true));
   }
 }
