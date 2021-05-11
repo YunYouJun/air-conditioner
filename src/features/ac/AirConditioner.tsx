@@ -96,7 +96,7 @@ const WindPower = () => {
   const windLevel: Array<number> = [1, 2, 3, 4, 5]
   let currentWindpower: number = parseInt(localStorage.getItem('ac-windoPower')!)
   return (
-    <ul className="windBox">
+    <ul className="wind-box">
       {
         windLevel.map((item: number) => {
           return (item <= currentWindpower ? <li style={{ height: item + (2 * 0.5) + item + 'px' }} key={item}></li> : <li key={item}></li>)

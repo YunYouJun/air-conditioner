@@ -162,10 +162,10 @@ export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
   }
 };
 
-// /**
-//  * 增加风力
-//  * @returns
-//  */
+ /**
+  * 增加风力
+  * @returns
+  */
 export const increaseWindPower = (): AppThunk => (dispatch, getState) => {
   const currentValue = selectWindPower(getState());
   console.log(currentValue)
@@ -178,10 +178,10 @@ export const increaseWindPower = (): AppThunk => (dispatch, getState) => {
 }
 
 
-// /**
-//  * 减小风力
-//  * @returns
-//  */
+ /**
+  * 减小风力
+  * @returns
+  */
 export const decreaseWindPower = (): AppThunk => (dispatch, getState) => {
   const currentValue = selectWindPower(getState());
   console.log(currentValue)
