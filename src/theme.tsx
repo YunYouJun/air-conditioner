@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import PropTypes from "prop-types";
 import { useMediaQuery } from "@material-ui/core";
 import { ThemeProvider as MuiThemeProvider } from "@material-ui/styles";
-import { createMuiTheme } from "@material-ui/core/styles";
+import { createTheme } from "@material-ui/core/styles";
 
 export function ThemeProvider(props: any) {
   const { children } = props;
@@ -13,7 +13,7 @@ export function ThemeProvider(props: any) {
   // A custom theme for this app
   const theme = useMemo(
     () =>
-      createMuiTheme({
+    createTheme({
         palette: {
           mode: preferredMode,
         },

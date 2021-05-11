@@ -1,5 +1,5 @@
 import {
-  createMuiTheme,
+  createTheme,
   makeStyles,
   ThemeProvider,
 } from "@material-ui/core/styles";
@@ -125,7 +125,7 @@ function toggleAC(status: boolean, dispatch: any) {
   dispatch(toggleStatus());
 }
 
-const customTheme = createMuiTheme({
+const customTheme = createTheme({
   palette: {
     primary: green,
   },
