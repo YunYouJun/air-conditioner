@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import EmojiObjectsOutlinedIcon from "@material-ui/icons/EmojiObjectsOutlined";
-import { ximalayaLink } from "../features/adsense";
+import { jumpToXimalaya, ximalayaLink } from "../features/adsense";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,7 +18,14 @@ export default function ProTip() {
     <Typography align="center" className={classes.root} color="textSecondary">
       <EmojiObjectsOutlinedIcon />
       Tip: {/* eslint-disable-next-line */}
-      <a className="ximalaya-text-link" href={ximalayaLink} target="_blank">
+      <a
+        className="ximalaya-text-link"
+        href={ximalayaLink}
+        target="_blank"
+        onClick={() => {
+          jumpToXimalaya();
+        }}
+      >
         喜马拉雅
       </a>
       为你的夏日带去清凉！

@@ -19,7 +19,10 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "react/jsx-no-target-blank": 0
+    }
   },
   "browserslist": {
     "production": [
