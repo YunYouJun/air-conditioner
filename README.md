@@ -43,7 +43,7 @@
 * `AC_NGINX_DOMAIN` 指定域名
 * `AC_NGINX_PORT` 指定监听端口
 
-# 部署
+### 部署
 
 本项目基于腾讯开源项目 [CloudBase Framework](https://github.com/Tencent/cloudbase-framework) [![star](https://img.shields.io/github/stars/Tencent/cloudbase-framework?style=social)](https://github.com/Tencent/cloudbase-framework) 开发部署，支持一键云端部署
 
