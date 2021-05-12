@@ -40,8 +40,8 @@
 
 部署时可使用以下环境变量进行配置自定义：
 
-* `AC_NGINX_DOMAIN` 指定域名
-* `AC_NGINX_PORT` 指定监听端口
+- `AC_NGINX_DOMAIN` 指定域名
+- `AC_NGINX_PORT` 指定监听端口
 
 ### 自行构建
 
@@ -69,6 +69,7 @@ yarn build
   - [x] 音效
     - [x] 按钮
     - [x] 工作声
+    - [ ] 接入 [喜马拉雅](https://m.ximalaya.com/sleepaudio/6?mixedTrackIds=331526646&utm_source=smxkt) 更多音效
 - [x] 适应系统的亮暗模式
 
 ## Ref
