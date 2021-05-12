@@ -47,7 +47,7 @@
 
 构建时可使用以下环境变量进行配置自定义：
 
-* `AC_CNAME` 指定 CNAME
+- `AC_CNAME` 指定 CNAME
 
 ## Dev
 
