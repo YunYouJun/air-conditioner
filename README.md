@@ -36,6 +36,8 @@
 
 样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/)
 
+## 自行部署
+
 ### Docker
 
 部署时可使用以下环境变量进行配置自定义：
@@ -43,11 +45,11 @@
 - `AC_NGINX_DOMAIN` 指定域名
 - `AC_NGINX_PORT` 指定监听端口
 
-### 部署
+### 腾讯云
 
-本项目基于腾讯开源项目 [CloudBase Framework](https://github.com/Tencent/cloudbase-framework) [![star](https://img.shields.io/github/stars/Tencent/cloudbase-framework?style=social)](https://github.com/Tencent/cloudbase-framework) 开发部署，支持一键云端部署
+基于腾讯开源项目 [CloudBase Framework](https://github.com/Tencent/cloudbase-framework) [![star](https://img.shields.io/github/stars/Tencent/cloudbase-framework?style=social)](https://github.com/Tencent/cloudbase-framework) 开发部署，支持一键云端部署
 
-[![](https://main.qcloudimg.com/raw/67f5a389f1ac6f3b4d04c7256438e44f.svg)](https://console.cloud.tencent.com/tcb/env/index?action=CreateAndDeployCloudBaseProject&appUrl=https%3A%2F%2Fgithub.com%2FTencentCloudBase-Marketplace%2Fair-conditioner%2F&branch=master)
+[![腾讯云｜部署到云开发](https://main.qcloudimg.com/raw/67f5a389f1ac6f3b4d04c7256438e44f.svg)](https://console.cloud.tencent.com/tcb/env/index?action=CreateAndDeployCloudBaseProject&appUrl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner%2F&branch=master)
 
 ## Dev
 
@@ -58,6 +60,17 @@ yarn start
 
 yarn build
 # ./build
+```
+
+### 环境变量
+
+```bash
+cp .env.example .env
+```
+
+```bash
+# 关闭广告
+REACT_APP_DISABLE_ADSENSE=true
 ```
 
 ## Todo

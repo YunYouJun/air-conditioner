@@ -12,22 +12,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * 喜马拉雅链接
+ */
+function XimalayaLink() {
+  return (
+    <a
+      className="ximalaya-text-link"
+      href={ximalayaLink}
+      target="_blank"
+      onClick={() => {
+        jumpToXimalaya();
+      }}
+    >
+      喜马拉雅
+    </a>
+  );
+}
+
 export default function ProTip() {
   const classes = useStyles();
   return (
     <Typography align="center" className={classes.root} color="textSecondary">
       <EmojiObjectsOutlinedIcon />
-      Tip: {/* eslint-disable-next-line */}
-      <a
-        className="ximalaya-text-link"
-        href={ximalayaLink}
-        target="_blank"
-        onClick={() => {
-          jumpToXimalaya();
-        }}
-      >
-        喜马拉雅
-      </a>
+      Tip: {process.env.REACT_APP_DISABLE_ADSENSE ? null : <XimalayaLink />}
       为你的夏日带去清凉！
     </Typography>
   );

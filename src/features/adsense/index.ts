@@ -11,7 +11,9 @@ export const ximalayaLink =
  * 「你想用钱来收买我吗？这是对我的侮辱！我本想这样大声呵斥他，但钱实在是太多了」
  */
 export function jumpToXimalaya() {
-  console.log("jump");
+  console.log(
+    "你想用钱来收买我吗？这是对我的侮辱！我本想这样大声呵斥他，但钱实在是太多了。"
+  );
   ReactGA.ga("send", {
     hitType: "event",
     eventCategory: "Outbound Link",
