@@ -1,5 +1,11 @@
 import RemoteControl from "../components/RemoteControl";
+import Copyright from "../layouts/Copyright";
 
 export default function Rc() {
-  return <RemoteControl />;
+  return (
+    <div>
+      <RemoteControl />
+      <Copyright />
+    </div>
+  );
 }
