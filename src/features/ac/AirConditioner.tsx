@@ -9,6 +9,7 @@ import "./AirConditioner.scss";
 import { useAppSelector } from "../../app/hooks";
 
 import { AcMode, selectTemperature } from "./acSlice";
+import { ximalayaLink } from "../adsense";
 
 const acColor = {
   border: "#e0e0e0",
@@ -238,6 +239,28 @@ function EnergyLabel(props: any) {
 }
 
 /**
+ * 节能产品惠民工程
+ */
+function EnergySavingLabel() {
+  return (
+    <div className="energy-saving-label">
+      <span className="label-font">&nbsp;节能产品惠民工程</span>
+      {/* eslint-disable-next-line */}
+      <a className="ximalaya-link" href={ximalayaLink} target="_blank">
+        <img
+          className="ximalaya-logo"
+          src="/ximalaya-logo.png"
+          alt="ximalaya-logo"
+        />
+      </a>
+      {textLabel(10, "black", 1.2, 0.1, 0)}
+      {textLabel(10, "black", 1.2, 0.1, 0)}
+      {textLabel(11, "black", 2, 0.1, 0.25)}
+    </div>
+  );
+}
+
+/**
  * 风特效
  * @param props
  */
@@ -280,6 +303,7 @@ export default function AirConditioner(props: {
         <AirOutlet />
         <AcStatus status={props.status} />
         <EnergyLabel className={classes.energyLabel} titleLength={6} />
+        <EnergySavingLabel />
       </AcBorder>
       <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>
         <WindEffect />
