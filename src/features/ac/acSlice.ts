@@ -41,8 +41,6 @@ const initialState: AcState = {
 
 const maxTemperature = 31;
 const minTemperature = 16;
-const maxWindPower = 5;
-const minWindPower = 1;
 
 export const acSlice = createSlice({
   name: "ac",
@@ -82,20 +80,15 @@ export const acSlice = createSlice({
       localStorage.setItem(acItemKey.temperature, state.temperature.toString());
     },
     /**
-    * 增加风力
-    * @param state
-    */
-    incrementWind: (state) => {
-      state.windPower += 1;
-      localStorage.setItem(acItemKey.windPower, state.windPower.toString())
-    },
-
-    /**
-   * 减小风力
-   * @param state
-   */
-    decrementWind: (state) => {
-      state.windPower -= 1;
+  * 调整风力
+  * @param state
+  */
+    adjustWind: (state) => {
+      if (state.windPower >= 5) {
+        state.windPower = 1
+      } else {
+        state.windPower += 1
+      }
       localStorage.setItem(acItemKey.windPower, state.windPower.toString())
     },
     /**
@@ -127,8 +120,7 @@ export const {
   setTemperature,
   increment,
   decrement,
-  incrementWind,
-  decrementWind,
+  adjustWind,
   setMode,
   toggleStatus,
   setStatus,
@@ -162,33 +154,12 @@ export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
   }
 };
 
- /**
-  * 增加风力
-  * @returns
-  */
-export const increaseWindPower = (): AppThunk => (dispatch, getState) => {
-  const currentValue = selectWindPower(getState());
-  if (currentValue < maxWindPower) {
-    dispatch(incrementWind());
-  } else {
-    dispatch(setMessage("已经是最大风力啦! "));
-    dispatch(setOpen(true));
-  }
-}
-
-
- /**
-  * 减小风力
-  * @returns
-  */
-export const decreaseWindPower = (): AppThunk => (dispatch, getState) => {
-  const currentValue = selectWindPower(getState());
-  if (currentValue > minWindPower) {
-    dispatch(decrementWind());
-  } else {
-    dispatch(setMessage("已经是最小风力啦! "));
-    dispatch(setOpen(true));
-  }
+/**
+ * 调整风力风力
+ * @returns
+ */
+export const adjustWindPower = (): AppThunk => (dispatch, getState) => {
+  dispatch(adjustWind())
 }
 
 

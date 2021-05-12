@@ -6,9 +6,9 @@ import {
 import { Box, Fab } from "@material-ui/core";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ArrowLeftIcon from "@material-ui/icons/ArrowBackIos";
-import ArrowRightIcon from "@material-ui/icons/ArrowForwardIos";
-
+import ToysIcon from "@material-ui/icons/Toys";
+import VolumeUpIcon from "@material-ui/icons/VolumeUp"
+import VolumeOffIcon from "@material-ui/icons/VolumeOff"
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import AcUnitIcon from "@material-ui/icons/AcUnit";
 import WbSunnyIcon from "@material-ui/icons/WbSunny";
@@ -18,8 +18,7 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import {
   decreaseTemperature,
   increaseTemperature,
-  increaseWindPower,
-  decreaseWindPower,
+  adjustWind,
   setMode,
   toggleStatus,
 } from "../features/ac/acSlice";
@@ -63,7 +62,6 @@ function playDi() {
 
 let timeoutId: any;
 let intervalId: any;
-
 /**
  * 播放空调启动声音
  */
@@ -117,8 +115,8 @@ function toggleAC(status: boolean, dispatch: any) {
     }
     acWork.currentTime = noiseStartTime + noiseDuration;
   } else {
-    if(!localStorage.getItem("ac-windPower")){
-      localStorage.setItem("ac-windPower",'3')
+    if (!localStorage.getItem("ac-windPower")) {
+      localStorage.setItem("ac-windPower", '3')
     }
     playStartSound();
   }
@@ -135,6 +133,32 @@ const SOUND_DI_PATH = getAssetsUrl("/assets/audio/di.mp3");
 const SOUND_AC_WORK_PATH = getAssetsUrl("/assets/audio/ac-work.mp3");
 const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
   "/assets/audio/air-extractor-fan.mp3"
+);
+
+/**
+ * 切换空调声音状态
+ * @param {*} props
+ */
+function changeAudioStatus(status: boolean,) {
+  if (!localStorage.getItem('audioStatus')) { localStorage.setItem('audioStatus', '0') }
+  if (status && localStorage.getItem('audioStatus') === '0') {
+    (document.getElementById("ac-work") as HTMLAudioElement).load();
+    (document.getElementById("air-extractor-fan") as HTMLAudioElement).load()
+    localStorage.setItem('audioStatus', '1')
+  } else if (status && localStorage.getItem('audioStatus') === '1') {
+    (document.getElementById("air-extractor-fan") as HTMLAudioElement).play()
+    localStorage.setItem('audioStatus', '0')
+  }
+}
+
+/**
+ * 静音开关按钮
+ * @param {*} props
+ */
+const volumeSwitch = localStorage.getItem('audioStatus') === '0' ? (
+  < VolumeUpIcon />
+) : (
+  <VolumeOffIcon />
 );
 
 /**
@@ -156,16 +180,6 @@ export default function RemoteControl() {
       ></audio>
       <div>
         {" "}
-        {/* 风力减小按钮 */}
-        <RCButton
-          aria-label="addWind"
-          className={classes.margin}
-          onClick={()=>{
-            dispatch(decreaseWindPower())
-          }}
-        >
-          <ArrowLeftIcon />
-        </RCButton>
         <RCButton
           color="primary"
           aria-label="cold"
@@ -199,26 +213,36 @@ export default function RemoteControl() {
         >
           <WbSunnyIcon />
         </RCButton>
-        {/* 风力增加按钮 */}
+      </div>
+      <div>
         <RCButton
-          aria-label="reduceWind"
+          aria-label="RegulateWind"
           className={classes.margin}
-          onClick={()=>{
-            dispatch(increaseWindPower())
+          onClick={() => {
+            dispatch(adjustWind())
           }}
         >
-          <ArrowRightIcon />
+          <ToysIcon />
+        </RCButton>
+        <RCButton
+          aria-label="add"
+          className={classes.margin}
+          onClick={() => {
+            dispatch(increaseTemperature());
+          }}
+        >
+          <ExpandLessIcon />
+        </RCButton>
+        <RCButton
+          aria-label="RegulateWind"
+          className={classes.margin}
+          onClick={() => {
+            changeAudioStatus(ac.status)
+          }}
+        >
+          {volumeSwitch}
         </RCButton>
       </div>
-      <RCButton
-        aria-label="add"
-        className={classes.margin}
-        onClick={() => {
-          dispatch(increaseTemperature());
-        }}
-      >
-        <ExpandLessIcon />
-      </RCButton>
       <RCButton
         aria-label="reduce"
         className={classes.margin}
