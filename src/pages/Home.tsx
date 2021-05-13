@@ -11,44 +11,15 @@ import Toast from "../features/toast/Toast";
 
 import { ThemeProvider } from "../theme";
 
-import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { useAppSelector } from "../app/hooks";
 import { RootState } from "../app/store";
 import Copyright from "../layouts/Copyright";
-import {
-  AcMode,
-  acItemKey,
-  setTemperature,
-  setMode,
-  setStatus,
-} from "../features/ac/acSlice";
-import { useEffect } from "react";
+import { useDetectStorage } from "../features/ac";
 
 function Home() {
   const ac = useAppSelector((state: RootState) => state.ac);
 
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      // 重复设置相同的键值不会触发该事件
-      switch (e.key) {
-        case acItemKey.status:
-          dispatch(setStatus(e.newValue === "true"));
-          break;
-        case acItemKey.temperature:
-          dispatch(setTemperature(parseInt(e.newValue || "20")));
-          break;
-        case acItemKey.mode:
-          dispatch(setMode((e.newValue || "cold") as AcMode));
-          break;
-        default:
-          break;
-      }
-    }
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-    };
-  }, [dispatch]);
+  useDetectStorage();
 
   /**
    * 根据模式返回对应的色温
@@ -86,7 +57,7 @@ function Home() {
               <Button
                 variant="outlined"
                 onClick={() => {
-                  window.open("/rc", "_blank", "width=300, height=400");
+                  window.open("/#/rc", "_blank", "width=300, height=400");
                 }}
               >
                 独立遥控器

@@ -1,0 +1,20 @@
+{
+  "version": "2.0",
+  "envId": "{{env.ENV_ID}}",
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "framework": {
+    "name": "air-conditioner",
+    "plugins": {
+      "web": {
+        "use": "@cloudbase/framework-plugin-website",
+        "inputs": {
+          "outputPath": "./build",
+          "commands": {
+            "build": "npm run build"
+          },
+          "cloudPath": "/"
+        }
+      }
+    }
+  }
+}
