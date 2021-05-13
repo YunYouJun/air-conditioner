@@ -17,7 +17,6 @@ function CreateCname() {
 }
 
 (function (){
+    require('dotenv').config()
     CreateCname()
 })()
-
-
