@@ -39,6 +39,9 @@ function RCButton(props: any) {
     <Fab
       {...props}
       onClick={() => {
+        if (props['data-disable']) {
+          return;
+        }
         playDi();
         props.onClick();
       }}
@@ -157,6 +160,7 @@ export default function RemoteControl() {
           color="primary"
           aria-label="cold"
           className={classes.margin}
+          data-disable={!ac.status}
           onClick={() => {
             dispatch(setMode("cold"));
           }}
@@ -180,6 +184,7 @@ export default function RemoteControl() {
           aria-label="hot"
           className={classes.margin}
           style={{ backgroundColor: "orange", color: "white" }}
+          data-disable={!ac.status}
           onClick={() => {
             dispatch(setMode("hot"));
           }}
@@ -190,6 +195,7 @@ export default function RemoteControl() {
       <RCButton
         aria-label="add"
         className={classes.margin}
+        data-disable={!ac.status}
         onClick={() => {
           dispatch(increaseTemperature());
         }}
@@ -199,6 +205,7 @@ export default function RemoteControl() {
       <RCButton
         aria-label="reduce"
         className={classes.margin}
+        data-disable={!ac.status}
         onClick={() => {
           dispatch(decreaseTemperature());
         }}
