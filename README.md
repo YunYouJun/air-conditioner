@@ -67,7 +67,7 @@ cp .env.example .env
 构建时可使用以下环境变量进行配置自定义：
 
 - `AC_CNAME` 指定 CNAME
-- `REACT_APP_DISABLE_ADSENSE` 开启广告，可用值 `true` `false`
+- `REACT_APP_DISABLE_ADSENSE` 关闭广告，设置任意非空值即可
 
 ## Dev
 
