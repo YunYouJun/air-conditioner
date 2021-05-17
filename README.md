@@ -31,10 +31,19 @@
 ```html
 <iframe height="740" src="https://ac.yunyoujun.cn"></iframe>
 ```
-
-您可以快速为您的网站安装空调。
-
-样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/)
+您可以快速为您的网站安装空调。  
+样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/) 
+  
+### 在您的 Hugo 网站中安装   
+  
+#### Air Conditioner-Hugo shortcodes  
+天气日渐炎热，考虑到朋友浏览 Blog 时，可能心情烦躁，因此提供 Hugo 空调上门安装服务！😄😄  
+  
+#### Hugo 在线体验  
+请移步二楼：https://guole.fun/airconditioner/
+  
+#### 食用方法 
+请移步三楼：https：
 
 ### Docker
 
