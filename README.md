@@ -39,11 +39,8 @@
 #### Air Conditioner-Hugo shortcodes  
 天气日渐炎热，考虑到朋友浏览 Blog 时，可能心情烦躁，因此提供 Hugo 空调上门安装服务！😄😄  
   
-#### Hugo 在线体验  
-请移步二楼：https://guole.fun/airconditioner/
-  
-#### 食用方法 
-请移步三楼：https：
+* Hugo 在线体验：https://guole.fun/airconditioner/  
+* 食用方法 ：https://github.com/kuole-o/Hugo-air-conditioner
 
 ### Docker
 
