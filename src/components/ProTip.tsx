@@ -14,8 +14,10 @@ const useStyles = makeStyles((theme) => ({
 
 /**
  * 喜马拉雅链接
+ * @param props
+ * @returns
  */
-function XimalayaLink() {
+function XimalayaLink(props: { text: string }) {
   return (
     <a
       className="ximalaya-text-link"
@@ -25,7 +27,7 @@ function XimalayaLink() {
         jumpToXimalaya();
       }}
     >
-      喜马拉雅
+      {props.text || "喜马拉雅"}
     </a>
   );
 }
@@ -35,8 +37,11 @@ export default function ProTip() {
   return (
     <Typography align="center" className={classes.root} color="textSecondary">
       <EmojiObjectsOutlinedIcon />
-      Tip: {process.env.REACT_APP_DISABLE_ADSENSE ? null : <XimalayaLink />}
-      为你的夏日带去清凉！
+      Tip: 为你的夏日带去
+      {process.env.REACT_APP_DISABLE_ADSENSE ? null : (
+        <XimalayaLink text="清凉" />
+      )}
+      ！
     </Typography>
   );
 }

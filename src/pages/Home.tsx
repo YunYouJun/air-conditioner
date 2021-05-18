@@ -15,7 +15,12 @@ import { useAppSelector } from "../app/hooks";
 import { RootState } from "../app/store";
 import Copyright from "../layouts/Copyright";
 import { useDetectStorage } from "../features/ac";
+import { GoogleAdsense } from "../features/adsense/google";
 
+/**
+ * 主页
+ * @returns
+ */
 function Home() {
   const ac = useAppSelector((state: RootState) => state.ac);
 
@@ -66,6 +71,7 @@ function Home() {
           </div>
           <RemoteControl />
           <Copyright />
+          <GoogleAdsense />
         </Box>
         <Toast />
       </Container>
