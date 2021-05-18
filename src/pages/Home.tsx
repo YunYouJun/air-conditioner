@@ -15,7 +15,7 @@ import { useAppSelector } from "../app/hooks";
 import { RootState } from "../app/store";
 import Copyright from "../layouts/Copyright";
 import { useDetectStorage } from "../features/ac";
-import { GoogleAdsense } from "../features/adsense/google";
+import { GoogleAdsenseUnit } from "../features/adsense/google";
 
 /**
  * 主页
@@ -71,7 +71,7 @@ function Home() {
           </div>
           <RemoteControl />
           <Copyright />
-          <GoogleAdsense />
+          <GoogleAdsenseUnit />
         </Box>
         <Toast />
       </Container>
