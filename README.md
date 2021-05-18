@@ -36,6 +36,10 @@
 
 样板房：[空调房](https://www.yunyoujun.cn/air-conditioner-room/)
 
+### 上门服务
+
+- Hugo: <https://github.com/kuole-o/Hugo-air-conditioner>
+
 ## 自行部署
 
 ### Docker
