@@ -1,6 +1,6 @@
 # Air Conditioner
 
-中文文档 | [English Docs](./README.en.md)
+[中文文档](./README.md) | English Docs
 
 [![Github Pages](https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg)](https://github.com/YunYouJun/air-conditioner/actions)
 
