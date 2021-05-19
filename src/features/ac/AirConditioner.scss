@@ -3,29 +3,36 @@
 }
 
 .energy-saving-label {
-  display: flex;
-  flex-direction: column;
+  opacity: 0.8;
   position: absolute;
   top: 10px;
-  left: 65px;
-  height: 45px;
-  width: 50px;
-  border-radius: 4px;
-  border: 3px solid #4caf50;
-}
-
-.label-font {
-  display: block;
-  width: 330%;
-  transform: scale(0.3);
+  left: 63px;
+  background-color: #4caf50;
+  padding: 12px;
+  border-radius: 2px;
+  transform: scale(0.22);
   transform-origin: left top;
-  margin: 2px auto;
-  margin-left: 2px;
-}
 
-.ximalaya-link {
-  margin-top: -21px;
-  margin-left: 2px;
+  &_bg {
+    padding: 10px;
+    width: 200px;
+    border-radius: 15px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &_title {
+    font-size: 20px;
+    display: block;
+    margin: 2px auto;
+  }
+
+  &_description {
+    font-size: 12px;
+  }
 }
 
 .ximalaya-text-link {
@@ -35,8 +42,6 @@
 }
 
 .ximalaya-logo {
-  margin: 0;
-  padding: 0;
-  top: -1rem;
-  width: 40px;
+  margin: 12px;
+  width: 56px;
 }

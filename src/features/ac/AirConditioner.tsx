@@ -142,7 +142,7 @@ function AcStatus(props: { status: boolean }) {
  * 文本标签（黑色小点点）
  * @param num
  * @param color
- * @param size
+ * @param size 宽高尺寸
  * @param mx
  * @param my
  */
@@ -185,7 +185,7 @@ function EnergyLabel(props: any) {
       left={10}
       height={70}
       width={50}
-      borderRadius={2}
+      borderRadius={1}
       p={0.5}
     >
       {textLabel(6, "white", 4, 0.25)}
@@ -243,27 +243,36 @@ function EnergyLabel(props: any) {
  */
 function EnergySavingLabel() {
   return (
-    <div className="energy-saving-label">
-      <span className="label-font">&nbsp;节能产品惠民工程</span>
-      {/* eslint-disable-next-line */}
-      <a
-        className="ximalaya-link"
-        href={ximalayaLink}
-        target="_blank"
-        onClick={() => {
-          jumpToXimalaya();
-        }}
-      >
-        <img
-          className="ximalaya-logo"
-          src="/ximalaya-logo.png"
-          alt="ximalaya-logo"
-        />
-      </a>
-      {textLabel(10, "black", 1.2, 0.1, 0)}
-      {textLabel(10, "black", 1.2, 0.1, 0)}
-      {textLabel(11, "black", 2, 0.1, 0.25)}
-    </div>
+    <a
+      className="ximalaya-link"
+      href={ximalayaLink}
+      target="_blank"
+      onClick={() => {
+        jumpToXimalaya();
+      }}
+    >
+      <div className="energy-saving-label">
+        <div className="energy-saving-label_bg">
+          <span className="energy-saving-label_title">
+            节能产品&nbsp;&nbsp;惠民工程
+          </span>
+          <img
+            className="ximalaya-logo"
+            src="/images/ximalaya-logo.png"
+            alt="喜马拉雅"
+          />
+          <span className="energy-saving-label_description">
+            推广上限价格：XXXX 元
+          </span>
+          <span className="energy-saving-label_description">
+            政府补助金额：XXXX 元
+          </span>
+          <span className="energy-saving-label_description">
+            补助上限价格：XXXX 元
+          </span>
+        </div>
+      </div>
+    </a>
   );
 }
 
