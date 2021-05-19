@@ -17,7 +17,7 @@ History: [云空调，便携小空调｜云游君的小站](https://www.yunyouju
 
 - Turn on air conditioner any time and anywhere
 - Portable
-- Low Power Consumption（Drawn with `HTML CSS` instead of `Canvas`）
+- Low power consumption（Drawn with `HTML CSS` instead of `Canvas`）
 - Noise is negligible
 - Easy to use
 - Swift installation
@@ -34,7 +34,7 @@ History: [云空调，便携小空调｜云游君的小站](https://www.yunyouju
 <iframe height="740" src="https://ac.yunyoujun.cn"></iframe>
 ```
 
-Quickly install an air conditioner for your website.
+Quickly install an air conditioner on your website.
 
 Sample Installation：[AC Room](https://www.yunyoujun.cn/air-conditioner-room/)
 
