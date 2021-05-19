@@ -4,12 +4,12 @@
 
 [![Github Pages](https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg)](https://github.com/YunYouJun/air-conditioner/actions)
 
-Online air conditioner. Portable air conditioner. Invite a breeze of chill into your summer life!
+Cloud air conditioner. Portable air conditioner. Invite a cool breeze into your summer life!
 
 History: [云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
 
 - Machine Only：<https://ac.yunyoujun.cn>
-- Sample Installation：<https://www.yunyoujun.cn/air-conditioner-room/>
+- Sample Room：<https://www.yunyoujun.cn/air-conditioner-room/>
 
 ## Features
 
@@ -36,7 +36,7 @@ History: [云空调，便携小空调｜云游君的小站](https://www.yunyouju
 
 Quickly install an air conditioner on your website.
 
-Sample Installation：[AC Room](https://www.yunyoujun.cn/air-conditioner-room/)
+Sample Room：[AC Room](https://www.yunyoujun.cn/air-conditioner-room/)
 
 ### Home Installation Service
 
