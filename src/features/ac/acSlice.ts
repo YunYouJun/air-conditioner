@@ -30,7 +30,7 @@ const initialState: AcState = {
   status: false,
   mode: (localStorage.getItem(acItemKey.mode) as AcMode) || "cold",
   temperature:
-    parseInt(localStorage.getItem(acItemKey.temperature) || "") || 20,
+    parseInt(localStorage.getItem(acItemKey.temperature) || "") || 26,
 };
 
 const maxTemperature = 31;
