@@ -82,6 +82,11 @@ export const acSlice = createSlice({
     setMode(state, action: PayloadAction<AcMode>) {
       state.mode = action.payload;
       localStorage.setItem(acItemKey.mode, state.mode);
+      if (AcMode = cold) {
+        dispatch(setMessage("请把您的空调制冷温度调至26度以上，为节能减排贡献一份力量"));
+      } else {
+        dispatch(setMessage("请把您的空调制热温度调至20度以下，为节能减排贡献一份力量"));
+      }
     },
 
     /**
