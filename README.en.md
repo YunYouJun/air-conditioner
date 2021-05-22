@@ -15,7 +15,7 @@ History: [云空调，便携小空调｜云游君的小站](https://www.yunyouju
 
 ### Advantages
 
-- Turn on air conditioner any time and anywhere
+- Turn on the air conditioner any time and anywhere
 - Portable
 - Low power consumption（Drawn with `HTML CSS` instead of `Canvas`）
 - Noise is negligible
@@ -46,14 +46,14 @@ Sample Room：[AC Room](https://www.yunyoujun.cn/air-conditioner-room/)
 
 ### Docker
 
-You can use the following environment variables to customize configuration.
+You can use the following environment variables to customize the configuration.
 
 - `AC_NGINX_DOMAIN` Set domain name
 - `AC_NGINX_PORT` Set listening port
 
 ### Tencent CloudBase
 
-Developed and deployed based on Tencent's open source project [CloudBase Framework](https://github.com/Tencent/cloudbase-framework) [![star](https://img.shields.io/github/stars/Tencent/cloudbase-framework?style=social)](https://github.com/Tencent/cloudbase-framework). One-click deploying is supported.
+Developed and deployed based on Tencent's open source project [CloudBase Framework](https://github.com/Tencent/cloudbase-framework)[![star](https://img.shields.io/github/stars/Tencent/cloudbase-framework?style=social)](https://github.com/Tencent/cloudbase-framework). One-click deploying is supported.
 
 [![腾讯云｜Deploy to CloudBase](https://main.qcloudimg.com/raw/67f5a389f1ac6f3b4d04c7256438e44f.svg)](https://console.cloud.tencent.com/tcb/env/index?action=CreateAndDeployCloudBaseProject&appUrl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner%2F&branch=master)
 
