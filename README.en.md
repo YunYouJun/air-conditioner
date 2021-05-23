@@ -15,7 +15,7 @@ History: [云空调，便携小空调｜云游君的小站](https://www.yunyouju
 
 ### Advantages
 
-- Turn on air conditioner any time and anywhere
+- Turn on the air conditioner any time and anywhere
 - Portable
 - Low power consumption（Drawn with `HTML CSS` instead of `Canvas`）
 - Noise is negligible
@@ -46,7 +46,7 @@ Sample Room：[AC Room](https://www.yunyoujun.cn/air-conditioner-room/)
 
 ### Docker
 
-You can use the following environment variables to customize configuration.
+You can use the following environment variables to customize the configuration.
 
 - `AC_NGINX_DOMAIN` Set domain name
 - `AC_NGINX_PORT` Set listening port
