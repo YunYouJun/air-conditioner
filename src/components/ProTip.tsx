@@ -38,7 +38,9 @@ export default function ProTip() {
     <Typography align="center" className={classes.root} color="textSecondary">
       <EmojiObjectsOutlinedIcon />
       Tip: 为你的夏日带去
-      {process.env.REACT_APP_DISABLE_ADSENSE ? null : (
+      {process.env.REACT_APP_DISABLE_ADSENSE ? (
+        "清凉"
+      ) : (
         <XimalayaLink text="清凉" />
       )}
       ！
