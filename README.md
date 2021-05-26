@@ -53,17 +53,19 @@
 
 ### 腾讯云
 
-基于腾讯开源项目 [CloudBase Framework](https://github.com/Tencent/cloudbase-framework) [![star](https://img.shields.io/github/stars/Tencent/cloudbase-framework?style=social)](https://github.com/Tencent/cloudbase-framework) 开发部署，支持一键云端部署
+基于腾讯开源项目 [CloudBase Framework](https://github.com/Tencent/cloudbase-framework) 开发部署，支持一键云端部署。
 
 [![腾讯云｜部署到云开发](https://main.qcloudimg.com/raw/67f5a389f1ac6f3b4d04c7256438e44f.svg)](https://console.cloud.tencent.com/tcb/env/index?action=CreateAndDeployCloudBaseProject&appUrl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner%2F&branch=master)
 
 ## Dev
 
 ```bash
+# 开发预览
 # yarn dev
 yarn start
 # http://localhost:3000/
 
+# 构建项目
 yarn build
 # ./build
 ```
