@@ -26,11 +26,15 @@ export const acItemKey = {
   temperature: namespace + "temperature",
 };
 
+// https://baike.baidu.com/item/26度空调节能倡导行动
+const defaultTemperature = 26;
+
 const initialState: AcState = {
   status: false,
   mode: (localStorage.getItem(acItemKey.mode) as AcMode) || "cold",
   temperature:
-    parseInt(localStorage.getItem(acItemKey.temperature) || "") || 20,
+    parseInt(localStorage.getItem(acItemKey.temperature) || "") ||
+    defaultTemperature,
 };
 
 const maxTemperature = 31;
@@ -134,5 +138,34 @@ export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
     dispatch(setOpen(true));
   }
 };
+
+/**
+ * 切换模式
+ * @param mode
+ * @returns
+ */
+export const toggleMode =
+  (mode: AcMode): AppThunk =>
+  (dispatch, getState) => {
+    dispatch(setMode(mode));
+    const currentTemperature = selectTemperature(getState());
+    const goodColdTemperature = 26;
+    const goodHotTemperature = 20;
+
+    const recommendedSlogan = (mode: AcMode, temperature: number) =>
+      `建议将空调的制${
+        mode === "cold" ? "冷" : "热"
+      }温度调至 ${temperature} 度以${
+        mode === "cold" ? "上" : "下"
+      }，为节能减排贡献一份力量！`;
+
+    if (mode === "cold" && currentTemperature < goodColdTemperature) {
+      dispatch(setMessage(recommendedSlogan("cold", goodColdTemperature)));
+      dispatch(setOpen(true));
+    } else if (mode === "hot" && currentTemperature > goodHotTemperature) {
+      dispatch(setMessage(recommendedSlogan("hot", goodHotTemperature)));
+      dispatch(setOpen(true));
+    }
+  };
 
 export default acSlice.reducer;

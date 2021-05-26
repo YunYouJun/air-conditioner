@@ -15,7 +15,7 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import {
   decreaseTemperature,
   increaseTemperature,
-  setMode,
+  toggleMode,
   toggleStatus,
 } from "../features/ac/acSlice";
 import { RootState } from "../app/store";
@@ -158,7 +158,7 @@ export default function RemoteControl() {
           aria-label="cold"
           className={classes.margin}
           onClick={() => {
-            dispatch(setMode("cold"));
+            dispatch(toggleMode("cold"));
           }}
         >
           <AcUnitIcon />
@@ -181,7 +181,7 @@ export default function RemoteControl() {
           className={classes.margin}
           style={{ backgroundColor: "orange", color: "white" }}
           onClick={() => {
-            dispatch(setMode("hot"));
+            dispatch(toggleMode("hot"));
           }}
         >
           <WbSunnyIcon />
