@@ -16,6 +16,10 @@ export interface AcState {
    * 温度
    */
   temperature: number;
+  /**
+   * 风速
+   */
+  speed: number;
 }
 
 const namespace = "ac-";
@@ -35,10 +39,13 @@ const initialState: AcState = {
   temperature:
     parseInt(localStorage.getItem(acItemKey.temperature) || "") ||
     defaultTemperature,
+  speed: (localStorage.getItem(acItemKey.speed) as AcMode) || 1.0,
 };
 
 const maxTemperature = 31;
 const minTemperature = 16;
+const maxSpeed = 1.0;
+const minSpeed = 0.0;
 
 export const acSlice = createSlice({
   name: "ac",
@@ -64,7 +71,7 @@ export const acSlice = createSlice({
      * 增加温度
      * @param state
      */
-    increment: (state) => {
+    incrementTemp: (state) => {
       state.temperature += 1;
       localStorage.setItem(acItemKey.temperature, state.temperature.toString());
     },
@@ -73,9 +80,26 @@ export const acSlice = createSlice({
      * 降低温度
      * @param state
      */
-    decrement: (state) => {
+    decrementTemp: (state) => {
       state.temperature -= 1;
       localStorage.setItem(acItemKey.temperature, state.temperature.toString());
+    },
+    /**
+     * 增加风速
+     * @param state
+     */
+    incrementSpeed: (state) => {
+      state.speed += 0.25;
+      localStorage.setItem(acItemKey.speed, state.speed.toString());
+    },
+
+    /**
+     * 降低风速
+     * @param state
+     */
+    decrementSpeed: (state) => {
+      state.speed -= 0.25;
+      localStorage.setItem(acItemKey.speed, state.speed.toString());
     },
 
     /**
@@ -101,11 +125,15 @@ export const acSlice = createSlice({
 });
 
 export const selectTemperature = (state: RootState) => state.ac.temperature;
+export const selectSpeed = (state: RootState) => state.ac.speed;
 
 export const {
   setTemperature,
-  increment,
-  decrement,
+  setSpeed,
+  incrementTemp,
+  decrementTemp,
+  incrementSpeed,
+  decrementSpeed,
   setMode,
   toggleStatus,
   setStatus,
@@ -118,7 +146,7 @@ export const {
 export const increaseTemperature = (): AppThunk => (dispatch, getState) => {
   const currentValue = selectTemperature(getState());
   if (currentValue < maxTemperature) {
-    dispatch(increment());
+    dispatch(incrementTemp());
   } else {
     dispatch(setMessage("已经是最大温度啦！"));
     dispatch(setOpen(true));
@@ -132,9 +160,37 @@ export const increaseTemperature = (): AppThunk => (dispatch, getState) => {
 export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
   const currentValue = selectTemperature(getState());
   if (currentValue > minTemperature) {
-    dispatch(decrement());
+    dispatch(decrementTemp());
   } else {
     dispatch(setMessage("已经是最小温度啦！"));
+    dispatch(setOpen(true));
+  }
+};
+
+/**
+ * 增加风速
+ * @returns
+ */
+export const increaseSpeed = (): AppThunk => (dispatch, getState) => {
+  const currentValue = selectSpeed(getState());
+  if (currentValue < maxSpeed) {
+    dispatch(incrementSpeed());
+  } else {
+    dispatch(setMessage("已经是最高风速啦！"));
+    dispatch(setOpen(true));
+  }
+};
+
+/**
+ * 降低风速
+ * @returns
+ */
+export const decreaseSpeed = (): AppThunk => (dispatch, getState) => {
+  const currentValue = selectSpeed(getState());
+  if (currentValue > minSpeed) {
+    dispatch(decrementSpeed());
+  } else {
+    dispatch(setMessage("已经是最低风速啦！"));
     dispatch(setOpen(true));
   }
 };
