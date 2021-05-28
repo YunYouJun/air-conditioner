@@ -15,6 +15,8 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import {
   decreaseTemperature,
   increaseTemperature,
+  decreaseSpeed,
+  increaseSpeed,
   toggleMode,
   toggleStatus,
 } from "../features/ac/acSlice";
@@ -87,6 +89,9 @@ function playWorkSound() {
   ) as HTMLAudioElement;
   acWork.load();
   acWork.play();
+  /**
+   * ToDo: 需要实现设置初始音量以及按键触发后调节当前音量、并且在遥控器上画出来调节风速的按钮
+   */
 
   playWorkSoundTimeoutId = setTimeout(() => {
     playWorkSoundIntervalId = setInterval(() => {
