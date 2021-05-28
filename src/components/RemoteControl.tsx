@@ -128,10 +128,10 @@ const customTheme = createTheme({
   },
 });
 
-const SOUND_DI_PATH = getAssetsUrl("/assets/audio/di.m4a");
-const SOUND_AC_WORK_PATH = getAssetsUrl("/assets/audio/ac-work.m4a");
+const SOUND_DI_PATH = getAssetsUrl("/assets/audio/di.mp3");
+const SOUND_AC_WORK_PATH = getAssetsUrl("/assets/audio/ac-work.mp3");
 const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
-  "/assets/audio/air-extractor-fan.m4a"
+  "/assets/audio/air-extractor-fan.mp3"
 );
 
 /**
