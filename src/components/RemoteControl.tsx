@@ -1,8 +1,5 @@
-import {
-  createTheme,
-  makeStyles,
-  ThemeProvider,
-} from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/styles";
+import { createTheme, Theme, ThemeProvider } from "@material-ui/core/styles";
 import { Box, Fab } from "@material-ui/core";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -21,12 +18,9 @@ import {
 import { RootState } from "../app/store";
 import { getAssetsUrl } from "../assets/utils";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   margin: {
-    margin: theme.spacing(1),
-  },
-  extendedIcon: {
-    marginRight: theme.spacing(1),
+    margin: 8,
   },
 }));
 

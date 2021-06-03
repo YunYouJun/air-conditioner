@@ -1,11 +1,12 @@
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/styles";
 import Typography from "@material-ui/core/Typography";
 import EmojiObjectsOutlinedIcon from "@material-ui/icons/EmojiObjectsOutlined";
 import { jumpToXimalaya, ximalayaLink } from "../features/adsense";
+import { Theme } from "@material-ui/core";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    margin: theme.spacing(3, 0),
+    margin: 24,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
