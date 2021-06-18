@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/styles";
 import Typography from "@material-ui/core/Typography";
 import EmojiObjectsOutlinedIcon from "@material-ui/icons/EmojiObjectsOutlined";
-import { jumpToXimalaya, ximalayaLink } from "../features/adsense";
+import { jumpToAdsense, adsenseLink } from "../features/adsense";
 import { Theme } from "@material-ui/core";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -18,14 +18,14 @@ const useStyles = makeStyles((theme: Theme) => ({
  * @param props
  * @returns
  */
-function XimalayaLink(props: { text: string }) {
+function AdsenseLink(props: { text: string }) {
   return (
     <a
-      className="ximalaya-text-link"
-      href={ximalayaLink}
+      className="adsense-text-link"
+      href={adsenseLink}
       target="_blank"
       onClick={() => {
-        jumpToXimalaya();
+        jumpToAdsense();
       }}
     >
       {props.text || "喜马拉雅"}
@@ -42,7 +42,7 @@ export default function ProTip() {
       {process.env.REACT_APP_DISABLE_ADSENSE ? (
         "清凉"
       ) : (
-        <XimalayaLink text="清凉" />
+        <AdsenseLink text="清凉" />
       )}
       ！
     </Typography>

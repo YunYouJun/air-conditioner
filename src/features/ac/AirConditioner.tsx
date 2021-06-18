@@ -9,7 +9,7 @@ import "./AirConditioner.scss";
 import { useAppSelector } from "../../app/hooks";
 
 import { AcMode, selectTemperature } from "./acSlice";
-import { ximalayaLink, jumpToXimalaya } from "../adsense";
+import { adsenseLink, jumpToAdsense } from "../adsense";
 
 const acColor = {
   border: "#e0e0e0",
@@ -244,11 +244,11 @@ function EnergyLabel(props: any) {
 function EnergySavingLabel() {
   return (
     <a
-      className="ximalaya-link"
-      href={ximalayaLink}
+      className="adsense-link"
+      href={adsenseLink}
       target="_blank"
       onClick={() => {
-        jumpToXimalaya();
+        jumpToAdsense();
       }}
     >
       <div className="energy-saving-label">
@@ -256,11 +256,12 @@ function EnergySavingLabel() {
           <span className="energy-saving-label_title">
             节能产品&nbsp;&nbsp;惠民工程
           </span>
-          <img
-            className="ximalaya-logo"
+          {/* <img
+            className="adsense-logo"
             src="/images/ximalaya-logo.png"
-            alt="喜马拉雅"
-          />
+            alt="夏日清凉"
+          /> */}
+          <span className="adsense-logo" title="夏日清凉">🍉</span>
           <span className="energy-saving-label_description">
             推广上限价格：XXXX 元
           </span>
