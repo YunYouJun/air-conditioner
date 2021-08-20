@@ -55,7 +55,7 @@
 
 使用 [腾讯云 Webify](https://webify.cloudbase.net/) 一键部署：
 
-[![](https://cloudbase.net/deploy.svg)](https://console.cloud.tencent.com/webify/new?tpl=https%3A%2F%2Fgithub.com%2Fstarkwang%2Fair-conditioner&reponame=my-air-conditioner)
+[![](https://cloudbase.net/deploy.svg)](https://console.cloud.tencent.com/webify/new?tpl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner&reponame=my-air-conditioner)
 
 ## Dev
 
