@@ -1,13 +1,15 @@
-import { makeStyles } from "@material-ui/styles";
-import { createTheme, Theme, ThemeProvider } from "@material-ui/core/styles";
-import { Box, Fab } from "@material-ui/core";
-import ExpandLessIcon from "@material-ui/icons/ExpandLess";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
-import AcUnitIcon from "@material-ui/icons/AcUnit";
-import WbSunnyIcon from "@material-ui/icons/WbSunny";
+import React from "react";
+import { makeStyles } from "@mui/styles";
+import { ThemeProvider } from "@mui/styles";
+import { createTheme, Theme } from "@mui/material/styles";
+import { Box, Fab } from "@mui/material";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import AcUnitIcon from "@mui/icons-material/AcUnit";
+import WbSunnyIcon from "@mui/icons-material/WbSunny";
 
-import { green } from "@material-ui/core/colors";
+import { green } from "@mui/material/colors";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import {
   decreaseTemperature,
@@ -132,7 +134,7 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
  * 遥控
  * @param {*} props
  */
-export default function RemoteControl() {
+export const RemoteControl: React.FC = () => {
   const classes = useStyles();
   const ac = useAppSelector((state: RootState) => state.ac);
   const dispatch = useAppDispatch();
@@ -201,4 +203,6 @@ export default function RemoteControl() {
       </RCButton>
     </Box>
   );
-}
+};
+
+export default RemoteControl;

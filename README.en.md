@@ -76,7 +76,7 @@ cp .env.example .env
 
 ```bash
 # Disable Advertisement
-REACT_APP_DISABLE_ADSENSE=true
+VITE_DISABLE_ADSENSE=true
 ```
 
 ## Todo

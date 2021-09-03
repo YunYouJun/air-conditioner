@@ -1,12 +1,12 @@
 import "./App.scss";
 
+import React, { useEffect } from "react";
 import { ThemeProvider } from "./theme";
-import Container from "@material-ui/core/Container";
+import { Container } from "@mui/material";
 
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Rc from "./pages/Rc";
-import { useEffect } from "react";
 
 import pkg from "../package.json";
 
@@ -30,7 +30,7 @@ function consoleInfo(
   );
 }
 
-function App() {
+const App: React.FC = () => {
   useEffect(() => {
     consoleInfo(pkg.name, pkg.repository.url);
     consoleInfo("@" + pkg.author.name, pkg.author.url);
@@ -51,6 +51,6 @@ function App() {
       </Container>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

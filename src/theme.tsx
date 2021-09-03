@@ -1,12 +1,10 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
-import { useMediaQuery } from "@material-ui/core";
-import {
-  ThemeProvider as MuiThemeProvider,
-  createTheme,
-} from "@material-ui/core/styles";
+import { useMediaQuery } from "@mui/material";
+import { ThemeProvider as MuiThemeProvider } from "@mui/styles";
+import { createTheme } from "@mui/material/styles";
 
-export function ThemeProvider(props: any) {
+export const ThemeProvider: React.FC = (props) => {
   const { children } = props;
 
   // https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media/prefers-color-scheme
@@ -24,7 +22,7 @@ export function ThemeProvider(props: any) {
   );
 
   return <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>;
-}
+};
 
 ThemeProvider.propTypes = {
   children: PropTypes.node,

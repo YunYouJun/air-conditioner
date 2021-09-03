@@ -1,6 +1,7 @@
 import React from "react";
-import { makeStyles } from "@material-ui/styles";
-import { Box, Grid, Typography, Fade } from "@material-ui/core";
+import { makeStyles } from "@mui/styles";
+import { Theme } from "@mui/material";
+import { Box, Grid, Typography, Fade } from "@mui/material";
 import logo from "../../logo.svg";
 
 import * as pkg from "../../../package.json";
@@ -17,7 +18,7 @@ const acColor = {
   wind: "#bbbbbb",
 };
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   acBorder: {
     borderRadius: 10,
     borderBottomLeftRadius: 20,
@@ -261,7 +262,9 @@ function EnergySavingLabel() {
             src="/images/ximalaya-logo.png"
             alt="夏日清凉"
           /> */}
-          <span className="adsense-logo" title="夏日清凉">🍉</span>
+          <span className="adsense-logo" title="夏日清凉">
+            🍉
+          </span>
           <span className="energy-saving-label_description">
             推广上限价格：XXXX 元
           </span>
@@ -320,7 +323,7 @@ export default function AirConditioner(props: {
         <AirOutlet />
         <AcStatus status={props.status} />
         <EnergyLabel className={classes.energyLabel} titleLength={6} />
-        {process.env.REACT_APP_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
+        {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
       </AcBorder>
       <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>
         <WindEffect />

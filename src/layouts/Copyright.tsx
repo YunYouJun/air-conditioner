@@ -1,10 +1,6 @@
-import Box from "@material-ui/core/Box";
-import Link from "@material-ui/core/Link";
-import Typography from "@material-ui/core/Typography";
+import React from "react";
+import { Box, Link, Typography, IconButton, Tooltip } from "@mui/material";
 import * as pkg from "../../package.json";
-
-import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@material-ui/core/Tooltip";
 
 import Icon from "@mdi/react";
 import { mdiGithub } from "@mdi/js";
@@ -60,7 +56,7 @@ const socialList = [
   },
 ];
 
-function Copyright() {
+export const Copyright: React.FC = () => {
   return (
     <div>
       <Box>
@@ -86,7 +82,7 @@ function Copyright() {
       </Typography>
       <Box style={{ textAlign: "center" }}>
         {socialList.map((item) => (
-          <Tooltip title={item.label} arrow>
+          <Tooltip title={item.label} arrow key={item.type}>
             <IconButton
               sx={{ color: item.color }}
               href={item.href}
@@ -99,6 +95,6 @@ function Copyright() {
       </Box>
     </div>
   );
-}
+};
 
 export default Copyright;

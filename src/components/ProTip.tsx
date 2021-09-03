@@ -1,8 +1,9 @@
-import { makeStyles } from "@material-ui/styles";
-import Typography from "@material-ui/core/Typography";
-import EmojiObjectsOutlinedIcon from "@material-ui/icons/EmojiObjectsOutlined";
+import React from "react";
+import { makeStyles } from "@mui/styles";
+import { Theme } from "@mui/material/styles";
+import { Typography } from "@mui/material";
+import EmojiObjectsOutlinedIcon from "@mui/icons-material/EmojiObjectsOutlined";
 import { jumpToAdsense, adsenseLink } from "../features/adsense";
-import { Theme } from "@material-ui/core";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -18,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) => ({
  * @param props
  * @returns
  */
-function AdsenseLink(props: { text: string }) {
+const AdsenseLink: React.FC<{ text: string }> = (props) => {
   return (
     <a
       className="adsense-text-link"
@@ -31,7 +32,7 @@ function AdsenseLink(props: { text: string }) {
       {props.text || "喜马拉雅"}
     </a>
   );
-}
+};
 
 export default function ProTip() {
   const classes = useStyles();
@@ -39,7 +40,7 @@ export default function ProTip() {
     <Typography align="center" className={classes.root} color="textSecondary">
       <EmojiObjectsOutlinedIcon />
       Tip: 为你的夏日带去
-      {process.env.REACT_APP_DISABLE_ADSENSE ? (
+      {import.meta.env.VITE_DISABLE_ADSENSE ? (
         "清凉"
       ) : (
         <AdsenseLink text="清凉" />

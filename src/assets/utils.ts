@@ -1,7 +1,7 @@
 /**
  * 是否为生产环境
  */
-export const isProd = process.env.NODE_ENV === "production";
+export const isProd = import.meta.env.PROD;
 
 /**
  * 获取资源 URL
@@ -10,5 +10,7 @@ export const isProd = process.env.NODE_ENV === "production";
 export function getAssetsUrl(url: string) {
   const jsdelivrCDN =
     "https://cdn.jsdelivr.net/gh/YunYouJun/air-conditioner/public";
-  return (isProd ? jsdelivrCDN : process.env.PUBLIC_URL) + url;
+  return (isProd ? jsdelivrCDN : import.meta.env.BASE_URL) + url.startsWith("/")
+    ? url.slice(1)
+    : url;
 }

@@ -1,9 +1,10 @@
-import { Alert, Snackbar } from "@material-ui/core";
+import React from "react";
+import { Alert, Snackbar } from "@mui/material";
 import { RootState } from "../../app/store";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { setOpen } from "./toastSlice";
 
-export default function Toast() {
+export const Toast: React.FC = () => {
   const toast = useAppSelector((state: RootState) => state.toast);
   const dispatch = useAppDispatch();
 
@@ -18,4 +19,6 @@ export default function Toast() {
       </Alert>
     </Snackbar>
   );
-}
+};
+
+export default Toast;
