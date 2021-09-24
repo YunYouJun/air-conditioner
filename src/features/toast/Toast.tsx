@@ -1,7 +1,7 @@
 import React from "react";
 import { Alert, Snackbar } from "@mui/material";
-import { RootState } from "../../app/store";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { RootState } from "~/app/store";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { setOpen } from "./toastSlice";
 
 export const Toast: React.FC = () => {

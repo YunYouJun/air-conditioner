@@ -1,8 +1,8 @@
 import "./App.scss";
 
 import React, { useEffect } from "react";
-import { ThemeProvider } from "./theme";
-import { Container } from "@mui/material";
+import { AppTheme } from "./theme";
+import { Container, useTheme } from "@mui/material";
 
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -35,8 +35,9 @@ const App: React.FC = () => {
     consoleInfo(pkg.name, pkg.repository.url);
     consoleInfo("@" + pkg.author.name, pkg.author.url);
   }, []);
+
   return (
-    <ThemeProvider>
+    <AppTheme>
       <Container maxWidth="sm">
         <Router>
           <Switch>
@@ -49,7 +50,7 @@ const App: React.FC = () => {
           </Switch>
         </Router>
       </Container>
-    </ThemeProvider>
+    </AppTheme>
   );
 };
 

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": [
@@ -22,7 +23,10 @@
     "types": [
       "vite/client"
     ],
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "~/*": ["src/*"]
+    }
   },
   "include": [
     "./src"

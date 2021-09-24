@@ -1,11 +1,11 @@
-import { useAppDispatch } from "../../app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import {
   AcMode,
   acItemKey,
   setTemperature,
   setMode,
   setStatus,
-} from "../../features/ac/acSlice";
+} from "~/features/ac/acSlice";
 import { useEffect } from "react";
 
 /**

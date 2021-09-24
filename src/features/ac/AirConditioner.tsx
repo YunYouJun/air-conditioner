@@ -1,13 +1,10 @@
 import React from "react";
-import { makeStyles } from "@mui/styles";
-import { Theme } from "@mui/material";
 import { Box, Grid, Typography, Fade } from "@mui/material";
-import logo from "../../logo.svg";
 
-import * as pkg from "../../../package.json";
+import * as pkg from "~/../package.json";
 
 import "./AirConditioner.scss";
-import { useAppSelector } from "../../app/hooks";
+import { useAppSelector } from "~/app/hooks";
 
 import { AcMode, selectTemperature } from "./acSlice";
 import { adsenseLink, jumpToAdsense } from "../adsense";
@@ -18,28 +15,7 @@ const acColor = {
   wind: "#bbbbbb",
 };
 
-const useStyles = makeStyles((theme: Theme) => ({
-  acBorder: {
-    borderRadius: 10,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  acDisplay: {
-    textShadow: "0px 0px 2px rgba(0, 0, 0, 0.3)",
-    // visibility: (props) => props.visibility,
-  },
-  acLogo: {
-    width: 12,
-  },
-  acStatus: {
-    backgroundColor: (props?: any) => props.backgroundColor || "transparent",
-  },
-  energyLabel: {
-    backgroundColor: "#4ea5f5",
-  },
-}));
-
-function AcBorder(props: any) {
+const AcBorder: React.FC = (props) => {
   return (
     <Box
       bgcolor="background.paper"
@@ -49,10 +25,15 @@ function AcBorder(props: any) {
       borderRadius={10}
       boxShadow={3}
       position="relative"
+      style={{
+        borderRadius: 10,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+      }}
       {...props}
     ></Box>
   );
-}
+};
 
 /**
  * 空调温度
@@ -94,7 +75,7 @@ const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
  * 空调 Logo
  * @param props
  */
-function AcLogo(props: any) {
+const AcLogo: React.FC = () => {
   return (
     // <Box align="center" mt={12}>
     <Box textAlign="center" mt={12}>
@@ -104,31 +85,39 @@ function AcLogo(props: any) {
         target="_blank"
         rel="noreferrer noopener"
       >
-        <img className={props.className} src={logo} alt="logo" />
+        <img
+          style={{
+            width: 12,
+          }}
+          src="/yun-logo.svg"
+          alt="logo"
+        />
       </a>
     </Box>
   );
-}
+};
 
 /**
  * 出风口线
  * @returns
  */
-function AirOutlet() {
+const AirOutlet: React.FC = () => {
   return <Box mt={1} border={1} borderColor={acColor.border}></Box>;
-}
+};
 
 /**
  * 空调状态
  * @param props
  */
-function AcStatus(props: { status: boolean }) {
+const AcStatus: React.FC<{ status: boolean }> = (props) => {
   // 空调状态小灯
   const led = { backgroundColor: props.status ? "#38F709" : acColor.border };
-  const classes = useStyles(led);
+
   return (
     <Box
-      className={classes.acStatus}
+      style={{
+        backgroundColor: led.backgroundColor || "transparent",
+      }}
       position="absolute"
       height={4}
       width={4}
@@ -137,7 +126,7 @@ function AcStatus(props: { status: boolean }) {
       right={10}
     ></Box>
   );
-}
+};
 
 /**
  * 文本标签（黑色小点点）
@@ -177,10 +166,9 @@ function textLabel(
  * 功耗标签
  * @param props
  */
-function EnergyLabel(props: any) {
+const EnergyLabel: React.FC<{ titleLength: number }> = (props) => {
   return (
     <Box
-      className={props.className}
       position="absolute"
       top={10}
       left={10}
@@ -188,6 +176,9 @@ function EnergyLabel(props: any) {
       width={50}
       borderRadius={1}
       p={0.5}
+      style={{
+        backgroundColor: "#4ea5f5",
+      }}
     >
       {textLabel(6, "white", 4, 0.25)}
       <Box
@@ -237,7 +228,7 @@ function EnergyLabel(props: any) {
       {textLabel(8, "white", 2, 0.1)}
     </Box>
   );
-}
+};
 
 /**
  * 节能产品惠民工程
@@ -312,17 +303,16 @@ export default function AirConditioner(props: {
   status: boolean;
   temperature: number;
 }) {
-  const classes = useStyles(props);
   return (
     <Box>
-      <AcBorder className={classes.acBorder}>
+      <AcBorder>
         <Fade in={props.status}>
           <AcDisplay mode={props.mode} />
         </Fade>
-        <AcLogo className={classes.acLogo} />
+        <AcLogo />
         <AirOutlet />
         <AcStatus status={props.status} />
-        <EnergyLabel className={classes.energyLabel} titleLength={6} />
+        <EnergyLabel titleLength={6} />
         {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
       </AcBorder>
       <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>

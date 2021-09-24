@@ -1,56 +1,24 @@
 import React from "react";
-import { makeStyles } from "@mui/styles";
-import { ThemeProvider } from "@mui/styles";
-import { createTheme, Theme } from "@mui/material/styles";
-import { Box, Fab } from "@mui/material";
+import { Box } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import AcUnitIcon from "@mui/icons-material/AcUnit";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 
-import { green } from "@mui/material/colors";
-import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { blue, green, red } from "@mui/material/colors";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   decreaseTemperature,
   increaseTemperature,
   toggleMode,
   toggleStatus,
-} from "../features/ac/acSlice";
-import { RootState } from "../app/store";
-import { getAssetsUrl } from "../assets/utils";
+} from "~/features/ac/acSlice";
+import { RootState } from "~/app/store";
+import { getAssetsUrl } from "~/utils";
 
-const useStyles = makeStyles((theme: Theme) => ({
-  margin: {
-    margin: 8,
-  },
-}));
-
-/**
- * 遥控器按钮
- * @param props
- */
-function RCButton(props: any) {
-  return (
-    <Fab
-      {...props}
-      onClick={() => {
-        playDi();
-        props.onClick();
-      }}
-    ></Fab>
-  );
-}
-
-/**
- * 播放「嘀」的音效
- */
-function playDi() {
-  const di = document.getElementById("di");
-  if (di) {
-    (di as HTMLAudioElement).play();
-  }
-}
+import "./index.scss";
+import { RCButton } from "./RCButton";
 
 let playStartSoundTimeoutId: any;
 let playWorkSoundTimeoutId: any;
@@ -118,12 +86,6 @@ function toggleAC(status: boolean, dispatch: any) {
   dispatch(toggleStatus());
 }
 
-const customTheme = createTheme({
-  palette: {
-    primary: green,
-  },
-});
-
 const SOUND_DI_PATH = getAssetsUrl("/assets/audio/di.m4a");
 const SOUND_AC_WORK_PATH = getAssetsUrl("/assets/audio/ac-work.m4a");
 const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
@@ -135,9 +97,9 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
  * @param {*} props
  */
 export const RemoteControl: React.FC = () => {
-  const classes = useStyles();
   const ac = useAppSelector((state: RootState) => state.ac);
   const dispatch = useAppDispatch();
+
   return (
     <Box my={4} display="flex" flexDirection="column" alignItems="center">
       <audio id="di" src={SOUND_DI_PATH} preload="auto"></audio>
@@ -150,31 +112,31 @@ export const RemoteControl: React.FC = () => {
       <div>
         {" "}
         <RCButton
-          color="primary"
           aria-label="cold"
-          className={classes.margin}
+          style={{
+            color: "white",
+            backgroundColor: blue[700],
+          }}
           onClick={() => {
             dispatch(toggleMode("cold"));
           }}
         >
           <AcUnitIcon />
         </RCButton>
-        <ThemeProvider theme={customTheme}>
-          <RCButton
-            color={ac.status ? "secondary" : "primary"}
-            aria-label="add"
-            className={classes.margin}
-            onClick={() => {
-              toggleAC(ac.status, dispatch);
-            }}
-            style={{ color: "white" }}
-          >
-            <PowerSettingsNewIcon />
-          </RCButton>
-        </ThemeProvider>
+        <RCButton
+          aria-label="add"
+          onClick={() => {
+            toggleAC(ac.status, dispatch);
+          }}
+          style={{
+            backgroundColor: ac.status ? red[600] : green[600],
+            color: "white",
+          }}
+        >
+          <PowerSettingsNewIcon />
+        </RCButton>
         <RCButton
           aria-label="hot"
-          className={classes.margin}
           style={{ backgroundColor: "orange", color: "white" }}
           onClick={() => {
             dispatch(toggleMode("hot"));
@@ -185,7 +147,6 @@ export const RemoteControl: React.FC = () => {
       </div>
       <RCButton
         aria-label="add"
-        className={classes.margin}
         onClick={() => {
           dispatch(increaseTemperature());
         }}
@@ -194,7 +155,6 @@ export const RemoteControl: React.FC = () => {
       </RCButton>
       <RCButton
         aria-label="reduce"
-        className={classes.margin}
         onClick={() => {
           dispatch(decreaseTemperature());
         }}

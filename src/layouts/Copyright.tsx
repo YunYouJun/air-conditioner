@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Link, Typography, IconButton, Tooltip } from "@mui/material";
-import * as pkg from "../../package.json";
+import * as pkg from "~/../package.json";
 
 import Icon from "@mdi/react";
 import { mdiGithub } from "@mdi/js";
