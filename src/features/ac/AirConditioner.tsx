@@ -237,11 +237,8 @@ function EnergySavingLabel() {
   return (
     <a
       className="adsense-link"
-      href={adsenseLink}
+      href="https://sponsors.yunyoujun.cn"
       target="_blank"
-      onClick={() => {
-        jumpToAdsense();
-      }}
     >
       <div className="energy-saving-label">
         <div className="energy-saving-label_bg">
@@ -254,7 +251,7 @@ function EnergySavingLabel() {
             alt="夏日清凉"
           /> */}
           <span className="adsense-logo" title="夏日清凉">
-            🍉
+            💰
           </span>
           <span className="energy-saving-label_description">
             推广上限价格：XXXX 元
