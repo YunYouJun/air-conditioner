@@ -66,6 +66,7 @@ const Home: React.FC = () => {
         <RemoteControl />
         <Copyright />
       </Box>
+
       <Toast />
     </Container>
   );

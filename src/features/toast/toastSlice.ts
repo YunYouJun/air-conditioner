@@ -1,3 +1,4 @@
+import { AlertColor } from "@mui/material";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface ToastState {
@@ -9,11 +10,16 @@ export interface ToastState {
    * 消息内容
    */
   message: string;
+  /**
+   * 提示类型
+   */
+  severity: AlertColor;
 }
 
 const initialState: ToastState = {
   open: false,
   message: "",
+  severity: "error",
 };
 
 export const toastSlice = createSlice({
@@ -36,9 +42,12 @@ export const toastSlice = createSlice({
     setOpen(state, action: PayloadAction<boolean>) {
       state.open = action.payload;
     },
+    setSeverity(state, action: PayloadAction<AlertColor>) {
+      state.severity = action.payload;
+    },
   },
 });
 
-export const { setMessage, setOpen } = toastSlice.actions;
+export const { setMessage, setOpen, setSeverity } = toastSlice.actions;
 
 export default toastSlice.reducer;

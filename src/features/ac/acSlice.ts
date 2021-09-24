@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk, RootState } from "~/app/store";
-import { setMessage, setOpen } from "../toast/toastSlice";
+import { setMessage, setOpen, setSeverity } from "../toast/toastSlice";
 
 export type AcMode = "cold" | "hot";
 export interface AcState {
@@ -122,6 +122,7 @@ export const increaseTemperature = (): AppThunk => (dispatch, getState) => {
   } else {
     dispatch(setMessage("已经是最大温度啦！"));
     dispatch(setOpen(true));
+    dispatch(setSeverity("error"));
   }
 };
 
@@ -136,6 +137,7 @@ export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
   } else {
     dispatch(setMessage("已经是最小温度啦！"));
     dispatch(setOpen(true));
+    dispatch(setSeverity("error"));
   }
 };
 
@@ -162,9 +164,11 @@ export const toggleMode =
     if (mode === "cold" && currentTemperature < goodColdTemperature) {
       dispatch(setMessage(recommendedSlogan("cold", goodColdTemperature)));
       dispatch(setOpen(true));
+      dispatch(setSeverity("success"));
     } else if (mode === "hot" && currentTemperature > goodHotTemperature) {
       dispatch(setMessage(recommendedSlogan("hot", goodHotTemperature)));
       dispatch(setOpen(true));
+      dispatch(setSeverity("success"));
     }
   };
 
