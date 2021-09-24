@@ -23,7 +23,7 @@ const AdsenseLink: React.FC<{ text: string }> = (props) => {
   );
 };
 
-export default function ProTip() {
+export const ProTip: React.FC = () => {
   return (
     <Typography
       align="center"
@@ -45,4 +45,4 @@ export default function ProTip() {
       ！
     </Typography>
   );
-}
+};

@@ -1,15 +1,15 @@
 import React from "react";
 import { Button, Container, Typography, Box } from "@mui/material";
 
-import ProTip from "~/components/ProTip";
-import RemoteControl from "~/components/RemoteControl";
+import { ProTip } from "~/components/ProTip";
+import { RemoteControl } from "~/components/RemoteControl";
 
-import AirConditioner from "~/features/ac/AirConditioner";
-import Toast from "~/features/toast/Toast";
+import { AirConditioner } from "~/features/ac/AirConditioner";
+import { Toast } from "~/features/toast/Toast";
 
 import { useAppSelector } from "~/app/hooks";
 import { RootState } from "~/app/store";
-import Copyright from "~/layouts/Copyright";
+import { Copyright } from "~/layouts/Copyright";
 import { useDetectStorage } from "~/features/ac";
 
 /**

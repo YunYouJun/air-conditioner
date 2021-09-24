@@ -7,7 +7,7 @@ import "./AirConditioner.scss";
 import { useAppSelector } from "~/app/hooks";
 
 import { AcMode, selectTemperature } from "./acSlice";
-import { adsenseLink, jumpToAdsense } from "../adsense";
+// import { adsenseLink, jumpToAdsense } from "../adsense";
 
 const acColor = {
   border: "#e0e0e0",
@@ -295,11 +295,11 @@ const WindEffect = React.forwardRef((props, ref) => {
 /**
  * 空调
  */
-export default function AirConditioner(props: {
+export const AirConditioner: React.FC<{
   mode: AcMode;
   status: boolean;
   temperature: number;
-}) {
+}> = (props) => {
   return (
     <Box>
       <AcBorder>
@@ -317,4 +317,4 @@ export default function AirConditioner(props: {
       </Fade>
     </Box>
   );
-}
+};

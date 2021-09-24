@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import reactRefresh from "@vitejs/plugin-react-refresh";
 import path from "path";
 
+import Icons from "unplugin-icons/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
@@ -13,6 +14,7 @@ export default defineConfig({
   },
   plugins: [
     reactRefresh(),
+    Icons({ compiler: "jsx", jsx: "react" }),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],

@@ -2,55 +2,54 @@ import React from "react";
 import { Box, Link, Typography, IconButton, Tooltip } from "@mui/material";
 import * as pkg from "~/../package.json";
 
-import Icon from "@mdi/react";
-import { mdiGithub } from "@mdi/js";
-import { mdiTelegram } from "@mdi/js";
-import { mdiSinaWeibo } from "@mdi/js";
-import { mdiTwitter } from "@mdi/js";
-import { mdiWechat } from "@mdi/js";
-import { mdiEarth } from "@mdi/js";
-import { mdiCloud } from "@mdi/js";
+import IconGithub from "~icons/mdi/github";
+import IconTelegram from "~icons/mdi/telegram";
+import IconSinaWeibo from "~icons/mdi/sina-weibo";
+import IconTwitter from "~icons/mdi/twitter";
+import IconWechat from "~icons/mdi/wechat";
+import IconEarth from "~icons/mdi/earth";
+import IconCloud from "~icons/mdi/cloud";
 
 const socialList = [
   {
     type: "github",
     color: "black",
-    icon: mdiGithub,
+    icon: IconGithub,
     label: `GitHub: YunYouJun`,
     href: `https://github.com/YunYouJun`,
   },
   {
     type: "telegram",
     color: "#1da1f2",
-    icon: mdiTelegram,
+    icon: IconTelegram,
     label: "Telegram Channel",
     href: "https://t.me/elpsycn",
   },
   {
     type: "weibo",
     color: "#DB2828",
-    icon: mdiSinaWeibo,
+    icon: IconSinaWeibo,
     label: "微博：机智的云游君",
     href: "http://weibo.com/jizhideyunyoujun",
   },
   {
     type: "twitter",
     color: "#1da1f2",
-    icon: mdiTwitter,
+    icon: IconTwitter,
     label: "Twitter: YunYouJun",
     href: "https://twitter.com/YunYouJun",
   },
   {
     type: "wechat",
     color: "#1AAD19",
-    icon: mdiWechat,
+    icon: IconWechat,
     label: "微信公众号：云游君",
     href: "https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/about/white-qrcode-and-search.jpg",
   },
   {
     type: "blog",
     color: "#6435C9",
-    icon: mdiEarth,
+    icon: IconEarth,
     label: "博客：yunyoujun.cn",
     href: "http://www.yunyoujun.cn",
   },
@@ -70,7 +69,7 @@ export const Copyright: React.FC = () => {
             href="https://sponsors.yunyoujun.cn"
             target="_blank"
           >
-            <Icon path={mdiCloud} size={0.6}></Icon>
+            <IconCloud style={{ fontSize: "1rem" }} />
           </IconButton>
           <Link color="inherit" href={pkg.author.url} target="_blank">
             {pkg.author.name}
@@ -88,7 +87,7 @@ export const Copyright: React.FC = () => {
               href={item.href}
               target="_blank"
             >
-              <Icon path={item.icon} size={1} />
+              <item.icon />
             </IconButton>
           </Tooltip>
         ))}
