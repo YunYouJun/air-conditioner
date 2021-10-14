@@ -30,11 +30,14 @@ export const ToggleModeBtn: React.FC = () => {
 };
 
 export const AppTheme: React.FC = (props) => {
+  const [mode, setMode] = React.useState<PaletteMode>("light");
   // https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media/prefers-color-scheme
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const preferredMode = prefersDarkMode ? "dark" : "light";
-
-  const [mode, setMode] = React.useState<PaletteMode>(preferredMode);
+  // Remount styles after React hydration
+  React.useEffect(() => {
+    const preferredMode = prefersDarkMode ? "dark" : "light";
+    setMode(preferredMode);
+  }, []);
 
   const colorMode = React.useMemo(
     () => ({
