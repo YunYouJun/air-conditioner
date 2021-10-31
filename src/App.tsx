@@ -2,7 +2,6 @@ import "./App.scss";
 
 import React, { useEffect } from "react";
 import { AppTheme } from "./theme";
-import { Container, useTheme } from "@mui/material";
 
 import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -38,18 +37,20 @@ const App: React.FC = () => {
 
   return (
     <AppTheme>
-      <Container maxWidth="sm">
-        <Router>
-          <Switch>
-            <Route path="/rc">
-              <Rc />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
-          </Switch>
-        </Router>
-      </Container>
+      <main className="text-gray-700 dark:text-gray-200">
+        <div className="max-w-600px m-auto">
+          <Router>
+            <Switch>
+              <Route path="/rc">
+                <Rc />
+              </Route>
+              <Route path="/">
+                <Home />
+              </Route>
+            </Switch>
+          </Router>
+        </div>
+      </main>
     </AppTheme>
   );
 };

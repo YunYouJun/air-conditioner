@@ -77,8 +77,7 @@ const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
  */
 const AcLogo: React.FC = () => {
   return (
-    // <Box align="center" mt={12}>
-    <Box textAlign="center" mt={12}>
+    <div className="text-center mt-28">
       <a
         href={pkg.repository.url}
         title={pkg.description}
@@ -86,6 +85,7 @@ const AcLogo: React.FC = () => {
         rel="noreferrer noopener"
       >
         <img
+          className="m-auto"
           style={{
             width: 12,
           }}
@@ -93,7 +93,7 @@ const AcLogo: React.FC = () => {
           alt="logo"
         />
       </a>
-    </Box>
+    </div>
   );
 };
 

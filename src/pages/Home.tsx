@@ -36,15 +36,9 @@ const Home: React.FC = () => {
   return (
     <Container maxWidth="sm" className={getClassByMode()}>
       <Box sx={{ pt: 4 }} bgcolor="transparent">
-        <Typography
-          color="textPrimary"
-          align="center"
-          variant="h4"
-          component="h1"
-          gutterBottom
-        >
+        <h1 className="text-center text-3xl">
           便携小空调
-        </Typography>
+        </h1>
         <ProTip />
         <AirConditioner
           status={ac.status}

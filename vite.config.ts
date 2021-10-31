@@ -4,6 +4,7 @@ import path from "path";
 
 import Icons from "unplugin-icons/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import WindiCSS from 'vite-plugin-windicss'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,7 +15,15 @@ export default defineConfig({
   },
   plugins: [
     reactRefresh(),
-    Icons({ compiler: "jsx", jsx: "react" }),
+    Icons({
+      autoInstall: true,
+      compiler: "jsx",
+      jsx: "react"
+    }),
+
+    // https://github.com/antfu/vite-plugin-windicss
+    WindiCSS(),
+
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],

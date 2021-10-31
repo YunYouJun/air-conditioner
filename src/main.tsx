@@ -1,7 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
+// windicss layers
+import 'virtual:windi-base.css'
+import 'virtual:windi-components.css'
+// your custom styles here
 import "./styles/index.scss";
+// windicss utilities should be the last style import
+import 'virtual:windi-utilities.css'
+// windicss devtools support (dev only)
+import 'virtual:windi-devtools'
 
 import App from "./App";
 import { store } from "./app/store";

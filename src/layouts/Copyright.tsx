@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Link, Typography, IconButton, Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import * as pkg from "~/../package.json";
 
 import IconGithub from "~icons/mdi/github";
@@ -13,7 +13,7 @@ import IconCloud from "~icons/mdi/cloud";
 const socialList = [
   {
     type: "github",
-    color: "black",
+    color: "inherit",
     icon: IconGithub,
     label: `GitHub: YunYouJun`,
     href: `https://github.com/YunYouJun`,
@@ -58,28 +58,26 @@ const socialList = [
 export const Copyright: React.FC = () => {
   return (
     <div>
-      <Box>
-        <Typography variant="body2" color="textSecondary" align="center">
-          {"© "}
-          <Link color="inherit" href={pkg.repository.url} target="_blank">
-            Yun Air Conditioner
-          </Link>
-          <IconButton
-            sx={{ color: "#0078e7" }}
-            href="https://sponsors.yunyoujun.cn"
-            target="_blank"
-          >
-            <IconCloud style={{ fontSize: "1rem" }} />
-          </IconButton>
-          <Link color="inherit" href={pkg.author.url} target="_blank">
-            {pkg.author.name}
-          </Link>
-        </Typography>
-      </Box>
-      <Typography variant="body2" color="textSecondary" align="center">
+      <p className="text-center">
+        {"© "}
+        <a href={pkg.repository.url} target="_blank">
+          Yun Air Conditioner
+        </a>
+        <IconButton
+          sx={{ color: "#0078e7" }}
+          href="https://sponsors.yunyoujun.cn"
+          target="_blank"
+        >
+          <IconCloud style={{ fontSize: "1rem" }} />
+        </IconButton>
+        <a href={pkg.author.url} target="_blank">
+          {pkg.author.name}
+        </a>
+      </p>
+      <p className="text-center">
         {" 2019 - " + new Date().getFullYear()}
-      </Typography>
-      <Box style={{ textAlign: "center" }}>
+      </p>
+      <div className="text-center">
         {socialList.map((item) => (
           <Tooltip title={item.label} arrow key={item.type}>
             <IconButton
@@ -91,7 +89,7 @@ export const Copyright: React.FC = () => {
             </IconButton>
           </Tooltip>
         ))}
-      </Box>
+      </div>
     </div>
   );
 };
