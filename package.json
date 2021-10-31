@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.10.0",
-    "@iconify/json": "^1.1.417",
+    "@iconify-json/mdi": "^1.0.6",
     "@mui/icons-material": "^5.0.4",
     "@svgr/core": "^5.5.0",
     "@types/node": "^16.11.6",

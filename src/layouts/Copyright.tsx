@@ -58,7 +58,7 @@ const socialList = [
 export const Copyright: React.FC = () => {
   return (
     <div>
-      <p className="text-center">
+      <p className="text-center text-xs">
         {"© "}
         <a href={pkg.repository.url} target="_blank">
           Yun Air Conditioner
@@ -70,12 +70,13 @@ export const Copyright: React.FC = () => {
         >
           <IconCloud style={{ fontSize: "1rem" }} />
         </IconButton>
+        &nbsp;
         <a href={pkg.author.url} target="_blank">
-          {pkg.author.name}
+          云游君 @{pkg.author.name}
         </a>
       </p>
-      <p className="text-center">
-        {" 2019 - " + new Date().getFullYear()}
+      <p className="text-center text-xs">
+      {"2019 - " + new Date().getFullYear()}
       </p>
       <div className="text-center">
         {socialList.map((item) => (

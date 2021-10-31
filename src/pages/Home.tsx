@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Container, Typography, Box } from "@mui/material";
+import { Button } from "@mui/material";
 
 import { ProTip } from "~/components/ProTip";
 import { RemoteControl } from "~/components/RemoteControl";
@@ -34,8 +34,8 @@ const Home: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="sm" className={getClassByMode()}>
-      <Box sx={{ pt: 4 }} bgcolor="transparent">
+    <div className={`max-w-600px m-auto ${getClassByMode()}`}>
+      <div className="pt-6">
         <h1 className="text-center text-3xl">
           便携小空调
         </h1>
@@ -46,7 +46,7 @@ const Home: React.FC = () => {
           mode={ac.mode}
         />
         <div className="text-center">
-          <Box sx={{ mt: 2 }}>
+          <div className="mt-2">
             <Button
               variant="outlined"
               onClick={() => {
@@ -55,14 +55,14 @@ const Home: React.FC = () => {
             >
               独立遥控器
             </Button>
-          </Box>
+          </div>
         </div>
         <RemoteControl />
         <Copyright />
-      </Box>
+      </div>
 
       <Toast />
-    </Container>
+    </div>
   );
 };
 

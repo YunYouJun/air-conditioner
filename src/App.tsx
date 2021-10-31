@@ -37,7 +37,7 @@ const App: React.FC = () => {
 
   return (
     <AppTheme>
-      <main className="text-gray-700 dark:text-gray-200">
+      <main className="text-gray-700 dark:text-gray-200 p-2">
         <div className="max-w-600px m-auto">
           <Router>
             <Switch>
