@@ -9,7 +9,7 @@ export function GoogleAutoAdsense() {
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
     ></script>
-  );
+  )
 }
 
 /**
@@ -18,7 +18,7 @@ export function GoogleAutoAdsense() {
  */
 export function GoogleAdsenseUnit() {
   return (
-    <div style={{ textAlign: "center" }}>
+    <div style={{ textAlign: 'center' }}>
       <script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
@@ -27,10 +27,10 @@ export function GoogleAdsenseUnit() {
       <ins
         className="adsbygoogle"
         style={{
-          display: "inline-block",
+          display: 'inline-block',
           minWidth: 400,
           maxWidth: 970,
-          width: "100%",
+          width: '100%',
           height: 90,
         }}
         data-ad-client="ca-pub-2245427233262012"
@@ -40,5 +40,5 @@ export function GoogleAdsenseUnit() {
       ></ins>
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
-  );
+  )
 }

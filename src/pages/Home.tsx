@@ -1,36 +1,35 @@
-import React from "react";
-import { Button } from "@mui/material";
+import React from 'react'
+import { Button } from '@mui/material'
 
-import { ProTip } from "~/components/ProTip";
-import { RemoteControl } from "~/components/RemoteControl";
+import { ProTip } from '~/components/ProTip'
+import { RemoteControl } from '~/components/RemoteControl'
 
-import { AirConditioner } from "~/features/ac/AirConditioner";
-import { Toast } from "~/features/toast/Toast";
+import { AirConditioner } from '~/features/ac/AirConditioner'
+import { Toast } from '~/features/toast/Toast'
 
-import { useAppSelector } from "~/app/hooks";
-import { RootState } from "~/app/store";
-import { Copyright } from "~/layouts/Copyright";
-import { useDetectStorage } from "~/features/ac";
+import { useAppSelector } from '~/app/hooks'
+import { RootState } from '~/app/store'
+import { Copyright } from '~/layouts/Copyright'
+import { useDetectStorage } from '~/features/ac'
 
 /**
  * 主页
  * @returns
  */
 const Home: React.FC = () => {
-  const ac = useAppSelector((state: RootState) => state.ac);
+  const ac = useAppSelector((state: RootState) => state.ac)
 
-  useDetectStorage();
+  useDetectStorage()
 
   /**
    * 根据模式返回对应的色温
    * @returns
    */
   function getClassByMode() {
-    if (ac.status) {
-      return ac.mode === "hot" ? "hot-color" : "cold-color";
-    } else {
-      return "";
-    }
+    if (ac.status)
+      return ac.mode === 'hot' ? 'hot-color' : 'cold-color'
+    else
+      return ''
   }
 
   return (
@@ -50,7 +49,7 @@ const Home: React.FC = () => {
             <Button
               variant="outlined"
               onClick={() => {
-                window.open("/#/rc", "_blank", "width=300, height=400");
+                window.open('/#/rc', '_blank', 'width=300, height=400')
               }}
             >
               独立遥控器
@@ -63,7 +62,7 @@ const Home: React.FC = () => {
 
       <Toast />
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

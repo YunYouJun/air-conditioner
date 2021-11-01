@@ -1,47 +1,47 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AppThunk, RootState } from "~/app/store";
-import { setMessage, setOpen, setSeverity } from "../toast/toastSlice";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { setMessage, setOpen, setSeverity } from '../toast/toastSlice'
+import { AppThunk, RootState } from '~/app/store'
 
-export type AcMode = "cold" | "hot";
+export type AcMode = 'cold' | 'hot'
 export interface AcState {
   /**
    * 状态
    */
-  status: boolean;
+  status: boolean
   /**
    * 模式
    */
-  mode: AcMode;
+  mode: AcMode
   /**
    * 温度
    */
-  temperature: number;
+  temperature: number
 }
 
-const namespace = "ac-";
+const namespace = 'ac-'
 
 export const acItemKey = {
-  status: namespace + "status",
-  mode: namespace + "mode",
-  temperature: namespace + "temperature",
-};
+  status: `${namespace}status`,
+  mode: `${namespace}mode`,
+  temperature: `${namespace}temperature`,
+}
 
 // https://baike.baidu.com/item/26度空调节能倡导行动
-const defaultTemperature = 26;
+const defaultTemperature = 26
 
 const initialState: AcState = {
   status: false,
-  mode: (localStorage.getItem(acItemKey.mode) as AcMode) || "cold",
+  mode: (localStorage.getItem(acItemKey.mode) as AcMode) || 'cold',
   temperature:
-    parseInt(localStorage.getItem(acItemKey.temperature) || "") ||
-    defaultTemperature,
-};
+    parseInt(localStorage.getItem(acItemKey.temperature) || '')
+    || defaultTemperature,
+}
 
-const maxTemperature = 31;
-const minTemperature = 16;
+const maxTemperature = 31
+const minTemperature = 16
 
 export const acSlice = createSlice({
-  name: "ac",
+  name: 'ac',
   initialState,
   reducers: {
     /**
@@ -50,7 +50,7 @@ export const acSlice = createSlice({
      * @param action
      */
     setStatus(state, action: PayloadAction<boolean>) {
-      state.status = action.payload;
+      state.status = action.payload
     },
     /**
      * 设置温度
@@ -58,15 +58,15 @@ export const acSlice = createSlice({
      * @param action
      */
     setTemperature(state, action: PayloadAction<number>) {
-      state.temperature = action.payload;
+      state.temperature = action.payload
     },
     /**
      * 增加温度
      * @param state
      */
     increment: (state) => {
-      state.temperature += 1;
-      localStorage.setItem(acItemKey.temperature, state.temperature.toString());
+      state.temperature += 1
+      localStorage.setItem(acItemKey.temperature, state.temperature.toString())
     },
 
     /**
@@ -74,8 +74,8 @@ export const acSlice = createSlice({
      * @param state
      */
     decrement: (state) => {
-      state.temperature -= 1;
-      localStorage.setItem(acItemKey.temperature, state.temperature.toString());
+      state.temperature -= 1
+      localStorage.setItem(acItemKey.temperature, state.temperature.toString())
     },
 
     /**
@@ -84,8 +84,8 @@ export const acSlice = createSlice({
      * @param action
      */
     setMode(state, action: PayloadAction<AcMode>) {
-      state.mode = action.payload;
-      localStorage.setItem(acItemKey.mode, state.mode);
+      state.mode = action.payload
+      localStorage.setItem(acItemKey.mode, state.mode)
     },
 
     /**
@@ -94,13 +94,13 @@ export const acSlice = createSlice({
      * @param action
      */
     toggleStatus(state) {
-      state.status = !state.status;
-      localStorage.setItem(acItemKey.status, state.status.toString());
+      state.status = !state.status
+      localStorage.setItem(acItemKey.status, state.status.toString())
     },
   },
-});
+})
 
-export const selectTemperature = (state: RootState) => state.ac.temperature;
+export const selectTemperature = (state: RootState) => state.ac.temperature
 
 export const {
   setTemperature,
@@ -109,67 +109,70 @@ export const {
   setMode,
   toggleStatus,
   setStatus,
-} = acSlice.actions;
+} = acSlice.actions
 
 /**
  * 增加温度
  * @returns
  */
 export const increaseTemperature = (): AppThunk => (dispatch, getState) => {
-  const currentValue = selectTemperature(getState());
+  const currentValue = selectTemperature(getState())
   if (currentValue < maxTemperature) {
-    dispatch(increment());
-  } else {
-    dispatch(setMessage("已经是最大温度啦！"));
-    dispatch(setOpen(true));
-    dispatch(setSeverity("error"));
+    dispatch(increment())
   }
-};
+  else {
+    dispatch(setMessage('已经是最大温度啦！'))
+    dispatch(setOpen(true))
+    dispatch(setSeverity('error'))
+  }
+}
 
 /**
  * 降低温度
  * @returns
  */
 export const decreaseTemperature = (): AppThunk => (dispatch, getState) => {
-  const currentValue = selectTemperature(getState());
+  const currentValue = selectTemperature(getState())
   if (currentValue > minTemperature) {
-    dispatch(decrement());
-  } else {
-    dispatch(setMessage("已经是最小温度啦！"));
-    dispatch(setOpen(true));
-    dispatch(setSeverity("error"));
+    dispatch(decrement())
   }
-};
+  else {
+    dispatch(setMessage('已经是最小温度啦！'))
+    dispatch(setOpen(true))
+    dispatch(setSeverity('error'))
+  }
+}
 
 /**
  * 切换模式
  * @param mode
  * @returns
  */
-export const toggleMode =
-  (mode: AcMode): AppThunk =>
-  (dispatch, getState) => {
-    dispatch(setMode(mode));
-    const currentTemperature = selectTemperature(getState());
-    const goodColdTemperature = 26;
-    const goodHotTemperature = 20;
+export const toggleMode
+  = (mode: AcMode): AppThunk =>
+    (dispatch, getState) => {
+      dispatch(setMode(mode))
+      const currentTemperature = selectTemperature(getState())
+      const goodColdTemperature = 26
+      const goodHotTemperature = 20
 
-    const recommendedSlogan = (mode: AcMode, temperature: number) =>
-      `建议将空调的制${
-        mode === "cold" ? "冷" : "热"
-      }温度调至 ${temperature} 度以${
-        mode === "cold" ? "上" : "下"
-      }，为节能减排贡献一份力量！`;
+      const recommendedSlogan = (mode: AcMode, temperature: number) =>
+        `建议将空调的制${
+          mode === 'cold' ? '冷' : '热'
+        }温度调至 ${temperature} 度以${
+          mode === 'cold' ? '上' : '下'
+        }，为节能减排贡献一份力量！`
 
-    if (mode === "cold" && currentTemperature < goodColdTemperature) {
-      dispatch(setMessage(recommendedSlogan("cold", goodColdTemperature)));
-      dispatch(setOpen(true));
-      dispatch(setSeverity("success"));
-    } else if (mode === "hot" && currentTemperature > goodHotTemperature) {
-      dispatch(setMessage(recommendedSlogan("hot", goodHotTemperature)));
-      dispatch(setOpen(true));
-      dispatch(setSeverity("success"));
+      if (mode === 'cold' && currentTemperature < goodColdTemperature) {
+        dispatch(setMessage(recommendedSlogan('cold', goodColdTemperature)))
+        dispatch(setOpen(true))
+        dispatch(setSeverity('success'))
+      }
+      else if (mode === 'hot' && currentTemperature > goodHotTemperature) {
+        dispatch(setMessage(recommendedSlogan('hot', goodHotTemperature)))
+        dispatch(setOpen(true))
+        dispatch(setSeverity('success'))
+      }
     }
-  };
 
-export default acSlice.reducer;
+export default acSlice.reducer

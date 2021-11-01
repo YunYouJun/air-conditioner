@@ -1,19 +1,19 @@
-import React from "react";
-import { Box, Grid, Typography, Fade } from "@mui/material";
+import React from 'react'
+import { Box, Grid, Typography, Fade } from '@mui/material'
+import { AcMode, selectTemperature } from './acSlice'
 
-import * as pkg from "~/../package.json";
+import * as pkg from '~/../package.json'
 
-import "./AirConditioner.scss";
-import { useAppSelector } from "~/app/hooks";
+import './AirConditioner.scss'
+import { useAppSelector } from '~/app/hooks'
 
-import { AcMode, selectTemperature } from "./acSlice";
 // import { adsenseLink, jumpToAdsense } from "../adsense";
 
 const acColor = {
-  border: "#e0e0e0",
-  display: "#cccccc",
-  wind: "#bbbbbb",
-};
+  border: '#e0e0e0',
+  display: '#cccccc',
+  wind: '#bbbbbb',
+}
 
 const AcBorder: React.FC = (props) => {
   return (
@@ -32,21 +32,21 @@ const AcBorder: React.FC = (props) => {
       }}
       {...props}
     ></Box>
-  );
-};
+  )
+}
 
 /**
  * 空调温度
  * @returns
  */
 function AcTemperature() {
-  const temperature = useAppSelector(selectTemperature);
+  const temperature = useAppSelector(selectTemperature)
   return (
     <Typography variant="h4" align="center">
       <span className="font-digit ac-temperature">{temperature}</span>
       <small className="font-digit">°C</small>
     </Typography>
-  );
+  )
 }
 
 /**
@@ -64,12 +64,12 @@ const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
       color={acColor.display}
     >
       <Typography align="left" variant="subtitle2">
-        <span>{props.mode === "cold" ? "❄" : "☀️"}</span>️️
+        <span>{props.mode === 'cold' ? '❄' : '☀️'}</span>️️
       </Typography>
       <AcTemperature />
     </Box>
-  );
-});
+  )
+})
 
 /**
  * 空调 Logo
@@ -94,16 +94,16 @@ const AcLogo: React.FC = () => {
         />
       </a>
     </div>
-  );
-};
+  )
+}
 
 /**
  * 出风口线
  * @returns
  */
 const AirOutlet: React.FC = () => {
-  return <Box mt={1} border={1} borderColor={acColor.border}></Box>;
-};
+  return <Box mt={1} border={1} borderColor={acColor.border}></Box>
+}
 
 /**
  * 空调状态
@@ -111,12 +111,12 @@ const AirOutlet: React.FC = () => {
  */
 const AcStatus: React.FC<{ status: boolean }> = (props) => {
   // 空调状态小灯
-  const led = { backgroundColor: props.status ? "#38F709" : acColor.border };
+  const led = { backgroundColor: props.status ? '#38F709' : acColor.border }
 
   return (
     <Box
       style={{
-        backgroundColor: led.backgroundColor || "transparent",
+        backgroundColor: led.backgroundColor || 'transparent',
       }}
       position="absolute"
       height={4}
@@ -125,8 +125,8 @@ const AcStatus: React.FC<{ status: boolean }> = (props) => {
       top={130}
       right={10}
     ></Box>
-  );
-};
+  )
+}
 
 /**
  * 文本标签（黑色小点点）
@@ -141,10 +141,10 @@ function textLabel(
   color: string,
   size: number,
   mx: number,
-  my = 0
+  my = 0,
 ) {
-  const titleLength = [...new Array(num).keys()];
-  const titleLabel = titleLength.map((n) => (
+  const titleLength = [...new Array(num).keys()]
+  const titleLabel = titleLength.map(n => (
     <Box
       key={n}
       mx={mx}
@@ -154,19 +154,19 @@ function textLabel(
       borderRadius="50%"
       bgcolor={color}
     ></Box>
-  ));
+  ))
   return (
     <Box display="flex" justifyContent="center">
       {titleLabel}
     </Box>
-  );
+  )
 }
 
 /**
  * 功耗标签
  * @param props
  */
-const EnergyLabel: React.FC<{ titleLength: number }> = (props) => {
+const EnergyLabel: React.FC<{ titleLength: number }> = () => {
   return (
     <Box
       position="absolute"
@@ -177,10 +177,10 @@ const EnergyLabel: React.FC<{ titleLength: number }> = (props) => {
       borderRadius={1}
       p={0.5}
       style={{
-        backgroundColor: "#4ea5f5",
+        backgroundColor: '#4ea5f5',
       }}
     >
-      {textLabel(6, "white", 4, 0.25)}
+      {textLabel(6, 'white', 4, 0.25)}
       <Box
         my={0.5}
         px={1}
@@ -199,11 +199,11 @@ const EnergyLabel: React.FC<{ titleLength: number }> = (props) => {
               borderRight: 2,
               borderBottom: 1.5,
               borderLeft: 0,
-              borderTopColor: "transparent",
-              borderRightColor: "green",
-              borderBottomColor: "transparent",
-              borderLeftColor: "transparent",
-              borderStyle: "solid",
+              borderTopColor: 'transparent',
+              borderRightColor: 'green',
+              borderBottomColor: 'transparent',
+              borderLeftColor: 'transparent',
+              borderStyle: 'solid',
             }}
           ></Box>
           <Box bgcolor="green" height={3} width="10%"></Box>
@@ -220,15 +220,15 @@ const EnergyLabel: React.FC<{ titleLength: number }> = (props) => {
         width="100%"
         bgcolor="background.paper"
       >
-        {textLabel(11, "black", 2, 0.1, 0.25)}
+        {textLabel(11, 'black', 2, 0.1, 0.25)}
         <Box my={0.1} borderTop={1} height={0} width="100%"></Box>
-        {textLabel(9, "black", 1.5, 0.1, 0.25)}
-        {textLabel(10, "black", 1.2, 0.1, 0)}
+        {textLabel(9, 'black', 1.5, 0.1, 0.25)}
+        {textLabel(10, 'black', 1.2, 0.1, 0)}
       </Box>
-      {textLabel(8, "white", 2, 0.1)}
+      {textLabel(8, 'white', 2, 0.1)}
     </Box>
-  );
-};
+  )
+}
 
 /**
  * 节能产品惠民工程
@@ -238,7 +238,7 @@ function EnergySavingLabel() {
     <a
       className="adsense-link"
       href="https://sponsors.yunyoujun.cn"
-      target="_blank"
+      target="_blank" rel="noreferrer"
     >
       <div className="energy-saving-label">
         <div className="energy-saving-label_bg">
@@ -265,7 +265,7 @@ function EnergySavingLabel() {
         </div>
       </div>
     </a>
-  );
+  )
 }
 
 /**
@@ -276,29 +276,29 @@ const WindEffect = React.forwardRef((props, ref) => {
   return (
     <Box {...props} ref={ref} mt={3} display="flex" justifyContent="center">
       <Box
-        style={{ transform: "rotate(10deg)" }}
+        style={{ transform: 'rotate(10deg)' }}
         bgcolor={acColor.wind}
         width={5}
         height={40}
       ></Box>
       <Box mx={10} bgcolor={acColor.wind} width={5} height={40}></Box>
       <Box
-        style={{ transform: "rotate(-10deg)" }}
+        style={{ transform: 'rotate(-10deg)' }}
         bgcolor={acColor.wind}
         width={5}
         height={40}
       ></Box>
     </Box>
-  );
-});
+  )
+})
 
 /**
  * 空调
  */
 export const AirConditioner: React.FC<{
-  mode: AcMode;
-  status: boolean;
-  temperature: number;
+  mode: AcMode
+  status: boolean
+  temperature: number
 }> = (props) => {
   return (
     <Box>
@@ -316,5 +316,5 @@ export const AirConditioner: React.FC<{
         <WindEffect />
       </Fade>
     </Box>
-  );
-};
+  )
+}

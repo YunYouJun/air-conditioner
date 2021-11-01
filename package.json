@@ -11,7 +11,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "lint": "eslint \"**/*.{tsx,ts,js}\"",
+    "lint:fix": "eslint \"**/*.{tsx,ts,js}\" --fix"
   },
   "browserslist": {
     "production": [
