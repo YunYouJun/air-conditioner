@@ -1,10 +1,9 @@
 import path from 'path'
 import { defineConfig } from 'vite'
-import reactRefresh from '@vitejs/plugin-react-refresh'
+import react from '@vitejs/plugin-react'
 
-import Icons from 'unplugin-icons/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import WindiCSS from 'vite-plugin-windicss'
+import Unocss from 'unocss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,15 +13,9 @@ export default defineConfig({
     },
   },
   plugins: [
-    reactRefresh(),
-    Icons({
-      autoInstall: true,
-      compiler: 'jsx',
-      jsx: 'react',
-    }),
+    react(),
 
-    // https://github.com/antfu/vite-plugin-windicss
-    WindiCSS(),
+    Unocss(),
 
     VitePWA({
       registerType: 'autoUpdate',

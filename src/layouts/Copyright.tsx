@@ -2,54 +2,46 @@ import React from 'react'
 import { IconButton, Tooltip } from '@mui/material'
 import * as pkg from '~/../package.json'
 
-import IconGithub from '~icons/mdi/github'
-import IconTelegram from '~icons/mdi/telegram'
-import IconSinaWeibo from '~icons/mdi/sina-weibo'
-import IconTwitter from '~icons/mdi/twitter'
-import IconWechat from '~icons/mdi/wechat'
-import IconEarth from '~icons/mdi/earth'
-import IconCloud from '~icons/mdi/cloud'
-
 const socialList = [
   {
     type: 'github',
     color: 'inherit',
-    icon: IconGithub,
+    icon: 'i-mdi-github',
     label: 'GitHub: YunYouJun',
     href: 'https://github.com/YunYouJun',
   },
   {
     type: 'telegram',
     color: '#1da1f2',
-    icon: IconTelegram,
+    icon: 'i-mdi-telegram',
     label: 'Telegram Channel',
     href: 'https://t.me/elpsycn',
   },
   {
     type: 'weibo',
     color: '#DB2828',
-    icon: IconSinaWeibo,
+    icon: 'i-mdi-sina-weibo',
     label: '微博：机智的云游君',
     href: 'http://weibo.com/jizhideyunyoujun',
   },
   {
     type: 'twitter',
     color: '#1da1f2',
-    icon: IconTwitter,
+    icon: 'i-mdi-twitter',
     label: 'Twitter: YunYouJun',
     href: 'https://twitter.com/YunYouJun',
   },
   {
     type: 'wechat',
     color: '#1AAD19',
-    icon: IconWechat,
+    icon: 'i-mdi-wechat',
     label: '微信公众号：云游君',
     href: 'https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/about/white-qrcode-and-search.jpg',
   },
   {
     type: 'blog',
     color: '#6435C9',
-    icon: IconEarth,
+    icon: 'i-mdi-earth',
     label: '博客：yunyoujun.cn',
     href: 'http://www.yunyoujun.cn',
   },
@@ -68,7 +60,7 @@ export const Copyright: React.FC = () => {
           href="https://sponsors.yunyoujun.cn"
           target="_blank"
         >
-          <IconCloud style={{ fontSize: '1rem' }} />
+          <span className="i-mdi-cloud" style={{ fontSize: '1rem' }} />
         </IconButton>
         &nbsp;
         <a href={pkg.author.url} target="_blank" rel="noreferrer">
@@ -86,7 +78,7 @@ export const Copyright: React.FC = () => {
               href={item.href}
               target="_blank"
             >
-              <item.icon />
+              <div className={item.icon} />
             </IconButton>
           </Tooltip>
         ))}

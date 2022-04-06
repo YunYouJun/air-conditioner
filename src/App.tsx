@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import './App.scss'
 
-import { Route, HashRouter as Router, Switch } from 'react-router-dom'
+import { Route, HashRouter as Router, Routes } from 'react-router-dom'
 import pkg from '../package.json'
 import { AppTheme } from './theme'
 
@@ -21,6 +21,7 @@ function consoleInfo(
   color = '#0078E7',
   emoji = '☁️',
 ) {
+  // eslint-disable-next-line no-console
   console.log(
     `%c ${emoji} ${name} %c ${link}`,
     `color: white; background: ${color}; padding:5px 0;`,
@@ -39,14 +40,10 @@ const App: React.FC = () => {
       <main className="text-gray-700 dark:text-gray-200 p-2">
         <div className="max-w-600px m-auto">
           <Router>
-            <Switch>
-              <Route path="/rc">
-                <Rc />
-              </Route>
-              <Route path="/">
-                <Home />
-              </Route>
-            </Switch>
+            <Routes>
+              <Route path="/rc" element={<Rc />} />
+              <Route path="/" element={<Home />} />
+            </Routes>
           </Router>
         </div>
       </main>
