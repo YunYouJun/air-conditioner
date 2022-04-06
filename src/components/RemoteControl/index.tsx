@@ -15,7 +15,7 @@ import {
   toggleMode,
   toggleStatus,
 } from '~/features/ac/acSlice'
-import { RootState } from '~/app/store'
+import type { RootState } from '~/app/store'
 import { getAssetsUrl } from '~/utils'
 
 import './index.scss'

@@ -1,12 +1,14 @@
 import React from 'react'
-import {
-  Alert as MuiAlert,
+import type {
   AlertColor,
   AlertProps,
+} from '@mui/material'
+import {
+  Alert as MuiAlert,
   Snackbar,
 } from '@mui/material'
 import { setOpen } from './toastSlice'
-import { RootState } from '~/app/store'
+import type { RootState } from '~/app/store'
 import { useAppDispatch, useAppSelector } from '~/app/hooks'
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>((

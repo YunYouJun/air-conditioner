@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import './App.scss'
 
-import { HashRouter as Router, Switch, Route } from 'react-router-dom'
+import { Route, HashRouter as Router, Switch } from 'react-router-dom'
 import pkg from '../package.json'
 import { AppTheme } from './theme'
 

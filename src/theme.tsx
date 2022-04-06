@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react'
+import type { PaletteMode } from '@mui/material'
 import {
-  useMediaQuery,
-  ThemeProvider as MuiThemeProvider,
-  PaletteMode,
   IconButton,
+  ThemeProvider as MuiThemeProvider,
+  useMediaQuery,
   useTheme,
 } from '@mui/material'
 import { createTheme } from '@mui/material/styles'

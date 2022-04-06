@@ -8,7 +8,7 @@ import { AirConditioner } from '~/features/ac/AirConditioner'
 import { Toast } from '~/features/toast/Toast'
 
 import { useAppSelector } from '~/app/hooks'
-import { RootState } from '~/app/store'
+import type { RootState } from '~/app/store'
 import { Copyright } from '~/layouts/Copyright'
 import { useDetectStorage } from '~/features/ac'
 

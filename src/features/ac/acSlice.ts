@@ -1,6 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import type { PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 import { setMessage, setOpen, setSeverity } from '../toast/toastSlice'
-import { AppThunk, RootState } from '~/app/store'
+import type { AppThunk, RootState } from '~/app/store'
 
 export type AcMode = 'cold' | 'hot'
 export interface AcState {

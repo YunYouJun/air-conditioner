@@ -1,6 +1,6 @@
 import React from 'react'
 import EmojiObjectsOutlinedIcon from '@mui/icons-material/EmojiObjectsOutlined'
-import { jumpToAdsense, adsenseLink } from '../features/adsense'
+import { adsenseLink, jumpToAdsense } from '../features/adsense'
 
 /**
  * 喜马拉雅链接

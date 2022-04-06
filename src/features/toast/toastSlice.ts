@@ -1,5 +1,6 @@
-import { AlertColor } from '@mui/material'
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import type { AlertColor } from '@mui/material'
+import type { PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 
 export interface ToastState {
   /**

@@ -1,4 +1,5 @@
-import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit'
+import type { Action, ThunkAction } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit'
 import acReducer from '../features/ac/acSlice'
 import toastReducer from '../features/toast/toastSlice'
 

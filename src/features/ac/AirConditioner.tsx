@@ -1,6 +1,7 @@
 import React from 'react'
-import { Box, Grid, Typography, Fade } from '@mui/material'
-import { AcMode, selectTemperature } from './acSlice'
+import { Box, Fade, Grid, Typography } from '@mui/material'
+import type { AcMode } from './acSlice'
+import { selectTemperature } from './acSlice'
 
 import * as pkg from '~/../package.json'
 
