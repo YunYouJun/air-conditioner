@@ -49,25 +49,25 @@ const socialList = [
 
 export const Copyright: React.FC = () => {
   return (
-    <div>
-      <p className="text-center text-xs">
+    <div className="opacity-80 text-xs text-center">
+      <div className="ac-text flex justify-center items-center m-2">
         {'© '}
         <a href={pkg.repository.url} target="_blank" rel="noreferrer">
           Yun Air Conditioner
         </a>
-        <IconButton
-          sx={{ color: '#0078e7' }}
+        <a
+          className="inline-flex"
           href="https://sponsors.yunyoujun.cn"
-          target="_blank"
+          target="_blank" rel="noreferrer"
+          style={{ color: '#0078e7' }}
         >
-          <span className="i-mdi-cloud" style={{ fontSize: '1rem' }} />
-        </IconButton>
-        &nbsp;
+          <div className="i-mdi-cloud text-sm mx-1" />
+        </a>
         <a href={pkg.author.url} target="_blank" rel="noreferrer">
           云游君 @{pkg.author.name}
         </a>
-      </p>
-      <p className="text-center text-xs">
+      </div>
+      <p>
         {`2019 - ${new Date().getFullYear()}`}
       </p>
       <div className="text-center">
@@ -78,7 +78,7 @@ export const Copyright: React.FC = () => {
               href={item.href}
               target="_blank"
             >
-              <div className={item.icon} />
+              <div className={`${item.icon} text-lg`} />
             </IconButton>
           </Tooltip>
         ))}

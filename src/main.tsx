@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 
 import '@unocss/reset/tailwind.css'
 // your custom styles here
+import './styles/css-vars.scss'
 import './styles/index.scss'
 
 import 'uno.css'

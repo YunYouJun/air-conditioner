@@ -1,6 +1,7 @@
 import React from 'react'
 import EmojiObjectsOutlinedIcon from '@mui/icons-material/EmojiObjectsOutlined'
 import { adsenseLink, jumpToAdsense } from '../features/adsense'
+import { useDark } from '~/hooks'
 
 /**
  * 喜马拉雅链接
@@ -23,6 +24,8 @@ const AdsenseLink: React.FC<{ text: string }> = (props) => {
 }
 
 export const ProTip: React.FC = () => {
+  const { toggleDark } = useDark()
+
   return (
     <p
       className="text-center"
@@ -33,7 +36,7 @@ export const ProTip: React.FC = () => {
         alignItems: 'center',
       }}
     >
-      <EmojiObjectsOutlinedIcon />
+      <EmojiObjectsOutlinedIcon className="cursor-pointer" onClick={toggleDark} />
       Tip: 为你的夏日带去
       {import.meta.env.VITE_DISABLE_ADSENSE
         ? (
