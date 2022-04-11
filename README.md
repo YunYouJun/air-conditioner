@@ -1,4 +1,8 @@
-# Air Conditioner
+<h1 align="center">
+Air Conditioner
+</h1>
+
+<p align="center">
 
 中文文档 | [English Docs](./README.en.md)
 
@@ -6,25 +10,28 @@
 
 云空调，便携小空调，为你的夏日带去清凉！
 
-前世今生：[云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
+</p>
 
-- 裸机：<https://ac.yunyoujun.cn>
+> 前世今生：[云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
+
+- 裸机：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
+- 测试机：[ac.yyj.moe](https://ac.yyj.moe)
 - 样板房：<https://www.yunyoujun.cn/air-conditioner-room/>
 
 ## Features
 
 ### 优势
 
-- 随时随地打开空调
-- 便携
-- 低功耗（使用 HTML CSS 而非 Canvas 绘制）
-- 静音
-- 操作简单
-- 安装便捷
+- 🕐 随时随地打开空调
+- 📱 便携
+- 🔋 低功耗（使用 HTML CSS 而非 Canvas 绘制）
+- 🔊 静音
+- 🎮 操作简单
+- 🔧 安装便捷
 
 ### 劣势
 
-- 没有风
+- 💨 没有风
 
 ## 安装
 
@@ -55,7 +62,7 @@
 
 使用 [腾讯云 Webify](https://webify.cloudbase.net/) 一键部署：
 
-[![](https://cloudbase.net/deploy.svg)](https://console.cloud.tencent.com/webify/new?tpl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner&reponame=my-air-conditioner)
+[![cloudbase](https://cloudbase.net/deploy.svg)](https://console.cloud.tencent.com/webify/new?tpl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner&reponame=my-air-conditioner)
 
 ## Dev
 
