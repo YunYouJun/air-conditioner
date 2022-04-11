@@ -3,12 +3,17 @@ Air Conditioner
 </h1>
 
 <p align="center">
-[中文文档](./README.md) | English Docs
+<a href="https://github.com/YunYouJun/air-conditioner/actions" target="_blank">
+<img src="https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg" alt="GitHub Pages" />
+</a>
+</p>
 
-[![Github Pages](https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg)](https://github.com/YunYouJun/air-conditioner/actions)
+<p align="center">
+<a href="./README.md">中文文档</a> | English Docs
+</p>
 
+<p align="center">
 Cloud air conditioner. Portable air conditioner. Invite a cool breeze into your summer life!
-
 </p>
 
 History: [云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)

@@ -3,13 +3,17 @@ Air Conditioner
 </h1>
 
 <p align="center">
+<a href="https://github.com/YunYouJun/air-conditioner/actions" target="_blank">
+<img src="https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg" alt="GitHub Pages" />
+</a>
+</p>
 
-中文文档 | [English Docs](./README.en.md)
+<p align="center">
+中文文档 | <a href="./README.en.md">English Docs</a>
+</p>
 
-[![Github Pages](https://github.com/YunYouJun/air-conditioner/workflows/Github%20Pages/badge.svg)](https://github.com/YunYouJun/air-conditioner/actions)
-
+<p align="center">
 云空调，便携小空调，为你的夏日带去清凉！
-
 </p>
 
 > 前世今生：[云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
