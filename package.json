@@ -62,8 +62,9 @@
     "eslint": "^8.13.0",
     "typescript": "^4.6.3",
     "unocss": "^0.31.0",
-    "usehooks-ts": "^2.4.2",
+    "usehooks-ts": "^2.5.0",
     "vite": "^2.9.1",
+    "vite-plugin-pages": "^0.22.0",
     "vite-plugin-pwa": "^0.11.13"
   }
 }

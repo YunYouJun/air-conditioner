@@ -5,7 +5,6 @@ import '@unocss/reset/tailwind.css'
 // your custom styles here
 import './styles/css-vars.scss'
 import './styles/index.scss'
-
 import 'uno.css'
 
 import { Provider } from 'react-redux'

@@ -109,3 +109,11 @@ VITE_DISABLE_ADSENSE=true
 
 - 数字字体: [Digital 7](https://www.dafont.com/digital-7.font)，Free for personal use
 - 空调工作声: [Air Extractor Fan | freesound](https://freesound.org/people/InspectorJ/sounds/403664/)
+
+## [Sponsors](https://sponsors.yunyoujun.cn)
+
+<p align="center">
+  <a href="https://cdn.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg">
+    <img src='https://cdn.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg'/>
+  </a>
+</p>

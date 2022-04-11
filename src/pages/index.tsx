@@ -9,7 +9,7 @@ import { Toast } from '~/features/toast/Toast'
 
 import { useAppSelector } from '~/app/hooks'
 import type { RootState } from '~/app/store'
-import { Copyright } from '~/layouts/Copyright'
+import { Copyright } from '~/components/layouts/Copyright'
 import { useDetectStorage } from '~/features/ac'
 
 /**
@@ -49,7 +49,7 @@ const Home: React.FC = () => {
             <Button
               variant="outlined"
               onClick={() => {
-                window.open('/#/rc', '_blank', 'width=300, height=400')
+                window.open('/rc', '_blank', 'width=300, height=400')
               }}
             >
               独立遥控器
@@ -57,7 +57,6 @@ const Home: React.FC = () => {
           </div>
         </div>
         <RemoteControl />
-        <Copyright />
       </div>
 
       <Toast />

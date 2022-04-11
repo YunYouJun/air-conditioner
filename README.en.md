@@ -107,3 +107,11 @@ VITE_DISABLE_ADSENSE=true
 
 - Numbers font: [Digital 7](https://www.dafont.com/digital-7.font)，Free for personal use
 - Working sounds of the AC: [Air Extractor Fan | freesound](https://freesound.org/people/InspectorJ/sounds/403664/)
+
+## [Sponsors](https://sponsors.yunyoujun.cn)
+
+<p align="center">
+  <a href="https://cdn.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg">
+    <img src='https://cdn.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg'/>
+  </a>
+</p>
