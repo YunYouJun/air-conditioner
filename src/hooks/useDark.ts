@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { useDarkMode } from 'usehooks-ts'
 
-export const useDark = () => {
+// https://stackoverflow.com/questions/70996320/enable-hot-reload-for-vite-react-project-instead-of-page-reload
+// avoid reload page
+export default function useDark() {
   const { isDarkMode: isDark, toggle: toggleDark } = useDarkMode()
 
   useEffect(() => {

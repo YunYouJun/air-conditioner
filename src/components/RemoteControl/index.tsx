@@ -7,7 +7,7 @@ import AcUnitIcon from '@mui/icons-material/AcUnit'
 import WbSunnyIcon from '@mui/icons-material/WbSunny'
 
 import { blue, green, red } from '@mui/material/colors'
-import { RCButton } from './RCButton'
+import RCButton from './RCButton'
 import { useAppDispatch, useAppSelector } from '~/app/hooks'
 import {
   decreaseTemperature,
@@ -97,7 +97,7 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
  * 遥控
  * @param {*} props
  */
-export const RemoteControl: React.FC = () => {
+const RemoteControl: React.FC = () => {
   const ac = useAppSelector((state: RootState) => state.ac)
   const dispatch = useAppDispatch()
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { createRoot } from 'react-dom/client'
+import ReactDOM from 'react-dom'
 
 import '@unocss/reset/tailwind.css'
 // your custom styles here
@@ -18,14 +18,13 @@ const tagManagerArgs = {
 }
 TagManager.initialize(tagManagerArgs)
 
-const container = document.getElementById('root')!
-const root = createRoot(container)
-root.render(
+ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
       <App />
     </Provider>
   </React.StrictMode>,
+  document.getElementById('root'),
 )
 
 // If you want to start measuring performance in your app, pass a function

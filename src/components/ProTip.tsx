@@ -1,14 +1,14 @@
-import React from 'react'
+import type { FC } from 'react'
 import EmojiObjectsOutlinedIcon from '@mui/icons-material/EmojiObjectsOutlined'
-import { adsenseLink, jumpToAdsense } from '../features/adsense'
-import { useDark } from '~/hooks'
+import { adsenseLink, jumpToAdsense } from '~/features/adsense'
+import useDark from '~/hooks/useDark'
 
 /**
  * 喜马拉雅链接
  * @param props
  * @returns
  */
-const AdsenseLink: React.FC<{ text: string }> = (props) => {
+const AdsenseLink: FC<{ text: string }> = (props) => {
   return (
     <a
       className="adsense-text-link"
@@ -23,7 +23,7 @@ const AdsenseLink: React.FC<{ text: string }> = (props) => {
   )
 }
 
-export const ProTip: React.FC = () => {
+const ProTip: FC = () => {
   const { toggleDark } = useDark()
 
   return (
@@ -36,7 +36,7 @@ export const ProTip: React.FC = () => {
         alignItems: 'center',
       }}
     >
-      <EmojiObjectsOutlinedIcon className="cursor-pointer" onClick={toggleDark} />
+      <EmojiObjectsOutlinedIcon className="cursor-pointer" style={{ color: '#f3a83b' }} onClick={toggleDark} />
       Tip: 为你的夏日带去
       {import.meta.env.VITE_DISABLE_ADSENSE
         ? (
@@ -49,3 +49,5 @@ export const ProTip: React.FC = () => {
     </p>
   )
 }
+
+export default ProTip

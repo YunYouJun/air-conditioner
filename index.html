@@ -17,7 +17,7 @@
   <script>
     (function () {
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-      const setting = localStorage.getItem('usehooks-ts-dark-mode') || 'auto'
+      const setting = (localStorage.getItem('usehooks-ts-dark-mode') === 'true' ? 'dark' : 'light') || 'auto'
       if (setting === 'dark' || (prefersDark && setting !== 'light'))
         document.documentElement.classList.toggle('dark', true)
     })()

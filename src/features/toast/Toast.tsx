@@ -18,7 +18,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>((
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />
 })
 
-export const Toast: React.FC<{ severity?: AlertColor }> = (props) => {
+const Toast: React.FC<{ severity?: AlertColor }> = (props) => {
   const toast = useAppSelector((state: RootState) => state.toast)
   const dispatch = useAppDispatch()
 

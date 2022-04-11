@@ -14,7 +14,7 @@ function playDi() {
  * 遥控器按钮
  * @param props
  */
-export const RCButton: React.FC<{
+const RCButton: React.FC<{
   onClick?: () => void
   style?: React.CSSProperties
 }> = (props) => {
@@ -29,3 +29,5 @@ export const RCButton: React.FC<{
     ></Fab>
   )
 }
+
+export default RCButton

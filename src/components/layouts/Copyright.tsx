@@ -47,7 +47,7 @@ const socialList = [
   },
 ]
 
-export const Copyright: React.FC = () => {
+const Copyright: React.FC = () => {
   return (
     <div className="opacity-80 text-xs text-center">
       <div className="ac-text flex justify-center items-center m-2">

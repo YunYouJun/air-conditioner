@@ -296,7 +296,7 @@ const WindEffect = React.forwardRef((props, ref) => {
 /**
  * 空调
  */
-export const AirConditioner: React.FC<{
+const AirConditioner: React.FC<{
   mode: AcMode
   status: boolean
   temperature: number
@@ -319,3 +319,5 @@ export const AirConditioner: React.FC<{
     </Box>
   )
 }
+
+export default AirConditioner
