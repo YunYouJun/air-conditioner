@@ -15,8 +15,9 @@ Air Conditioner
 <p align="center">
 Cloud air conditioner. Portable air conditioner. Invite a cool breeze into your summer life!
 </p>
+<br>
 
-History: [云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
+> History: [云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
 
 - Machine Only：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
 - Test Machine：[ac.yyj.moe](https://ac.yyj.moe)
