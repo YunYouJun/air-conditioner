@@ -7,11 +7,11 @@ import './styles/css-vars.scss'
 import './styles/index.scss'
 import 'uno.css'
 
-import { Provider } from 'react-redux'
 import TagManager from 'react-gtm-module'
 import App from './App'
-import { store } from './app/store'
 import reportWebVitals from './reportWebVitals'
+import { AcProvider, ComposeContext } from './context'
+import { ToastProvider } from './context/toast'
 
 const tagManagerArgs = {
   gtmId: 'GTM-NFMC9GL',
@@ -20,9 +20,9 @@ TagManager.initialize(tagManagerArgs)
 
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={store}>
+    <ComposeContext items={[AcProvider, ToastProvider]}>
       <App />
-    </Provider>
+    </ComposeContext>
   </React.StrictMode>,
   document.getElementById('root'),
 )

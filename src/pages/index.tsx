@@ -4,19 +4,18 @@ import Button from '@mui/material/Button'
 import ProTip from '~/components/ProTip'
 import RemoteControl from '~/components/RemoteControl'
 
-import AirConditioner from '~/features/ac/AirConditioner'
-import Toast from '~/features/toast/Toast'
+import AirConditioner from '~/components/ac/AirConditioner'
+import Toast from '~/components/Toast'
 
-import { useAppSelector } from '~/app/hooks'
-import type { RootState } from '~/app/store'
-import { useDetectStorage } from '~/features/ac'
+import { useDetectStorage } from '~/hooks'
+import { useAcCtx } from '~/context'
 
 /**
  * 主页
  * @returns
  */
 const Home: React.FC = () => {
-  const ac = useAppSelector((state: RootState) => state.ac)
+  const { state: ac } = useAcCtx()
 
   useDetectStorage()
 

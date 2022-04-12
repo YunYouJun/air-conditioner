@@ -1,1 +1,2 @@
-// export { default as useDark } from './useDark'
+export { default as useDark } from './useDark'
+export * from './useDetectStorage'

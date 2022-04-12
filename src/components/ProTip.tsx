@@ -1,6 +1,5 @@
 import type { FC } from 'react'
-import EmojiObjectsOutlinedIcon from '@mui/icons-material/EmojiObjectsOutlined'
-import { adsenseLink, jumpToAdsense } from '~/features/adsense'
+import { adsenseLink, jumpToAdsense } from '~/utils/adsense'
 import useDark from '~/hooks/useDark'
 
 /**
@@ -36,7 +35,7 @@ const ProTip: FC = () => {
         alignItems: 'center',
       }}
     >
-      <EmojiObjectsOutlinedIcon className="cursor-pointer" style={{ color: '#f3a83b' }} onClick={toggleDark} />
+      <div className="i-ic:outline-emoji-objects text-xl cursor-pointer" style={{ color: '#f3a83b' }} onClick={toggleDark}></div>
       Tip: 为你的夏日带去
       {import.meta.env.VITE_DISABLE_ADSENSE
         ? (

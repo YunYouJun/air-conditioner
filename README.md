@@ -19,8 +19,8 @@ Air Conditioner
 
 > 前世今生：[云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
 
-- 裸机：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
-- 测试机：[ac.yyj.moe](https://ac.yyj.moe)
+- 裸机[master]：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
+- 测试机[dev]：[ac.yyj.moe](https://ac.yyj.moe)
 - 样板房：<https://www.yunyoujun.cn/air-conditioner-room/>
 
 ## Features

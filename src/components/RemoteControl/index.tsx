@@ -1,24 +1,13 @@
 import React from 'react'
 import { Box } from '@mui/material'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew'
-import AcUnitIcon from '@mui/icons-material/AcUnit'
-import WbSunnyIcon from '@mui/icons-material/WbSunny'
 
 import { blue, green, red } from '@mui/material/colors'
 import RCButton from './RCButton'
-import { useAppDispatch, useAppSelector } from '~/app/hooks'
-import {
-  decreaseTemperature,
-  increaseTemperature,
-  toggleMode,
-  toggleStatus,
-} from '~/features/ac/acSlice'
-import type { RootState } from '~/app/store'
+import { useAcTemperature } from './temperature'
 import { getAssetsUrl } from '~/utils'
 
 import './index.scss'
+import { useAc, useAcCtx } from '~/context'
 
 let playStartSoundTimeoutId: any
 let playWorkSoundTimeoutId: any
@@ -63,7 +52,7 @@ function playWorkSound() {
  * 切换空调工作状态
  * @param {*} props
  */
-function toggleAC(status: boolean, dispatch: any) {
+function toggleAC(status: boolean) {
   if (status) {
     (document.getElementById('ac-work') as HTMLAudioElement).load()
     const acWork = document.getElementById(
@@ -83,8 +72,6 @@ function toggleAC(status: boolean, dispatch: any) {
   else {
     playStartSound()
   }
-
-  dispatch(toggleStatus())
 }
 
 const SOUND_DI_PATH = getAssetsUrl('/assets/audio/di.m4a')
@@ -98,8 +85,10 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
  * @param {*} props
  */
 const RemoteControl: React.FC = () => {
-  const ac = useAppSelector((state: RootState) => state.ac)
-  const dispatch = useAppDispatch()
+  const { toggleStatus, toggleMode } = useAc()
+  const { state: ac } = useAcCtx()
+
+  const { increase, decrease } = useAcTemperature()
 
   return (
     <Box my={4} display="flex" flexDirection="column" alignItems="center">
@@ -119,48 +108,45 @@ const RemoteControl: React.FC = () => {
             backgroundColor: blue[700],
           }}
           onClick={() => {
-            dispatch(toggleMode('cold'))
+            toggleMode('cold')
           }}
         >
-          <AcUnitIcon />
+          <div className="i-ic-round-ac-unit text-2xl" />
         </RCButton>
         <RCButton
           aria-label="add"
           onClick={() => {
-            toggleAC(ac.status, dispatch)
+            toggleAC(ac.status)
+            toggleStatus()
           }}
           style={{
             backgroundColor: ac.status ? red[600] : green[600],
             color: 'white',
           }}
         >
-          <PowerSettingsNewIcon />
+          <div className="i-ic:round-power-settings-new text-2xl" />
         </RCButton>
         <RCButton
           aria-label="hot"
           style={{ backgroundColor: 'orange', color: 'white' }}
           onClick={() => {
-            dispatch(toggleMode('hot'))
+            toggleMode('hot')
           }}
         >
-          <WbSunnyIcon />
+          <div className="i-ic-round-wb-sunny text-2xl" />
         </RCButton>
       </div>
       <RCButton
         aria-label="add"
-        onClick={() => {
-          dispatch(increaseTemperature())
-        }}
+        onClick={increase}
       >
-        <ExpandLessIcon />
+        <div className="i-mdi-triangle-small-up text-4xl" />
       </RCButton>
       <RCButton
         aria-label="reduce"
-        onClick={() => {
-          dispatch(decreaseTemperature())
-        }}
+        onClick={decrease}
       >
-        <ExpandMoreIcon />
+        <div className="i-mdi-triangle-small-down text-4xl" />
       </RCButton>
     </Box>
   )

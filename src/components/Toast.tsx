@@ -7,9 +7,7 @@ import {
   Alert as MuiAlert,
   Snackbar,
 } from '@mui/material'
-import { setOpen } from './toastSlice'
-import type { RootState } from '~/app/store'
-import { useAppDispatch, useAppSelector } from '~/app/hooks'
+import { useToastCtx } from '~/context/toast'
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>((
   props,
@@ -19,15 +17,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>((
 })
 
 const Toast: React.FC<{ severity?: AlertColor }> = (props) => {
-  const toast = useAppSelector((state: RootState) => state.toast)
-  const dispatch = useAppDispatch()
-
-  const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
-    if (reason === 'clickaway')
-      return
-
-    dispatch(setOpen(false))
-  }
+  const { state, dispatch } = useToastCtx()
 
   return (
     <Snackbar
@@ -35,16 +25,20 @@ const Toast: React.FC<{ severity?: AlertColor }> = (props) => {
         vertical: 'bottom',
         horizontal: 'center',
       }}
-      open={toast.open}
+      open={state.open}
       autoHideDuration={6000}
-      onClose={handleClose}
+      onClose={() => {
+        dispatch({ type: 'open', open: false })
+      }}
     >
       <Alert
-        onClose={handleClose}
-        severity={props.severity || toast.severity || 'error'}
+        onClose={() => {
+          dispatch({ type: 'open', open: false })
+        }}
+        severity={props.severity || state.severity || 'error'}
         style={{ width: '100%', minWidth: 318 }}
       >
-        {toast.message}
+        {state.message}
       </Alert>
     </Snackbar>
   )

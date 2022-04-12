@@ -1,10 +1,4 @@
-html,
-body,
-div,
-img,
-a {
-  box-sizing: border-box;
-}
+@use './helper.scss';
 
 body {
   margin: 0;
@@ -22,12 +16,4 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
-}
-
-.font-digit {
-  font-family: "Digital-7 Mono";
-}
-
-.ac-text {
-  color: var(--ac-text-color);
 }
