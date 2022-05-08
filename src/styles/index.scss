@@ -5,6 +5,8 @@ body {
   min-height: 90vh;
   background-color: var(--ac-bg-color);
   color: var(--ac-text-color);
+  
+  transition: background-color 0.2s;
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",

@@ -26,26 +26,20 @@ const ProTip: FC = () => {
   const { toggleDark } = useDark()
 
   return (
-    <p
-      className="text-center"
-      style={{
-        margin: 24,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
+    <div
+      className="m-6 text-center flex justify-center items-center"
     >
       <div className="i-ic:outline-emoji-objects text-xl cursor-pointer" style={{ color: '#f3a83b' }} onClick={toggleDark}></div>
       Tip: 为你的夏日带去
       {import.meta.env.VITE_DISABLE_ADSENSE
         ? (
-          '清凉'
-        )
+            '清凉'
+          )
         : (
           <AdsenseLink text="清凉" />
-        )}
+          )}
       ！
-    </p>
+    </div>
   )
 }
 

@@ -1,4 +1,4 @@
-import { Box, Grid } from '@mui/material'
+import { Grid } from '@mui/material'
 
 /**
  * 文本标签（黑色小点点）
@@ -8,65 +8,65 @@ import { Box, Grid } from '@mui/material'
  * @param mx
  * @param my
  */
-function textLabel(
-  num: number,
-  color: string,
-  size: number,
-  mx: number,
-  my = 0,
-) {
+const TextLabel: React.FC<{
+  num: number
+  color: string
+  size: number
+  mx: number
+  my: number
+}> = (props) => {
+  // eslint-disable-next-line react/prop-types
+  const { color, size, mx, my, num } = props
   const titleLength = [...new Array(num).keys()]
   const titleLabel = titleLength.map(n => (
-    <Box
+    <span
+      className="text-dot rounded-full"
       key={n}
-      mx={mx}
-      my={my}
-      width={size}
-      height={size}
-      borderRadius="50%"
-      bgcolor={color}
-    ></Box>
+      style={{
+        width: size,
+        height: size,
+        margin: `${my || 0}px ${mx}px`,
+      }}
+    ></span>
   ))
   return (
-    <Box display="flex" justifyContent="center">
+    <div className="flex justify-center" style={{
+      '--ac-c-text-dot': color,
+    } as any}>
       {titleLabel}
-    </Box>
+    </div>
   )
 }
 
 /**
  * 功耗标签
- * @param props
  */
 export const EnergyLabel: React.FC<{ titleLength: number }> = () => {
   return (
-    <Box
-      position="absolute"
-      top={10}
-      left={10}
-      height={70}
-      width={50}
-      borderRadius={1}
-      p={0.5}
+    <div
+      className="absolute p-1"
       style={{
         backgroundColor: '#4ea5f5',
+        borderRadius: 2,
+        top: 10,
+        left: 10,
+        height: 70,
+        width: 50,
       }}
     >
-      {textLabel(6, 'white', 4, 0.25)}
-      <Box
-        my={0.5}
-        px={1}
-        py={0.25}
-        height={28}
-        width="100%"
-        bgcolor="background.paper"
+      <TextLabel num={6} size={4} mx={2} my={0} color="white" />
+      <div
+        className="my-1 h-7 w-full bg-white"
+        style={{
+          padding: '2px 8px',
+        }}
       >
         <Grid container>
-          <Box bgcolor="green" height={3} width="40%"></Box>
-          <Box
-            height={3}
-            marginLeft="40%"
+          <div style={{ backgroundColor: 'green', width: '40%' }}></div>
+          <div
             style={{
+              marginLeft: '40%',
+              height: 3,
               borderTop: 1.5,
               borderRight: 2,
               borderBottom: 1.5,
@@ -77,28 +77,28 @@ export const EnergyLabel: React.FC<{ titleLength: number }> = () => {
               borderLeftColor: 'transparent',
               borderStyle: 'solid',
             }}
-          ></Box>
-          <Box bgcolor="green" height={3} width="10%"></Box>
+          ></div>
+          <div style={{ backgroundColor: 'green', width: '10%' }} ></div>
         </Grid>
-        <Box mt={0.25} bgcolor="lightGreen" height={3} width="50%"></Box>
-        <Box mt={0.25} bgcolor="#ffc107" height={3} width="60%"></Box>
-        <Box mt={0.25} bgcolor="orange" height={3} width="70%"></Box>
-        <Box mt={0.25} bgcolor="red" height={3} width="80%"></Box>
-      </Box>
-      <Box
-        mb={0.25}
-        pt={0.1}
-        height={20}
-        width="100%"
-        bgcolor="background.paper"
+        <div className="energy-label-level" style={{ backgroundColor: 'lightgreen', width: '50%' }} ></div>
+        <div className="energy-label-level" style={{ backgroundColor: '#ffc107', width: '60%' }} ></div>
+        <div className="energy-label-level" style={{ backgroundColor: 'orange', width: '70%' }} ></div>
+        <div className="energy-label-level" style={{ backgroundColor: 'red', width: '80%' }} ></div>
+      </div>
+      <div
+        className="w-full h-5 bg-white"
+        style={{
+          marginBottom: 2,
+          paddingTop: 0.8,
+        }}
       >
-        {textLabel(11, 'black', 2, 0.1, 0.25)}
-        <Box my={0.1} borderTop={1} height={0} width="100%"></Box>
-        {textLabel(9, 'black', 1.5, 0.1, 0.25)}
-        {textLabel(10, 'black', 1.2, 0.1, 0)}
-      </Box>
-      {textLabel(8, 'white', 2, 0.1)}
-    </Box>
+        <TextLabel num={11} size={2} mx={0.8} my={2} color="black" />
+        <div className="w-full h-0" style={{ borderTop: '1px solid', margin: '0.8px 0' }}></div>
+        <TextLabel num={9} size={1.5} mx={0.8} my={2} color="black" />
+        <TextLabel num={10} size={1.2} mx={0.8} my={0} color="black" />
+      </div>
+      <TextLabel num={8} size={2} mx={0.8} my={0} color="white" />
+    </div>
   )
 }
 

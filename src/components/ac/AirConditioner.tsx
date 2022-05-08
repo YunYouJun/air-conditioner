@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import React from 'react'
-import { Box, Fade, Typography } from '@mui/material'
+import { Fade } from '@mui/material'
 import { EnergyLabel, EnergySavingLabel } from './EnergyLabel'
 import type { AcMode } from '~/types'
 
@@ -19,21 +19,16 @@ const acColor = {
 
 const AcBorder: React.FC = (props) => {
   return (
-    <Box
-      bgcolor="background.paper"
-      height={150}
-      border={1}
-      borderColor={acColor.border}
-      borderRadius={10}
-      boxShadow={3}
-      position="relative"
+    <div
+      className="bg-white h-38 shadow relative"
       style={{
+        border: `1px solid ${acColor.border}`,
         borderRadius: 10,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
       }}
       {...props}
-    ></Box>
+    ></div>
   )
 }
 
@@ -44,10 +39,10 @@ const AcBorder: React.FC = (props) => {
 const AcTemperature: FC = () => {
   const { state } = useAcCtx()
   return (
-    <Typography variant="h4" align="center">
+    <h4 className="text-4xl text-center">
       <span className="font-digit ac-temperature">{state.temperature}</span>
       <small className="font-digit">°C</small>
-    </Typography>
+    </h4>
   )
 }
 
@@ -57,19 +52,18 @@ const AcTemperature: FC = () => {
  */
 const AcDisplay = React.forwardRef((props: { mode: AcMode }, ref) => {
   return (
-    <Box
-      {...props}
-      ref={ref}
-      position="absolute"
-      top={25}
-      right={30}
-      color={acColor.display}
+    <div
+      className="absolute top-6 right-8"
+      ref={ref as React.RefObject<HTMLDivElement>}
+      style={{
+        color: acColor.display,
+      }}
     >
-      <Typography align="left" variant="subtitle2">
+      <h6 className="text-left text-sm">
         <span>{props.mode === 'cold' ? '❄' : '☀️'}</span>️️
-      </Typography>
+      </h6>
       <AcTemperature />
-    </Box>
+    </div>
   )
 })
 
@@ -104,7 +98,7 @@ const AcLogo: React.FC = () => {
  * @returns
  */
 const AirOutlet: React.FC = () => {
-  return <Box mt={1} border={1} borderColor={acColor.border}></Box>
+  return <div className="mt-1" style={{ border: `1px solid ${acColor.border}` }}></div>
 }
 
 /**
@@ -116,17 +110,12 @@ const AcStatus: React.FC<{ status: boolean }> = (props) => {
   const led = { backgroundColor: props.status ? '#38F709' : acColor.border }
 
   return (
-    <Box
+    <div
+      className="absolute h-1 w-1 rounded-full top-32 right-2"
       style={{
         backgroundColor: led.backgroundColor || 'transparent',
       }}
-      position="absolute"
-      height={4}
-      width={4}
-      borderRadius="50%"
-      top={130}
-      right={10}
-    ></Box>
+    ></div>
   )
 }
 
@@ -136,21 +125,17 @@ const AcStatus: React.FC<{ status: boolean }> = (props) => {
  */
 const WindEffect = React.forwardRef((props, ref) => {
   return (
-    <Box {...props} ref={ref} mt={3} display="flex" justifyContent="center">
-      <Box
-        style={{ transform: 'rotate(10deg)' }}
-        bgcolor={acColor.wind}
-        width={5}
-        height={40}
-      ></Box>
-      <Box mx={10} bgcolor={acColor.wind} width={5} height={40}></Box>
-      <Box
-        style={{ transform: 'rotate(-10deg)' }}
-        bgcolor={acColor.wind}
-        width={5}
-        height={40}
-      ></Box>
-    </Box>
+    <div ref={ref as React.RefObject<HTMLDivElement>} className="wind-effect flex justify-center my-5">
+      <div
+        className="wind-line h-10 w-1"
+        style={{ backgroundColor: acColor.wind, transform: 'rotate(10deg)' }}
+      ></div>
+      <div className="wind-line h-10 w-1 mx-20" style={{ backgroundColor: acColor.wind }}></div>
+      <div
+        className="wind-line h-10 w-1"
+        style={{ backgroundColor: acColor.wind, transform: 'rotate(-10deg)' }}
+      ></div>
+    </div>
   )
 })
 
@@ -163,7 +148,7 @@ const AirConditioner: React.FC<{
   temperature: number
 }> = (props) => {
   return (
-    <Box>
+    <div>
       <AcBorder>
         <Fade in={props.status}>
           <AcDisplay mode={props.mode} />
@@ -177,7 +162,7 @@ const AirConditioner: React.FC<{
       <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>
         <WindEffect />
       </Fade>
-    </Box>
+    </div>
   )
 }
 

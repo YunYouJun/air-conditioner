@@ -2,6 +2,23 @@
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
+.wind-effect {
+  opacity: 0.3;
+}
+
+:root {
+  --ac-c-text-dot: black;
+}
+
+.text-dot {
+  background-color: var(--ac-c-text-dot);
+}
+
+.energy-label-level {
+  margin-top: 2px;
+  height: 3px;
+}
+
 .energy-saving-label {
   color: black;
   opacity: 0.8;

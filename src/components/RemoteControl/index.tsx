@@ -91,7 +91,7 @@ const RemoteControl: React.FC = () => {
   const { increase, decrease } = useAcTemperature()
 
   return (
-    <Box my={4} display="flex" flexDirection="column" alignItems="center">
+    <div className="flex my-6 flex-col items-center">
       <audio id="di" src={SOUND_DI_PATH} preload="auto"></audio>
       <audio id="ac-work" src={SOUND_AC_WORK_PATH} preload="auto"></audio>
       <audio
@@ -148,7 +148,7 @@ const RemoteControl: React.FC = () => {
       >
         <div className="i-mdi-triangle-small-down text-4xl" />
       </RCButton>
-    </Box>
+    </div>
   )
 }
 
