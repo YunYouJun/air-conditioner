@@ -19,7 +19,7 @@ Cloud air conditioner. Portable air conditioner. Invite a cool breeze into your 
 
 > History: [云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
 
-- Machine Only[master]：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
+- Machine Only[main]：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
 - Test Machine[dev]：[ac.yyj.moe](https://ac.yyj.moe)
 - Sample Room：<https://www.yunyoujun.cn/air-conditioner-room/>
 
@@ -67,7 +67,7 @@ You can use the following environment variables to customize the configuration.
 
 Developed and deployed based on Tencent's open source project [CloudBase Framework](https://github.com/Tencent/cloudbase-framework). One-click deploying is supported.
 
-[![腾讯云｜Deploy to CloudBase](https://main.qcloudimg.com/raw/67f5a389f1ac6f3b4d04c7256438e44f.svg)](https://console.cloud.tencent.com/tcb/env/index?action=CreateAndDeployCloudBaseProject&appUrl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner%2F&branch=master)
+[![腾讯云｜Deploy to CloudBase](https://main.qcloudimg.com/raw/67f5a389f1ac6f3b4d04c7256438e44f.svg)](https://console.cloud.tencent.com/tcb/env/index?action=CreateAndDeployCloudBaseProject&appUrl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner%2F&branch=main)
 
 ## Dev
 
