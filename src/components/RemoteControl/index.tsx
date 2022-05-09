@@ -1,5 +1,4 @@
 import React from 'react'
-import { Box } from '@mui/material'
 
 import { blue, green, red } from '@mui/material/colors'
 import RCButton from './RCButton'

@@ -1,5 +1,5 @@
 import React from 'react'
-import Button from '@mui/material/Button'
+import { Button } from '@mui/material'
 
 import ProTip from '~/components/ProTip'
 import RemoteControl from '~/components/RemoteControl'

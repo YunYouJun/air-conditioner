@@ -1,5 +1,3 @@
-import { Grid } from '@mui/material'
-
 /**
  * 文本标签（黑色小点点）
  * @param num
@@ -61,7 +59,7 @@ export const EnergyLabel: React.FC<{ titleLength: number }> = () => {
           padding: '2px 8px',
         }}
       >
-        <Grid container>
+        <div className="flex">
           <div style={{ backgroundColor: 'green', width: '40%' }}></div>
           <div
             style={{
@@ -79,7 +77,7 @@ export const EnergyLabel: React.FC<{ titleLength: number }> = () => {
             }}
           ></div>
           <div style={{ backgroundColor: 'green', width: '10%' }} ></div>
-        </Grid>
+        </div>
         <div className="energy-label-level" style={{ backgroundColor: 'lightgreen', width: '50%' }} ></div>
         <div className="energy-label-level" style={{ backgroundColor: '#ffc107', width: '60%' }} ></div>
         <div className="energy-label-level" style={{ backgroundColor: 'orange', width: '70%' }} ></div>

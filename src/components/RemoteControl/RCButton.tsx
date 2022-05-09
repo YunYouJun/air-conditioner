@@ -16,11 +16,12 @@ function playDi() {
  */
 const RCButton: React.FC<{
   onClick?: () => void
+  className?: string
   style?: React.CSSProperties
 }> = (props) => {
   return (
     <Fab
-      className="rc-button"
+      className={`rc-button ${props.className}`}
       {...props}
       onClick={() => {
         playDi()
