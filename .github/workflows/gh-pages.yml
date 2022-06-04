@@ -5,15 +5,16 @@ on:
     branches:
       - main # Set a branch name to trigger deployment
 
+  pull_request:
+    branches:
+      - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        
       - uses: pnpm/action-setup@v2
-        with:
-          version: 7
 
       - name: Set node version to ${{ matrix.node_version }}
         uses: actions/setup-node@v3
