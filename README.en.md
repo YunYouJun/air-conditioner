@@ -111,7 +111,7 @@ VITE_DISABLE_ADSENSE=true
 ## [Sponsors](https://sponsors.yunyoujun.cn)
 
 <p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg'/>
+  <a href="https://sponsors.yunyoujun.cn">
+    <img src='https://fastly.jsdelivr.net/gh/YunYouJun/sponsors/public/sponsors.svg'/>
   </a>
 </p>

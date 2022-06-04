@@ -36,7 +36,7 @@ const socialList = [
     color: '#1AAD19',
     icon: 'i-mdi-wechat',
     label: '微信公众号：云游君',
-    href: 'https://cdn.jsdelivr.net/gh/YunYouJun/cdn/img/about/white-qrcode-and-search.jpg',
+    href: 'https://cdn.yunyoujun.cn/img/about/white-qrcode-and-search.jpg',
   },
   {
     type: 'blog',
