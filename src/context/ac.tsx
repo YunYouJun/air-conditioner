@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, PropsWithChildren } from 'react'
 import { createContext, useContext, useReducer } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { useToastCtx } from './toast'
@@ -29,7 +29,7 @@ const AcContext = createContext<{
 } | undefined>(undefined)
 // AcContext.displayName = 'AC'
 
-export const AcProvider: FC = (props) => {
+export const AcProvider: FC<PropsWithChildren> = (props) => {
   const [initState, setAcState] = useLocalStorage<AcState>(acStorageKey, defaultState)
 
   function acReducer(state: AcState, action: AcAction) {

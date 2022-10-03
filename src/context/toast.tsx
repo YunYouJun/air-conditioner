@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, PropsWithChildren } from 'react'
 import { createContext, useContext, useReducer } from 'react'
 
 import type { AlertColor } from '@mui/material'
@@ -59,7 +59,7 @@ export const toastReducer = (state: ToastState, action: ToastAction) => {
   }
 }
 
-export const ToastProvider: FC = ({ children }) => {
+export const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(toastReducer, initialState)
 
   return (

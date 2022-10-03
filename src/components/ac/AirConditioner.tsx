@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import React from 'react'
 import { Fade } from '@mui/material'
 import { EnergyLabel, EnergySavingLabel } from './EnergyLabel'
@@ -17,7 +16,7 @@ const acColor = {
   wind: '#bbbbbb',
 }
 
-const AcBorder: React.FC = (props) => {
+const AcBorder: React.FC<React.PropsWithChildren> = (props) => {
   return (
     <div
       className="bg-white h-38 shadow relative"
@@ -36,7 +35,7 @@ const AcBorder: React.FC = (props) => {
  * 空调温度
  * @returns
  */
-const AcTemperature: FC = () => {
+const AcTemperature: React.FC = () => {
   const { state } = useAcCtx()
   return (
     <h4 className="text-4xl text-center">

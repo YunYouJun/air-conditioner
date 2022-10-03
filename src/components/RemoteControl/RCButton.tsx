@@ -14,11 +14,11 @@ function playDi() {
  * 遥控器按钮
  * @param props
  */
-const RCButton: React.FC<{
+const RCButton: React.FC<React.PropsWithChildren<{
   onClick?: () => void
   className?: string
   style?: React.CSSProperties
-}> = (props) => {
+}>> = (props) => {
   return (
     <Fab
       className={`rc-button ${props.className}`}

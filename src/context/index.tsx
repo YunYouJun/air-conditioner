@@ -1,8 +1,9 @@
-import type { FC } from 'react'
+import type { PropsWithChildren } from 'react'
+import React from 'react'
 
 export * from './ac'
 
-export const ComposeContext: FC<{ items: FC[] }> = (props) => {
+export const ComposeContext: React.FC<PropsWithChildren<{ items: React.FC<PropsWithChildren>[] }>> = (props) => {
   const { items, children } = props
   return (
     <>

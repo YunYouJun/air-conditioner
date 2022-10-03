@@ -1,19 +1,20 @@
-/**
- * 文本标签（黑色小点点）
- * @param num
- * @param color
- * @param size 宽高尺寸
- * @param mx
- * @param my
- */
-const TextLabel: React.FC<{
+import React from 'react'
+
+interface TextLabelProps {
   num: number
   color: string
+  /**
+   * 宽高尺寸
+   */
   size: number
   mx: number
   my: number
-}> = (props) => {
-  // eslint-disable-next-line react/prop-types
+}
+
+/**
+ * 文本标签（黑色小点点）
+ */
+const TextLabel: React.FC<TextLabelProps> = (props) => {
   const { color, size, mx, my, num } = props
   const titleLength = [...new Array(num).keys()]
   const titleLabel = titleLength.map(n => (

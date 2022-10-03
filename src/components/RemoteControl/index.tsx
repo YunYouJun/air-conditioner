@@ -49,7 +49,6 @@ function playWorkSound() {
 
 /**
  * 切换空调工作状态
- * @param {*} props
  */
 function toggleAC(status: boolean) {
   if (status) {
