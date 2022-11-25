@@ -6,7 +6,7 @@ const Rc: React.FC = () => {
   useDetectStorage()
 
   return (
-    <RemoteControl />
+    <RemoteControl isExtra={true} />
   )
 }
 

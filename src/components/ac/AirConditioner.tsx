@@ -1,6 +1,7 @@
 import React from 'react'
 import { Fade } from '@mui/material'
 import { EnergyLabel, EnergySavingLabel } from './EnergyLabel'
+import Sound from './Sound'
 import type { AcMode } from '~/types'
 
 import * as pkg from '~/../package.json'
@@ -161,6 +162,7 @@ const AirConditioner: React.FC<{
       <Fade in={props.status} timeout={{ enter: 2500, exit: 1500 }}>
         <WindEffect />
       </Fade>
+      <Sound />
     </div>
   )
 }
