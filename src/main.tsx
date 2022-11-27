@@ -23,7 +23,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ComposeContext items={[AcProvider, ToastProvider, SoundProvider]}>
       <App />
-    </ComposeContext>,
+    </ComposeContext>
   </React.StrictMode>,
 )
 
