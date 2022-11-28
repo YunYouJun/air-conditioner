@@ -1,7 +1,8 @@
 import type { FC, PropsWithChildren } from 'react'
 import { createContext, useContext, useReducer } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
-import { useToastCtx } from './toast'
+// import { useToastCtx } from './toast'
+import { updateToastState } from '~/store/toast'
 import type { AcMode, AcState } from '~/types'
 
 export const acStorageKey = 'ac:state'
@@ -82,7 +83,6 @@ export function useAcCtx() {
 
 export function useAc() {
   const { state, dispatch } = useAcCtx()
-  const { dispatch: dispatchToast } = useToastCtx()
 
   return {
     /**
@@ -99,31 +99,28 @@ export function useAc() {
       const goodHotTemperature = 20
 
       const recommendedSlogan = (mode: AcMode, temperature: number) =>
-        `建议将空调的制${
-          mode === 'cold' ? '冷' : '热'
-        }温度调至 ${temperature} 度以${
-          mode === 'cold' ? '上' : '下'
+        `建议将空调的制${mode === 'cold' ? '冷' : '热'
+        }温度调至 ${temperature} 度以${mode === 'cold' ? '上' : '下'
         }，为节能减排贡献一份力量！`
 
       if (mode === 'cold' && currentTemperature < goodColdTemperature) {
-        dispatchToast({
-          type: 'update',
-          payload: {
+        updateToastState(
+          {
             message: recommendedSlogan('cold', goodColdTemperature),
             open: true,
             severity: 'success',
+
           },
-        })
+        )
       }
       else if (mode === 'hot' && currentTemperature > goodHotTemperature) {
-        dispatchToast({
-          type: 'update',
-          payload: {
+        updateToastState(
+          {
             message: recommendedSlogan('hot', goodHotTemperature),
             open: true,
             severity: 'success',
           },
-        })
+        )
       }
     },
   }

@@ -1,12 +1,11 @@
 import { useAcCtx } from '~/context'
-import { useToastCtx } from '~/context/toast'
 
+import { updateToastState } from '~/store/toast'
 export const maxTemperature = 31
 export const minTemperature = 16
 
 export function useAcTemperature() {
   const { state, dispatch } = useAcCtx()
-  const { dispatch: dispatchToast } = useToastCtx()
 
   /**
    * 增加温度
@@ -17,13 +16,10 @@ export function useAcTemperature() {
       dispatch({ type: 'increment' })
     }
     else {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: '已经是最大温度啦！',
-          open: true,
-          severity: 'error',
-        },
+      updateToastState({
+        message: '已经是最大温度啦！',
+        open: true,
+        severity: 'error',
       })
     }
   }
@@ -37,13 +33,10 @@ export function useAcTemperature() {
       dispatch({ type: 'decrement' })
     }
     else {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: '已经是最小温度啦！',
-          open: true,
-          severity: 'error',
-        },
+      updateToastState({
+        message: '已经是最小温度啦！',
+        open: true,
+        severity: 'error',
       })
     }
   }
