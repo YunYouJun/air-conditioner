@@ -1,11 +1,14 @@
-FROM node:12
+FROM node:lts-alpine as builder
+
+RUN npm install -g pnpm
 
 WORKDIR /app
 COPY . .
-RUN yarn install && yarn build
 
-FROM nginx:latest
+RUN pnpm install && npm run build
+
+FROM nginx:alpine
 
 ENV AC_NGINX_PORT=80 AC_NGINX_DOMAIN=localhost
-COPY --from=0 /app/config/nginx/default.conf.template /etc/nginx/templates/default.conf.template
-COPY --from=0 /app/build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
