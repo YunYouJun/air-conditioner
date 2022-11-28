@@ -6,8 +6,9 @@ import { useAcTemperature } from './temperature'
 
 import './index.scss'
 import { useAc, useAcCtx } from '~/context'
-import { useSound } from '~/context/sound'
 import { getAssetsUrl } from '~/utils'
+
+import { startSound, stopSound } from '~/store/sound'
 
 const SOUND_DI_PATH = getAssetsUrl('/assets/audio/di.m4a')
 
@@ -19,7 +20,6 @@ const RemoteControl: React.FC<React.PropsWithChildren<{
   isExtra?: boolean
 }>> = (props) => {
   const { toggleStatus, toggleMode } = useAc()
-  const { stopSound, playStartSound } = useSound()
   const { state: ac } = useAcCtx()
 
   const { increase, decrease } = useAcTemperature()
@@ -37,8 +37,8 @@ const RemoteControl: React.FC<React.PropsWithChildren<{
     if (status)
       stopSound()
     else
-      playStartSound()
-  }, [stopSound, playStartSound])
+      startSound()
+  }, [stopSound, startSound])
 
   return (
     <div className="flex my-6 flex-col items-center">
