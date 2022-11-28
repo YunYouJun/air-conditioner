@@ -1,19 +1,17 @@
-import { useAcCtx } from '~/context'
+import acStore, { acDecrement, acIncrement } from '~/store/ac'
 
 import { updateToastState } from '~/store/toast'
 export const maxTemperature = 31
 export const minTemperature = 16
 
 export function useAcTemperature() {
-  const { state, dispatch } = useAcCtx()
-
   /**
    * 增加温度
    * @returns
    */
   const increase = () => {
-    if (state.temperature < maxTemperature) {
-      dispatch({ type: 'increment' })
+    if (acStore.temperature < maxTemperature) {
+      acIncrement()
     }
     else {
       updateToastState({
@@ -29,8 +27,8 @@ export function useAcTemperature() {
    * @returns
    */
   const decrease = () => {
-    if (state.temperature > minTemperature) {
-      dispatch({ type: 'decrement' })
+    if (acStore.temperature > minTemperature) {
+      acDecrement()
     }
     else {
       updateToastState({

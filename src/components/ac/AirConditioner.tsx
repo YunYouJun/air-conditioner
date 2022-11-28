@@ -1,5 +1,6 @@
 import React from 'react'
 import { Fade } from '@mui/material'
+import { useSnapshot } from 'valtio'
 import { EnergyLabel, EnergySavingLabel } from './EnergyLabel'
 import Sound from './Sound'
 import type { AcMode } from '~/types'
@@ -7,7 +8,7 @@ import type { AcMode } from '~/types'
 import * as pkg from '~/../package.json'
 
 import './AirConditioner.scss'
-import { useAcCtx } from '~/context'
+import acStore from '~/store/ac'
 
 // import { adsenseLink, jumpToAdsense } from "../adsense";
 
@@ -37,10 +38,10 @@ const AcBorder: React.FC<React.PropsWithChildren> = (props) => {
  * @returns
  */
 const AcTemperature: React.FC = () => {
-  const { state } = useAcCtx()
+  const acSnapshot = useSnapshot(acStore)
   return (
     <h4 className="text-4xl text-center">
-      <span className="font-digit ac-temperature">{state.temperature}</span>
+      <span className="font-digit ac-temperature">{acSnapshot.temperature}</span>
       <small className="font-digit">°C</small>
     </h4>
   )

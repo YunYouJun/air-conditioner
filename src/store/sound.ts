@@ -23,6 +23,10 @@ const playWorkSound = () => {
     }, noiseDuration * 1000)
   }, noiseStartTime * 1000)
 }
+
+/**
+ * 开始播放空调工作声音
+*/
 export const startSound = () => {
   const acWorkEl = document.querySelector('#ac-work') as HTMLAudioElement
   acWorkEl.load()
@@ -32,7 +36,9 @@ export const startSound = () => {
     playWorkSound()
   }, 8000)
 }
-
+/**
+ * 停止播放空调工作声音
+*/
 export const stopSound = () => {
   const acWorkEl = document.querySelector('#ac-work') as HTMLAudioElement
   acWorkEl.load()

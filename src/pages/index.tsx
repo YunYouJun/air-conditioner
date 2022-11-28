@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button } from '@mui/material'
 
+import { useSnapshot } from 'valtio'
 import ProTip from '~/components/ProTip'
 import RemoteControl from '~/components/RemoteControl'
 
@@ -8,24 +9,28 @@ import AirConditioner from '~/components/ac/AirConditioner'
 import Toast from '~/components/Toast'
 
 import { useDetectStorage } from '~/hooks'
-import { useAcCtx } from '~/context'
+import acStore, { setStatus } from '~/store/ac'
 
 /**
  * 主页
  * @returns
  */
 const Home: React.FC = () => {
-  const { state: ac } = useAcCtx()
+  const acSnapshot = useSnapshot(acStore)
 
   useDetectStorage()
+
+  useEffect(() => {
+    setStatus(false)
+  }, [])
 
   /**
    * 根据模式返回对应的色温
    * @returns
    */
   function getClassByMode() {
-    if (ac.status)
-      return ac.mode === 'hot' ? 'hot-color' : 'cold-color'
+    if (acSnapshot.status)
+      return acSnapshot.mode === 'hot' ? 'hot-color' : 'cold-color'
     else
       return ''
   }
@@ -38,9 +43,9 @@ const Home: React.FC = () => {
         </h1>
         <ProTip />
         <AirConditioner
-          status={ac.status}
-          temperature={ac.temperature}
-          mode={ac.mode}
+          status={acSnapshot.status}
+          temperature={acSnapshot.temperature}
+          mode={acSnapshot.mode}
         />
         <div className="text-center">
           <div className="mt-2">

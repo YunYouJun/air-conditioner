@@ -1,11 +1,14 @@
 import React, { useCallback } from 'react'
 
 import { blue, green, red } from '@mui/material/colors'
+import { useSnapshot } from 'valtio'
 import RCButton from './RCButton'
 import { useAcTemperature } from './temperature'
 
 import './index.scss'
-import { useAc, useAcCtx } from '~/context'
+
+import acStore, { toggleMode, toggleStatus } from '~/store/ac'
+
 import { getAssetsUrl } from '~/utils'
 
 import { startSound, stopSound } from '~/store/sound'
@@ -19,8 +22,7 @@ const SOUND_DI_PATH = getAssetsUrl('/assets/audio/di.m4a')
 const RemoteControl: React.FC<React.PropsWithChildren<{
   isExtra?: boolean
 }>> = (props) => {
-  const { toggleStatus, toggleMode } = useAc()
-  const { state: ac } = useAcCtx()
+  const acSnapshot = useSnapshot(acStore)
 
   const { increase, decrease } = useAcTemperature()
   /**
@@ -60,11 +62,11 @@ const RemoteControl: React.FC<React.PropsWithChildren<{
         <RCButton
           aria-label="add"
           onClick={() => {
-            toggleAC(ac.status)
+            toggleAC(acSnapshot.status)
             toggleStatus()
           }}
           style={{
-            backgroundColor: ac.status ? red[600] : green[600],
+            backgroundColor: acSnapshot.status ? red[600] : green[600],
             color: 'white',
           }}
         >

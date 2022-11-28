@@ -10,7 +10,6 @@ import 'uno.css'
 import TagManager from 'react-gtm-module'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
-import { AcProvider, ComposeContext } from './context'
 
 const tagManagerArgs = {
   gtmId: 'GTM-NFMC9GL',
@@ -19,9 +18,7 @@ TagManager.initialize(tagManagerArgs)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <ComposeContext items={[AcProvider]}>
-      <App />
-    </ComposeContext>
+    <App />
   </React.StrictMode>,
 )
 
