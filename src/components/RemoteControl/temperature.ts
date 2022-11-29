@@ -1,29 +1,23 @@
-import { useAcCtx } from '~/context'
-import { useToastCtx } from '~/context/toast'
+import acStore, { acDecrement, acIncrement } from '~/store/ac'
 
+import { updateToastState } from '~/store/toast'
 export const maxTemperature = 31
 export const minTemperature = 16
 
 export function useAcTemperature() {
-  const { state, dispatch } = useAcCtx()
-  const { dispatch: dispatchToast } = useToastCtx()
-
   /**
    * 增加温度
    * @returns
    */
   const increase = () => {
-    if (state.temperature < maxTemperature) {
-      dispatch({ type: 'increment' })
+    if (acStore.temperature < maxTemperature) {
+      acIncrement()
     }
     else {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: '已经是最大温度啦！',
-          open: true,
-          severity: 'error',
-        },
+      updateToastState({
+        message: '已经是最大温度啦！',
+        open: true,
+        severity: 'error',
       })
     }
   }
@@ -33,17 +27,14 @@ export function useAcTemperature() {
    * @returns
    */
   const decrease = () => {
-    if (state.temperature > minTemperature) {
-      dispatch({ type: 'decrement' })
+    if (acStore.temperature > minTemperature) {
+      acDecrement()
     }
     else {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: '已经是最小温度啦！',
-          open: true,
-          severity: 'error',
-        },
+      updateToastState({
+        message: '已经是最小温度啦！',
+        open: true,
+        severity: 'error',
       })
     }
   }

@@ -44,6 +44,7 @@
     "react-gtm-module": "2",
     "react-router-dom": "^6.4.1",
     "sass": "^1.55.0",
+    "valtio": "^1.7.6",
     "web-vitals": "^3.0.2"
   },
   "devDependencies": {

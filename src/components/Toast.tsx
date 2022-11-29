@@ -7,8 +7,8 @@ import {
   Alert as MuiAlert,
   Snackbar,
 } from '@mui/material'
-import { useToastCtx } from '~/context/toast'
-
+import { useSnapshot } from 'valtio'
+import toastStore, { updateToastState } from '~/store/toast'
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>((
   props,
   ref,
@@ -17,28 +17,33 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>((
 })
 
 const Toast: React.FC<{ severity?: AlertColor }> = (props) => {
-  const { state, dispatch } = useToastCtx()
-
+  const toastSnapshot = useSnapshot(toastStore)
   return (
     <Snackbar
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'center',
       }}
-      open={state.open}
+      open={toastSnapshot.open}
       autoHideDuration={6000}
       onClose={() => {
-        dispatch({ type: 'open', open: false })
+        updateToastState({
+          ...toastSnapshot,
+          open: false,
+        })
       }}
     >
       <Alert
         onClose={() => {
-          dispatch({ type: 'open', open: false })
+          updateToastState({
+            ...toastSnapshot,
+            open: false,
+          })
         }}
-        severity={props.severity || state.severity || 'error'}
+        severity={props.severity || toastSnapshot.severity || 'error'}
         style={{ width: '100%', minWidth: 318 }}
       >
-        {state.message}
+        {toastSnapshot.message}
       </Alert>
     </Snackbar>
   )
