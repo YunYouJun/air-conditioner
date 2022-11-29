@@ -8,7 +8,7 @@ import {
   Snackbar,
 } from '@mui/material'
 import { useSnapshot } from 'valtio'
-import toastStore, { changeOpen } from '~/store/toast'
+import toastStore, { updateToastState } from '~/store/toast'
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>((
   props,
   ref,
@@ -27,12 +27,18 @@ const Toast: React.FC<{ severity?: AlertColor }> = (props) => {
       open={toastSnapshot.open}
       autoHideDuration={6000}
       onClose={() => {
-        changeOpen(false)
+        updateToastState({
+          ...toastSnapshot,
+          open: false,
+        })
       }}
     >
       <Alert
         onClose={() => {
-          changeOpen(false)
+          updateToastState({
+            ...toastSnapshot,
+            open: false,
+          })
         }}
         severity={props.severity || toastSnapshot.severity || 'error'}
         style={{ width: '100%', minWidth: 318 }}
