@@ -1,6 +1,10 @@
 import { proxy } from 'valtio'
+import { watch } from 'valtio/utils'
+
 import { updateToastState } from './toast'
 import type { AcMode, AcState } from '~/types'
+
+import myUseLocalStorage from '~/utils/localStorage'
 
 export const acStorageKey = 'ac:state'
 
@@ -10,49 +14,34 @@ export const defaultAcState: AcState = {
   temperature: 26,
 }
 
-const getAcInitStateFromLocalStorage = () => ({
-  ...defaultAcState,
-  ...JSON.parse(localStorage.getItem(acStorageKey) as string),
-})
-
-const initAcState = getAcInitStateFromLocalStorage()
+const [initAcState, setAcState] = myUseLocalStorage<AcState>(acStorageKey, defaultAcState)
 
 const acStore = proxy<AcState>({
   ...initAcState,
 })
 
-const setAcStateToLoacl = (acState: AcState) => {
-  localStorage.setItem(acStorageKey, JSON.stringify({ ...acState }))
-}
+// 监听state的变化，变化后将其本地存储
+watch((get) => {
+  setAcState({ ...get(acStore) })
+})
 export const acIncrement = () => {
   acStore.temperature += 1
-  setAcStateToLoacl({ ...acStore })
 }
 export const acDecrement = () => {
   acStore.temperature -= 1
-  setAcStateToLoacl({ ...acStore })
 }
 export const toggleStatus = () => {
   acStore.status = !acStore.status
-  setAcStateToLoacl({ ...acStore })
 }
-export const setStatus = (status: AcState['status']) => {
-  acStore.status = status
-  setAcStateToLoacl({ ...acStore })
-}
-export const setMode = (mode: AcState['mode']) => {
-  acStore.mode = mode
-  setAcStateToLoacl({ ...acStore })
-}
+
 export const updateAcState = (payload: AcState) => {
   acStore.mode = payload.mode
   acStore.status = payload.status
   acStore.temperature = payload.temperature
-  setAcStateToLoacl({ ...acStore })
 }
 
 export const toggleMode = (mode: AcMode) => {
-  setMode(mode)
+  acStore.mode = mode
 
   const currentTemperature = acStore.temperature
   const goodColdTemperature = 26

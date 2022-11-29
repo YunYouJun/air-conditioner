@@ -33,7 +33,7 @@ const RemoteControl: React.FC<React.PropsWithChildren<{
     * 切换空调工作状态
   */
   const toggleAC = useCallback((status: boolean) => {
-    // 如果是远程遥控器，不进行直接切换，而是通过存储监听触发soundContext中的方法
+    // 如果是远程遥控器，不进行直接切换，而是通过存储监听触发store中的方法
     if (isExtra)
       return
     if (status)

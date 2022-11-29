@@ -9,7 +9,7 @@ import AirConditioner from '~/components/ac/AirConditioner'
 import Toast from '~/components/Toast'
 
 import { useDetectStorage } from '~/hooks'
-import acStore, { setStatus } from '~/store/ac'
+import acStore, { updateAcState } from '~/store/ac'
 
 /**
  * 主页
@@ -21,7 +21,10 @@ const Home: React.FC = () => {
   useDetectStorage()
 
   useEffect(() => {
-    setStatus(false)
+    updateAcState({
+      ...acSnapshot,
+      status: false,
+    })
   }, [])
 
   /**
