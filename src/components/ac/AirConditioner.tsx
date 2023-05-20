@@ -1,6 +1,7 @@
 import React from 'react'
 import { Fade } from '@mui/material'
-import { EnergyLabel, EnergySavingLabel } from './EnergyLabel'
+import { EnergyLabel } from './EnergyLabel'
+import { EnergySavingLabel } from './EnergySavingLabel'
 import type { AcMode } from '~/types'
 
 import * as pkg from '~/../package.json'

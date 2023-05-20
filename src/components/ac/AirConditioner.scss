@@ -61,9 +61,11 @@
 
 .adsense-logo {
   margin-bottom: 10px;
-  width: 56px;
   font-size: 3.5rem;
-  animation: iconAnimate 1.5s ease-in-out infinite;
+
+  &.animated {
+    animation: iconAnimate 1.5s ease-in-out infinite;
+  }
 }
 
 @keyframes iconAnimate {

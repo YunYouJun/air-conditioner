@@ -44,7 +44,7 @@ type ToastAction = {
   payload: Partial<ToastState>
 }
 
-export const toastReducer = (state: ToastState, action: ToastAction) => {
+export function toastReducer(state: ToastState, action: ToastAction) {
   switch (action.type) {
     case 'message':
       return { ...state, message: action.message }
