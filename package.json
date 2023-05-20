@@ -1,7 +1,7 @@
 {
   "name": "air-conditioner",
   "description": "云空调，便携小空调",
-  "packageManager": "pnpm@7.1.7",
+  "packageManager": "pnpm@8.5.1",
   "version": "0.1.3",
   "private": true,
   "author": {
