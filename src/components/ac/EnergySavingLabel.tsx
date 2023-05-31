@@ -3,7 +3,7 @@
  */
 export function EnergySavingLabel() {
   // const adsenseLink = 'https://sponsors.yunyoujun.cn'
-  const adsenseLink = 'https://www.bilibili.com/blackboard/activity-gkKsCvz81a.html?bsource=yunlefun'
+  const adsenseLink = 'https://qqdgw1.gdxfsh.org/'
 
   return (
     <a
