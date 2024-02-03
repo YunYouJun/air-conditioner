@@ -12,7 +12,6 @@ import { useAcCtx } from '~/context'
 
 /**
  * 主页
- * @returns
  */
 const Home: React.FC = () => {
   const { state: ac } = useAcCtx()
@@ -21,7 +20,6 @@ const Home: React.FC = () => {
 
   /**
    * 根据模式返回对应的色温
-   * @returns
    */
   function getClassByMode() {
     if (ac.status)

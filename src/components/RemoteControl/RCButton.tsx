@@ -27,7 +27,8 @@ const RCButton: React.FC<React.PropsWithChildren<{
         playDi()
         props.onClick && props.onClick()
       }}
-    ></Fab>
+    >
+    </Fab>
   )
 }
 

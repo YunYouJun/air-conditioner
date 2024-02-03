@@ -1,6 +1,5 @@
 /**
  * 谷歌自动广告
- * @returns
  */
 export function GoogleAutoAdsense() {
   return (
@@ -8,13 +7,13 @@ export function GoogleAutoAdsense() {
       data-ad-client="ca-pub-2245427233262012"
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
-    ></script>
+    >
+    </script>
   )
 }
 
 /**
  * 谷歌广告单元
- * @returns
  */
 export function GoogleAdsenseUnit() {
   return (
@@ -22,7 +21,8 @@ export function GoogleAdsenseUnit() {
       <script
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
-      ></script>
+      >
+      </script>
       {/* 横向广告 */}
       <ins
         className="adsbygoogle"
@@ -37,8 +37,13 @@ export function GoogleAdsenseUnit() {
         data-ad-slot="5090291296"
         data-ad-format="auto"
         data-full-width-responsive="true"
-      ></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      >
+      </ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push(
+        {}
+        );
+      </script>
     </div>
   )
 }

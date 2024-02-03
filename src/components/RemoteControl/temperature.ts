@@ -10,7 +10,6 @@ export function useAcTemperature() {
 
   /**
    * 增加温度
-   * @returns
    */
   const increase = () => {
     if (state.temperature < maxTemperature) {
@@ -30,7 +29,6 @@ export function useAcTemperature() {
 
   /**
    * 降低温度
-   * @returns
    */
   const decrease = () => {
     if (state.temperature > minTemperature) {

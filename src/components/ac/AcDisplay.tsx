@@ -5,7 +5,6 @@ import { useAcCtx } from '~/context'
 
 /**
  * 空调温度
- * @returns
  */
 const AcTemperature: React.FC = () => {
   const { state } = useAcCtx()
@@ -32,7 +31,8 @@ export const AcDisplay: React.FC<{ mode: AcMode }> = React.forwardRef(
         }}
       >
         <h6 className="text-left text-sm">
-          <span>{props.mode === 'cold' ? '❄' : '☀️'}</span>️️
+          <span>{props.mode === 'cold' ? '❄' : '☀️'}</span>
+          ️️
         </h6>
         <AcTemperature />
       </div>

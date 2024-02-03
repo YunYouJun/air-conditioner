@@ -29,19 +29,19 @@ const AcBorder: React.FC<React.PropsWithChildren> = (props) => {
         borderBottomRightRadius: 20,
       }}
       {...props}
-    ></div>
+    >
+    </div>
   )
 }
 
 /**
  * 空调 Logo
- * @param props
  */
 const AcLogo: React.FC = () => {
   return (
     <div className="text-center mt-28">
       <a
-        className='block'
+        className="block"
         href={pkg.repository.url}
         title={pkg.description}
         target="_blank"
@@ -62,7 +62,6 @@ const AcLogo: React.FC = () => {
 
 /**
  * 出风口线
- * @returns
  */
 const AirOutlet: React.FC = () => {
   return <div className="mt-1" style={{ border: `1px solid ${acColor.border}` }}></div>
@@ -82,7 +81,8 @@ const AcStatus: React.FC<{ status: boolean }> = (props) => {
       style={{
         backgroundColor: led.backgroundColor || 'transparent',
       }}
-    ></div>
+    >
+    </div>
   )
 }
 
@@ -96,12 +96,14 @@ const WindEffect = React.forwardRef((props, ref) => {
       <div
         className="wind-line h-10 w-1"
         style={{ backgroundColor: acColor.wind, transform: 'rotate(10deg)' }}
-      ></div>
+      >
+      </div>
       <div className="wind-line h-10 w-1 mx-20" style={{ backgroundColor: acColor.wind }}></div>
       <div
         className="wind-line h-10 w-1"
         style={{ backgroundColor: acColor.wind, transform: 'rotate(-10deg)' }}
-      ></div>
+      >
+      </div>
     </div>
   )
 })

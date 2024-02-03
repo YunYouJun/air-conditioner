@@ -16,7 +16,7 @@ interface TextLabelProps {
  */
 const TextLabel: React.FC<TextLabelProps> = (props) => {
   const { color, size, mx, my, num } = props
-  const titleLength = [...new Array(num).keys()]
+  const titleLength = [...Array.from({ length: num }).keys()]
   const titleLabel = titleLength.map(n => (
     <span
       className="text-dot rounded-full"
@@ -26,12 +26,16 @@ const TextLabel: React.FC<TextLabelProps> = (props) => {
         height: size,
         margin: `${my || 0}px ${mx}px`,
       }}
-    ></span>
+    >
+    </span>
   ))
   return (
-    <div className="flex justify-center" style={{
-      '--ac-c-text-dot': color,
-    } as any}>
+    <div
+      className="flex justify-center"
+      style={{
+        '--ac-c-text-dot': color,
+      } as any}
+    >
       {titleLabel}
     </div>
   )
@@ -76,13 +80,14 @@ export const EnergyLabel: React.FC<{ titleLength: number }> = () => {
               borderLeftColor: 'transparent',
               borderStyle: 'solid',
             }}
-          ></div>
-          <div style={{ backgroundColor: 'green', width: '10%' }} ></div>
+          >
+          </div>
+          <div style={{ backgroundColor: 'green', width: '10%' }}></div>
         </div>
-        <div className="energy-label-level" style={{ backgroundColor: 'lightgreen', width: '50%' }} ></div>
-        <div className="energy-label-level" style={{ backgroundColor: '#ffc107', width: '60%' }} ></div>
-        <div className="energy-label-level" style={{ backgroundColor: 'orange', width: '70%' }} ></div>
-        <div className="energy-label-level" style={{ backgroundColor: 'red', width: '80%' }} ></div>
+        <div className="energy-label-level" style={{ backgroundColor: 'lightgreen', width: '50%' }}></div>
+        <div className="energy-label-level" style={{ backgroundColor: '#ffc107', width: '60%' }}></div>
+        <div className="energy-label-level" style={{ backgroundColor: 'orange', width: '70%' }}></div>
+        <div className="energy-label-level" style={{ backgroundColor: 'red', width: '80%' }}></div>
       </div>
       <div
         className="w-full h-5 bg-white"

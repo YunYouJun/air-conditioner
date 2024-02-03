@@ -32,7 +32,6 @@ function consoleInfo(
 
 /**
  * Loading Animation
- * @returns
  */
 function Loading() {
   return (
@@ -43,7 +42,6 @@ function Loading() {
 /**
  * https://github.com/hannoeru/vite-plugin-pages
  * Must use Suspense
- * @returns
  */
 function Routes() {
   return (

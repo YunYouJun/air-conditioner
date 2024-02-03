@@ -5,7 +5,6 @@ import useDark from '~/hooks/useDark'
 /**
  * 喜马拉雅链接
  * @param props
- * @returns
  */
 const AdsenseLink: FC<{ text: string }> = (props) => {
   return (
@@ -15,7 +14,8 @@ const AdsenseLink: FC<{ text: string }> = (props) => {
       target="_blank"
       onClick={() => {
         jumpToAdsense()
-      }} rel="noreferrer"
+      }}
+      rel="noreferrer"
     >
       {props.text || '喜马拉雅'}
     </a>

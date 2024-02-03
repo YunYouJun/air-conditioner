@@ -80,7 +80,6 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
 
 /**
  * 遥控
- * @param {*} props
  */
 const RemoteControl: React.FC = () => {
   const { toggleStatus, toggleMode } = useAc()
@@ -96,7 +95,8 @@ const RemoteControl: React.FC = () => {
         id="air-extractor-fan"
         src={SOUND_AIR_EXTRACTOR_FAN_PATH}
         preload="auto"
-      ></audio>
+      >
+      </audio>
       <div>
         {' '}
         <RCButton
