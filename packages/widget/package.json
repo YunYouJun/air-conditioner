@@ -34,7 +34,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@air-conditioner/core": "workspace:*"
+    "@yunlefun-home/air-conditioner-core": "workspace:*"
   },
   "devDependencies": {
     "happy-dom": "catalog:",

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AcState } from '@air-conditioner/core'
-import { acModeIcons, defaultAcState } from '@air-conditioner/core'
+import type { AcState } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, defaultAcState } from '@yunlefun-home/air-conditioner-core'
 import { computed } from 'vue'
 import { useOptionalAirConditioner } from '../composables/useAirConditioner'
 import EnergyLabel from './EnergyLabel.vue'

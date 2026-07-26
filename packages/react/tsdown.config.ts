@@ -8,7 +8,7 @@ export default defineConfig({
   platform: 'neutral',
   deps: {
     neverBundle: [
-      '@air-conditioner/core',
+      '@yunlefun-home/air-conditioner-core',
       'react',
       'react-dom',
       /^react\//,

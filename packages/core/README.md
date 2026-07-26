@@ -1,17 +1,17 @@
-# @air-conditioner/core
+# @yunlefun-home/air-conditioner-core
 
 Framework-agnostic state, reducer, persistence, audio, and notification helpers for [Yun Air Conditioner](https://ac.yunyoujun.cn/).
 
 ## Install
 
 ```bash
-pnpm add @air-conditioner/core
+pnpm add @yunlefun-home/air-conditioner-core
 ```
 
 ## Usage
 
 ```ts
-import { createAirConditionerStore } from '@air-conditioner/core'
+import { createAirConditionerStore } from '@yunlefun-home/air-conditioner-core'
 
 const store = createAirConditionerStore()
 store.dispatch({ type: 'status', status: true })

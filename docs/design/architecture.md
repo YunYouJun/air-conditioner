@@ -12,7 +12,7 @@ packages/
 
 ## Core
 
-`@air-conditioner/core` 是唯一的状态来源，导出：
+`@yunlefun-home/air-conditioner-core` 是唯一的状态来源，导出：
 
 - `AcState`、`AcMode`、`AcAction`
 - `defaultAcState`
@@ -40,4 +40,4 @@ React 与 Vue 适配层只负责：
 - 属性：`storage-key`、`mode`、`status`、`temperature`、`title`
 - 事件：`ac-change`、`ac-notify`
 
-它只依赖 `@air-conditioner/core`，不引入 React 或 Vue runtime。
+它只依赖 `@yunlefun-home/air-conditioner-core`，不引入 React 或 Vue runtime。

@@ -1,19 +1,19 @@
 # Vue
 
-`@air-conditioner/vue` 基于 [`@air-conditioner/core`](/api/) 提供一套开箱即用的 Vue 3 组件：白色机身、能效标签、数码管温度显示、风特效、遥控器与音效，并自动适配亮 / 暗模式。
+`@yunlefun-home/air-conditioner` 基于 [`@yunlefun-home/air-conditioner-core`](/api/) 提供一套开箱即用的 Vue 3 组件：白色机身、能效标签、数码管温度显示、风特效、遥控器与音效，并自动适配亮 / 暗模式。
 
 ## 安装
 
 ```bash
-pnpm add @air-conditioner/vue
+pnpm add @yunlefun-home/air-conditioner
 ```
 
 ## 快速开始
 
 ```vue
 <script setup lang="ts">
-import { AirConditionerWidget } from '@air-conditioner/vue'
-import '@air-conditioner/vue/style.css'
+import { AirConditionerWidget } from '@yunlefun-home/air-conditioner'
+import '@yunlefun-home/air-conditioner/style.css'
 </script>
 
 <template>
@@ -28,7 +28,7 @@ import '@air-conditioner/vue/style.css'
 组件依赖一组音效与数码管字体，需要由宿主项目托管在静态资源目录下。从包内拷贝到你的 `public/`：
 
 ```bash
-cp -r node_modules/@air-conditioner/vue/dist/assets public/assets
+cp -r node_modules/@yunlefun-home/air-conditioner/dist/assets public/assets
 ```
 
 > 若你的项目没有把这些文件打进 `dist`，可直接从仓库的 [`packages/vue/public/assets`](https://github.com/YunYouJun/air-conditioner/tree/dev/packages/vue/public) 取用。
@@ -79,8 +79,8 @@ import {
   AirConditioner,
   AirConditionerProvider,
   RemoteControl,
-} from '@air-conditioner/vue'
-import '@air-conditioner/vue/style.css'
+} from '@yunlefun-home/air-conditioner'
+import '@yunlefun-home/air-conditioner/style.css'
 </script>
 
 <template>
@@ -118,7 +118,7 @@ import '@air-conditioner/vue/style.css'
 
 ```vue
 <script setup lang="ts">
-import { useAirConditioner } from '@air-conditioner/vue'
+import { useAirConditioner } from '@yunlefun-home/air-conditioner'
 
 const ac = useAirConditioner()
 // ac.state.value         当前状态（只读）
@@ -134,10 +134,10 @@ const ac = useAirConditioner()
 
 ```vue
 <script setup lang="ts">
-import { resolveAcAudioAssets } from '@air-conditioner/core'
-import { AirConditioner, AirConditionerProvider, RemoteControl, useAcAudio } from '@air-conditioner/vue'
+import { AirConditioner, AirConditionerProvider, RemoteControl, useAcAudio } from '@yunlefun-home/air-conditioner'
+import { resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
 import { ref } from 'vue'
-import '@air-conditioner/vue/style.css'
+import '@yunlefun-home/air-conditioner/style.css'
 
 const beep = ref<HTMLAudioElement | null>(null)
 const start = ref<HTMLAudioElement | null>(null)

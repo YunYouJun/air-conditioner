@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AcMode } from '@air-conditioner/core'
+import type { AcMode } from '@yunlefun-home/air-conditioner-core'
 import { computed } from 'vue'
 import { useAirConditioner } from '../composables/useAirConditioner'
 

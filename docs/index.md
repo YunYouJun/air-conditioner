@@ -15,7 +15,7 @@ hero:
 
 features:
   - title: Shared Core
-    details: 状态机、温度规则、通知和存储逻辑集中在 @air-conditioner/core。
+    details: 状态机、温度规则、通知和存储逻辑集中在 @yunlefun-home/air-conditioner-core。
   - title: Framework Adapters
     details: React 与 Vue 只负责框架绑定和组件渲染。
   - title: Native Widget
@@ -24,9 +24,9 @@ features:
 
 ## Packages
 
-- `@air-conditioner/core`
+- `@yunlefun-home/air-conditioner-core`
 - `@air-conditioner/react`
-- `@air-conditioner/vue`
+- `@yunlefun-home/air-conditioner`
 - `@air-conditioner/widget`
 
 ## Development

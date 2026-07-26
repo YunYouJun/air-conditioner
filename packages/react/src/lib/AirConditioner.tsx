@@ -1,5 +1,5 @@
-import type { AcState } from '@air-conditioner/core'
-import { defaultAcState } from '@air-conditioner/core'
+import type { AcState } from '@yunlefun-home/air-conditioner-core'
+import { defaultAcState } from '@yunlefun-home/air-conditioner-core'
 import { useOptionalAirConditionerState } from './context'
 
 export interface AirConditionerProps extends Partial<AcState> {

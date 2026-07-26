@@ -11,7 +11,7 @@ import {
   resolveAcAudioAssets,
 } from '../src'
 
-describe('@air-conditioner/core', () => {
+describe('@yunlefun-home/air-conditioner-core', () => {
   it('exports the default state', () => {
     expect(defaultAcState).toEqual({
       mode: 'cold',

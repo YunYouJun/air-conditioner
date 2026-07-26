@@ -4,7 +4,7 @@
 
 ## Unit Tests
 
-`@air-conditioner/core` 覆盖：
+`@yunlefun-home/air-conditioner-core` 覆盖：
 
 - 默认状态。
 - reducer 动作。

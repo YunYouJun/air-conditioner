@@ -1,11 +1,11 @@
-import type { AcAction, AcMode, AcState } from '@air-conditioner/core'
+import type { AcAction, AcMode, AcState } from '@yunlefun-home/air-conditioner-core'
 import type { FC, PropsWithChildren } from 'react'
 import {
   acReducer,
   acStorageKey,
   defaultAcState as defaultState,
   getAcActionNotification,
-} from '@air-conditioner/core'
+} from '@yunlefun-home/air-conditioner-core'
 import { createContext, useContext, useReducer } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { useToastCtx } from './toast'

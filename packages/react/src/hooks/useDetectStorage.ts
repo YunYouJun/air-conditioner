@@ -1,5 +1,5 @@
 import type { AcState } from '~/types'
-import { acStorageKey, defaultAcState } from '@air-conditioner/core'
+import { acStorageKey, defaultAcState } from '@yunlefun-home/air-conditioner-core'
 import { useEffect } from 'react'
 import { useAcCtx } from '~/context'
 

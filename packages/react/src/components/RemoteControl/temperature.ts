@@ -1,10 +1,10 @@
-import type { AcAction } from '@air-conditioner/core'
+import type { AcAction } from '@yunlefun-home/air-conditioner-core'
 import {
   acReducer,
   getAcActionNotification,
   maxTemperature,
   minTemperature,
-} from '@air-conditioner/core'
+} from '@yunlefun-home/air-conditioner-core'
 import { useAcCtx } from '~/context'
 import { useToastCtx } from '~/context/toast'
 

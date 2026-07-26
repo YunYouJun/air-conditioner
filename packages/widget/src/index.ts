@@ -3,8 +3,8 @@ import type {
   AcNotification,
   AcState,
   AirConditionerStore,
-} from '@air-conditioner/core'
-import { createAirConditionerStore, defaultAcState } from '@air-conditioner/core'
+} from '@yunlefun-home/air-conditioner-core'
+import { createAirConditionerStore, defaultAcState } from '@yunlefun-home/air-conditioner-core'
 
 export type WidgetAcMode = 'cold' | 'hot'
 

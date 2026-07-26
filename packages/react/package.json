@@ -56,7 +56,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@air-conditioner/core": "workspace:*",
+    "@yunlefun-home/air-conditioner-core": "workspace:*",
     "react-ga": "catalog:",
     "react-gtm-module": "catalog:",
     "react-router-dom": "catalog:",

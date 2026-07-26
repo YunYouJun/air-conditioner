@@ -1,4 +1,4 @@
-import type { AcMode } from '@air-conditioner/core'
+import type { AcMode } from '@yunlefun-home/air-conditioner-core'
 import { useAirConditioner } from './context'
 
 export interface RemoteControlProps {

@@ -1,5 +1,5 @@
 {
-  "name": "@air-conditioner/vue",
+  "name": "@yunlefun-home/air-conditioner",
   "type": "module",
   "version": "0.2.0",
   "description": "Vue components for Yun Air Conditioner.",
@@ -54,7 +54,7 @@
     "vue": ">=3.4"
   },
   "dependencies": {
-    "@air-conditioner/core": "workspace:^"
+    "@yunlefun-home/air-conditioner-core": "workspace:^"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

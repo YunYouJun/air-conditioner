@@ -1,5 +1,5 @@
 {
-  "name": "@air-conditioner/core",
+  "name": "@yunlefun-home/air-conditioner-core",
   "type": "module",
   "version": "0.2.0",
   "description": "Framework-agnostic air conditioner state and runtime helpers.",

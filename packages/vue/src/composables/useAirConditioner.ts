@@ -6,7 +6,7 @@ import type {
   AcState,
   AirConditionerStore,
   CreateAirConditionerStoreOptions,
-} from '@air-conditioner/core'
+} from '@yunlefun-home/air-conditioner-core'
 import type { InjectionKey, ShallowRef } from 'vue'
 import { inject, readonly, shallowRef } from 'vue'
 

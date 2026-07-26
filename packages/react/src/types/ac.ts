@@ -1,1 +1,1 @@
-export type { AcMode, AcState } from '@air-conditioner/core'
+export type { AcMode, AcState } from '@yunlefun-home/air-conditioner-core'

@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   deps: {
     neverBundle: [
-      '@air-conditioner/core',
+      '@yunlefun-home/air-conditioner-core',
       'vue',
     ],
   },

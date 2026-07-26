@@ -1,5 +1,5 @@
-import type { AcAudioController, AcAudioElements, AcChangeEvent } from '@air-conditioner/core'
-import { createAcAudioController } from '@air-conditioner/core'
+import type { AcAudioController, AcAudioElements, AcChangeEvent } from '@yunlefun-home/air-conditioner-core'
+import { createAcAudioController } from '@yunlefun-home/air-conditioner-core'
 import { onUnmounted } from 'vue'
 
 /**

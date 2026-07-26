@@ -1,4 +1,4 @@
-# @air-conditioner/vue
+# @yunlefun-home/air-conditioner
 
 > [云空调](https://ac.yunyoujun.cn) 的 Vue 3 组件——便携小空调，为你的夏日带去清凉！
 
@@ -7,15 +7,15 @@
 ## 安装
 
 ```bash
-pnpm add @air-conditioner/vue
+pnpm add @yunlefun-home/air-conditioner
 ```
 
 ## 使用
 
 ```vue
 <script setup lang="ts">
-import { AirConditionerWidget } from '@air-conditioner/vue'
-import '@air-conditioner/vue/style.css'
+import { AirConditionerWidget } from '@yunlefun-home/air-conditioner'
+import '@yunlefun-home/air-conditioner/style.css'
 </script>
 
 <template>
@@ -26,16 +26,16 @@ import '@air-conditioner/vue/style.css'
 样式表使用包内相对路径加载数码管字体，现代构建工具会自动处理，无需手动复制。完整 Widget 的音效与默认 Logo 仍需放到宿主项目的静态资源目录：
 
 ```bash
-cp -r node_modules/@air-conditioner/vue/dist/assets public/assets
-cp node_modules/@air-conditioner/vue/dist/yun-logo.svg public/yun-logo.svg
+cp -r node_modules/@yunlefun-home/air-conditioner/dist/assets public/assets
+cp node_modules/@yunlefun-home/air-conditioner/dist/yun-logo.svg public/yun-logo.svg
 ```
 
 如果只使用受控的 `AirConditioner` 机身组件，可以通过 `overrides` 传入状态，并用 `logo-url` 指定宿主自己的 Logo，无需复制音频资源：
 
 ```vue
 <script setup lang="ts">
-import { AirConditioner } from '@air-conditioner/vue'
-import '@air-conditioner/vue/style.css'
+import { AirConditioner } from '@yunlefun-home/air-conditioner'
+import '@yunlefun-home/air-conditioner/style.css'
 </script>
 
 <template>

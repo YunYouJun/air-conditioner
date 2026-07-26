@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AcChangeEvent, AcNotification, AcState } from '@air-conditioner/core'
-import { createAirConditionerStore } from '@air-conditioner/core'
+import type { AcChangeEvent, AcNotification, AcState } from '@yunlefun-home/air-conditioner-core'
+import { createAirConditionerStore } from '@yunlefun-home/air-conditioner-core'
 import { onUnmounted, provide } from 'vue'
 import {
   airConditionerKey,

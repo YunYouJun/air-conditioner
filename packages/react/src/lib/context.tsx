@@ -5,12 +5,12 @@ import type {
   AcState,
   AirConditionerStore,
   CreateAirConditionerStoreOptions,
-} from '@air-conditioner/core'
+} from '@yunlefun-home/air-conditioner-core'
 import type { PropsWithChildren } from 'react'
 import {
   createAirConditionerStore,
   defaultAcState,
-} from '@air-conditioner/core'
+} from '@yunlefun-home/air-conditioner-core'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 export interface AirConditionerProviderProps extends PropsWithChildren, CreateAirConditionerStoreOptions {}

@@ -1,5 +1,5 @@
-import { createAcAudioController } from '@air-conditioner/core'
 import { blue, green, red } from '@mui/material/colors'
+import { createAcAudioController } from '@yunlefun-home/air-conditioner-core'
 
 import React from 'react'
 import { useAc, useAcCtx } from '~/context'

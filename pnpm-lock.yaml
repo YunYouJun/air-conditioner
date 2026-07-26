@@ -176,7 +176,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@air-conditioner/core':
+      '@yunlefun-home/air-conditioner-core':
         specifier: workspace:*
         version: link:../core
       react-ga:
@@ -255,7 +255,7 @@ importers:
 
   packages/vue:
     dependencies:
-      '@air-conditioner/core':
+      '@yunlefun-home/air-conditioner-core':
         specifier: workspace:^
         version: link:../core
     devDependencies:
@@ -283,7 +283,7 @@ importers:
 
   packages/widget:
     dependencies:
-      '@air-conditioner/core':
+      '@yunlefun-home/air-conditioner-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

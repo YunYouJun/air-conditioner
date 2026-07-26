@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AcChangeEvent, AcNotification, AcState } from '@air-conditioner/core'
-import { resolveAcAudioAssets } from '@air-conditioner/core'
+import type { AcChangeEvent, AcNotification, AcState } from '@yunlefun-home/air-conditioner-core'
+import { resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
 import { computed, ref, shallowRef } from 'vue'
 import { useAcAudio } from '../composables/useAcAudio'
 import AirConditioner from './AirConditioner.vue'
