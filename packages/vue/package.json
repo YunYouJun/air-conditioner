@@ -1,30 +1,43 @@
 {
   "name": "@air-conditioner/vue",
   "type": "module",
-  "version": "0.1.3",
-  "private": true,
+  "version": "0.2.0",
   "description": "Vue components for Yun Air Conditioner.",
   "author": {
     "url": "https://www.yunyoujun.cn",
     "email": "me@yunyoujun.cn",
     "name": "YunYouJun"
   },
+  "license": "MIT",
   "homepage": "https://ac.yunyoujun.cn/",
   "repository": {
     "type": "git",
     "url": "https://github.com/YunYouJun/air-conditioner"
   },
+  "keywords": [
+    "air-conditioner",
+    "smart-home",
+    "vue",
+    "vue3"
+  ],
+  "sideEffects": [
+    "./dist/style.css"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css",
+    "./yun-logo.svg": "./dist/yun-logo.svg"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
@@ -33,6 +46,7 @@
     "build": "pnpm run build:lib",
     "build:app": "vite build --outDir dist-app",
     "build:lib": "tsdown && cp src/style.css dist/style.css && cp -r public/assets dist/assets && cp public/yun-logo.svg dist/yun-logo.svg",
+    "prepack": "pnpm run build",
     "serve": "vite preview dist-app",
     "typecheck": "vue-tsc --noEmit"
   },
@@ -40,7 +54,7 @@
     "vue": ">=3.4"
   },
   "dependencies": {
-    "@air-conditioner/core": "workspace:*"
+    "@air-conditioner/core": "workspace:^"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

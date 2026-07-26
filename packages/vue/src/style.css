@@ -1,8 +1,8 @@
 /* 数码管字体（与 React 主应用一致）。
-   字体文件需由宿主在 assetsBaseUrl/fonts 下提供，缺失时回退到等宽字体。 */
+   使用包内相对路径，构建工具会将字体作为依赖资源一并处理。 */
 @font-face {
   font-family: "Digital-7 Mono";
-  src: url("/assets/fonts/digital-7-mono.ttf") format("truetype");
+  src: url("./assets/fonts/digital-7-mono.ttf") format("truetype");
   font-display: swap;
 }
 

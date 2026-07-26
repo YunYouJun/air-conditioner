@@ -1,9 +1,8 @@
 import { defineConfig } from 'bumpp'
 
 const packages = [
-  'react',
+  'core',
   'vue',
-  // 'widget',
 ]
 
 export default defineConfig({

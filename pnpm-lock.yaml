@@ -256,7 +256,7 @@ importers:
   packages/vue:
     dependencies:
       '@air-conditioner/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
     devDependencies:
       '@vitejs/plugin-vue':

@@ -23,10 +23,27 @@ import '@air-conditioner/vue/style.css'
 </template>
 ```
 
-组件依赖一组音效与数码管字体，需放到宿主项目的静态资源目录：
+样式表使用包内相对路径加载数码管字体，现代构建工具会自动处理，无需手动复制。完整 Widget 的音效与默认 Logo 仍需放到宿主项目的静态资源目录：
 
 ```bash
 cp -r node_modules/@air-conditioner/vue/dist/assets public/assets
+cp node_modules/@air-conditioner/vue/dist/yun-logo.svg public/yun-logo.svg
+```
+
+如果只使用受控的 `AirConditioner` 机身组件，可以通过 `overrides` 传入状态，并用 `logo-url` 指定宿主自己的 Logo，无需复制音频资源：
+
+```vue
+<script setup lang="ts">
+import { AirConditioner } from '@air-conditioner/vue'
+import '@air-conditioner/vue/style.css'
+</script>
+
+<template>
+  <AirConditioner
+    :overrides="{ status: true, mode: 'cold', temperature: 26 }"
+    logo-url="/yun-logo.svg"
+  />
+</template>
 ```
 
 更多用法（Props、手动组合、暗黑模式、音效接入、组合式 API）见文档：
