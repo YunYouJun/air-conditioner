@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 interface PackageManifest {
@@ -31,5 +31,12 @@ describe('public package manifests', () => {
     const manifest = readManifest('../../vue/package.json')
 
     expect(manifest.exports?.['./yun-logo.svg']).toBe('./dist/yun-logo.svg')
+  })
+
+  it.each([
+    ['core', '../LICENSE'],
+    ['vue', '../../vue/LICENSE'],
+  ])('ships the MIT license with @air-conditioner/%s', (_packageName, relativePath) => {
+    expect(existsSync(new URL(relativePath, import.meta.url))).toBe(true)
   })
 })
