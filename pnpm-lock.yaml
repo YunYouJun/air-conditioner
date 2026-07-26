@@ -42,6 +42,9 @@ catalogs:
     '@types/react-router-dom':
       specifier: ^5.3.3
       version: 5.3.3
+    '@unocss/reset':
+      specifier: ^66.7.0
+      version: 66.7.5
     '@vitejs/plugin-react':
       specifier: ^6.0.2
       version: 6.0.2
@@ -222,6 +225,9 @@ importers:
       '@types/react-router-dom':
         specifier: 'catalog:'
         version: 5.3.3
+      '@unocss/reset':
+        specifier: 'catalog:'
+        version: 66.7.5
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 6.0.2(vite@8.0.16(@types/node@25.9.1)(jiti@2.7.0)(sass@1.100.0)(terser@5.48.0)(tsx@4.19.2)(yaml@2.9.0))
@@ -2323,6 +2329,9 @@ packages:
 
   '@unocss/preset-wind@66.7.0':
     resolution: {integrity: sha512-K2cCgQawl4GzFyI9almN4jZ33OJNI6U7WxZ9s7D5bivZYfHPaStLTPffNxWlmawwUZF0qpH0S+S7H745ZzgajQ==}
+
+  '@unocss/reset@66.7.5':
+    resolution: {integrity: sha512-z3wbt2cuQPjtT6w5xzRYZYFIIlUPzhVKz8yIcE9fvu7BgR3hO7uVsg/5mzDoGwQ96Ya3Sk68rpmI/gLYl4bJag==}
 
   '@unocss/rule-utils@66.7.0':
     resolution: {integrity: sha512-DMJIiey/m+xr0hpSbxFhSbKlC3e7QsuwdAEdgMmIM7pEcu/AEMl7oH198QYX9880P2X0hy5iFE6UCWx9CwGAXQ==}
@@ -7172,6 +7181,8 @@ snapshots:
     dependencies:
       '@unocss/core': 66.7.0
       '@unocss/preset-wind3': 66.7.0
+
+  '@unocss/reset@66.7.5': {}
 
   '@unocss/rule-utils@66.7.0':
     dependencies:

@@ -10,6 +10,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   resolve: {
     alias: {
+      '@yunlefun-home/air-conditioner-core': path.resolve(__dirname, '../core/src/index.ts'),
       '~/': `${path.resolve(__dirname, 'src')}/`,
     },
   },

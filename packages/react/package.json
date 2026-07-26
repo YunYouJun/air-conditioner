@@ -73,6 +73,7 @@
     "@types/react-dom": "catalog:",
     "@types/react-gtm-module": "catalog:",
     "@types/react-router-dom": "catalog:",
+    "@unocss/reset": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

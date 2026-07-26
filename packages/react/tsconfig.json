@@ -11,6 +11,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
+      "@yunlefun-home/air-conditioner-core": ["../core/src/index.ts"],
       "~/*": ["./src/*"]
     },
     "resolveJsonModule": true,
