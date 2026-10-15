@@ -1,4 +1,4 @@
 .build/
 build/
 .swiftpm/
-Model/renders/scenekit-*.png
+Model/renders/

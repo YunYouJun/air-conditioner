@@ -37,8 +37,11 @@ open build/CuteAC.app
 build/CuteAC.app/Contents/MacOS/CuteAC --capture /tmp/cute-ac
 ffmpeg -framerate 15 -i /tmp/cute-ac/frame-%03d.png \
   -vf "scale=360:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" \
-  ../../docs/public/macos/demo.gif
+  /tmp/cute-ac/demo.gif
+gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/macos/demo.gif
 ```
+
+文档截图用 WebP（`cwebp -q 86 -m 6`），比 PNG 小约 65%。`Model/renders/` 不入库，需要时用 Blender 脚本重新生成。
 
 ## 模型
 

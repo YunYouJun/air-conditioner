@@ -14,7 +14,7 @@
 
 | 制冷 | 制热 | 关机 |
 | --- | --- | --- |
-| ![制冷](/macos/popover-on-cold.png) | ![制热](/macos/popover-hot-28.png) | ![关机](/macos/popover-off.png) |
+| ![制冷](/macos/popover-on-cold.webp) | ![制热](/macos/popover-hot-28.webp) | ![关机](/macos/popover-off.webp) |
 
 ## 构建
 
@@ -46,6 +46,6 @@ open build/CuteAC.app
 /Applications/Blender.app/Contents/MacOS/Blender -b -P apps/macos/Model/build_cute_ac.py
 ```
 
-![低多边形空调模型](/macos/model-cold.png)
+![低多边形空调模型](/macos/model-cold.webp)
 
 更多细节（调试参数、重新生成演示 GIF、节点命名约定）见 [`apps/macos/README.md`](https://github.com/YunYouJun/air-conditioner/tree/dev/apps/macos)。
