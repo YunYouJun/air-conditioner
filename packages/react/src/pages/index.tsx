@@ -2,6 +2,7 @@ import { Button } from '@mui/material'
 import React from 'react'
 
 import AirConditioner from '~/components/ac/AirConditioner'
+import ComputerCooling from '~/components/ComputerCooling'
 import ProTip from '~/components/ProTip'
 
 import RemoteControl from '~/components/RemoteControl'
@@ -51,6 +52,7 @@ const Home: React.FC = () => {
               独立遥控器
             </Button>
           </div>
+          <ComputerCooling />
         </div>
         <RemoteControl />
       </div>
