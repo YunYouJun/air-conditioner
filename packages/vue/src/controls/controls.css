@@ -1,0 +1,296 @@
+/*
+ * Styles for @yunlefun-home/air-conditioner/controls.
+ *
+ * Theme by setting these on any ancestor (all optional):
+ *   --acw-tone-cool, --acw-tone-heat, --acw-tone-mid
+ *   --acw-ink, --acw-muted, --acw-faint
+ *   --acw-surface, --acw-sunken, --acw-line, --acw-line-strong, --acw-highlight
+ *   --acw-ease-spring, --acw-ease-out
+ * Defaults resolve per element through the private --_* variables below.
+ */
+
+.acw-dial,
+.acw-glyph {
+  --_cool: var(--acw-tone-cool, #5f939e);
+  --_heat: var(--acw-tone-heat, #cc8456);
+  --_mid: var(--acw-tone-mid, #687b67);
+  --_ink: var(--acw-ink, #28312f);
+  --_muted: var(--acw-muted, #69716d);
+  --_faint: var(--acw-faint, #9aa19b);
+  --_surface: var(--acw-surface, rgba(252, 252, 249, 0.94));
+  --_sunken: var(--acw-sunken, rgba(225, 230, 222, 0.55));
+  --_line: var(--acw-line, rgba(104, 123, 103, 0.2));
+  --_line-strong: var(--acw-line-strong, rgba(104, 123, 103, 0.38));
+  --_highlight: var(--acw-highlight, rgba(255, 255, 255, 0.86));
+  --_spring: var(--acw-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  --_ease-out: var(--acw-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+html.dark :is(.acw-dial, .acw-glyph) {
+  --_cool: var(--acw-tone-cool, #82b9c4);
+  --_heat: var(--acw-tone-heat, #e19a6b);
+  --_mid: var(--acw-tone-mid, #93ab92);
+  --_ink: var(--acw-ink, #f1f3ed);
+  --_muted: var(--acw-muted, #aab3ab);
+  --_faint: var(--acw-faint, #7c867f);
+  --_surface: var(--acw-surface, rgba(32, 41, 37, 0.94));
+  --_sunken: var(--acw-sunken, rgba(14, 19, 17, 0.5));
+  --_line: var(--acw-line, rgba(131, 153, 130, 0.2));
+  --_line-strong: var(--acw-line-strong, rgba(131, 153, 130, 0.38));
+  --_highlight: var(--acw-highlight, rgba(255, 255, 255, 0.06));
+}
+
+/* Temperature dial */
+
+.acw-dial {
+  --_tone: var(--_faint);
+  --_size: 196px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: var(--_ink);
+}
+
+.acw-dial--large { --_size: min(300px, 72vw); }
+.acw-dial[data-tone="cool"] { --_tone: var(--_cool); }
+.acw-dial[data-tone="heat"] { --_tone: var(--_heat); }
+
+.acw-dial__gauge {
+  position: relative;
+  width: var(--_size);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  outline: none;
+}
+
+.acw-dial__gauge:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--_ink) 30%, transparent); }
+
+.acw-dial__aura {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--_tone) 30%, transparent), transparent 70%);
+  filter: blur(10px);
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.acw-dial:not([data-tone="idle"]) .acw-dial__aura {
+  opacity: 1;
+  animation: acw-breathe 3.6s ease-in-out infinite;
+}
+
+.acw-dial svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.acw-dial__stop-cool { stop-color: var(--_cool); }
+.acw-dial__stop-mid { stop-color: var(--_mid); }
+.acw-dial__stop-heat { stop-color: var(--_heat); }
+
+.acw-dial__ticks line {
+  stroke: var(--_line-strong);
+  stroke-linecap: round;
+  stroke-width: 1.4;
+  transition: stroke 480ms ease;
+}
+
+.acw-dial__ticks line[data-lit="true"] { stroke: color-mix(in oklab, var(--_tone) 70%, var(--_muted)); }
+
+.acw-dial__track,
+.acw-dial__progress {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 11;
+}
+
+.acw-dial__track { stroke: var(--_sunken); }
+
+.acw-dial__progress {
+  filter: drop-shadow(0 4px 8px color-mix(in oklab, var(--_tone) 40%, transparent));
+  transition: stroke-dasharray 480ms var(--_ease-out), opacity 480ms ease;
+}
+
+.acw-dial[data-tone="idle"] .acw-dial__progress { opacity: 0.38; filter: grayscale(0.6); }
+
+.acw-dial__knob {
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+  transition: transform 480ms var(--_spring);
+}
+
+.acw-dial__knob-glow { fill: color-mix(in oklab, var(--_tone) 26%, transparent); }
+.acw-dial__knob-dot { fill: var(--_surface); stroke: var(--_tone); stroke-width: 3; }
+
+.acw-dial__readout {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.acw-dial__readout strong {
+  display: inline-flex;
+  align-items: flex-start;
+  font-size: calc(var(--_size) * 0.24);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.acw-dial__number {
+  position: relative;
+  display: inline-grid;
+  overflow: hidden;
+}
+
+.acw-dial__readout sup {
+  margin: 0.2em 0 0 0.12em;
+  color: var(--_muted);
+  font-size: 0.3em;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.acw-dial__readout small {
+  color: var(--_muted);
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.acw-dial__steps {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  width: calc(var(--_size) * 0.92);
+  margin-top: calc(var(--_size) * -0.2);
+}
+
+.acw-dial__step {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--_line);
+  border-radius: 50%;
+  background: var(--_surface);
+  box-shadow: inset 0 1px 0 var(--_highlight);
+  color: var(--_ink);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 260ms var(--_spring);
+}
+
+.acw-dial__step:active:not(:disabled) { transform: scale(0.86); }
+.acw-dial__step:disabled { color: var(--_faint); cursor: not-allowed; opacity: 0.55; }
+
+.acw-dial__range {
+  color: var(--_faint);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.acw-dial.is-disabled .acw-dial__readout strong { opacity: 0.55; }
+
+.acw-roll-up-enter-active,
+.acw-roll-up-leave-active,
+.acw-roll-down-enter-active,
+.acw-roll-down-leave-active {
+  transition: opacity 260ms var(--_ease-out), transform 260ms var(--_ease-out), filter 260ms var(--_ease-out);
+}
+
+.acw-roll-up-leave-active,
+.acw-roll-down-leave-active { position: absolute; }
+
+.acw-roll-up-enter-from,
+.acw-roll-down-leave-to { opacity: 0; transform: translateY(55%); filter: blur(3px); }
+
+.acw-roll-up-leave-to,
+.acw-roll-down-enter-from { opacity: 0; transform: translateY(-55%); filter: blur(3px); }
+
+/* Glyph */
+
+.acw-glyph {
+  --_tone: var(--_mid);
+  --acw-airflow: 0.6;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.acw-glyph[data-tone="cool"] { --_tone: var(--_cool); }
+.acw-glyph[data-tone="heat"] { --_tone: var(--_heat); }
+
+.acw-glyph__stop-top { stop-color: #ffffff; }
+.acw-glyph__stop-bottom { stop-color: #eef0ea; }
+.acw-glyph__shadow { fill: rgba(40, 49, 47, 0.14); }
+.acw-glyph__body { stroke: #a9b3a6; stroke-width: 2; }
+.acw-glyph__sheen { fill: none; stroke: white; stroke-linecap: round; stroke-opacity: 0.9; stroke-width: 3; }
+.acw-glyph__panel { fill: #e1e6de; stroke: #a5aea2; stroke-width: 1.5; }
+.acw-glyph__detail { fill: none; stroke: #858f86; stroke-linecap: round; stroke-width: 2; }
+.acw-glyph__led { fill: #b2bab0; transition: fill 480ms ease; }
+.acw-glyph__led-halo { fill: var(--_tone); opacity: 0; transform-box: fill-box; transform-origin: center; }
+
+.acw-glyph__louver {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transition: transform 900ms var(--_spring);
+}
+
+.acw-glyph__airflow path {
+  fill: none;
+  stroke: var(--_tone);
+  stroke-dasharray: 6 9;
+  stroke-linecap: round;
+  stroke-width: 3;
+  opacity: 0;
+  transition: opacity 480ms ease;
+}
+
+.acw-glyph.is-active .acw-glyph__louver { transform: rotateX(28deg) translateY(1px); }
+.acw-glyph.is-active .acw-glyph__led { fill: var(--_tone); }
+.acw-glyph.is-active .acw-glyph__led-halo { opacity: 0.35; animation: acw-breathe 2.4s ease-in-out infinite; }
+
+/* Airflow speeds up and thickens with intensity: 2.2s at 0 down to 0.8s at 1 */
+.acw-glyph.is-active .acw-glyph__airflow path {
+  opacity: calc(0.35 + var(--acw-airflow) * 0.5);
+  stroke-width: calc(2.4 + var(--acw-airflow) * 1.4);
+  animation: acw-airflow calc(2.2s - var(--acw-airflow) * 1.4s) linear infinite;
+}
+
+.acw-glyph.is-active .acw-glyph__airflow path:nth-child(2) { animation-delay: -0.35s; }
+.acw-glyph.is-active .acw-glyph__airflow path:nth-child(3) { animation-delay: -0.7s; }
+.acw-glyph.is-active .acw-glyph__airflow path:nth-child(4) { animation-delay: -1.05s; }
+
+@keyframes acw-airflow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -30; }
+}
+
+@keyframes acw-breathe {
+  50% { opacity: 0.55; transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acw-dial:not([data-tone="idle"]) .acw-dial__aura,
+  .acw-glyph.is-active .acw-glyph__airflow path,
+  .acw-glyph.is-active .acw-glyph__led-halo { animation: none; }
+
+  .acw-dial__knob,
+  .acw-dial__progress,
+  .acw-glyph__louver { transition: none; }
+}

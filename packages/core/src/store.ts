@@ -13,11 +13,12 @@ export function createAirConditionerStore(options: CreateAirConditionerStoreOpti
   const storageKey = options.storageKey ?? acStorageKey
   const storage = options.storage === undefined ? getBrowserStorage() : options.storage
   const persistedState = readAcState(storage, storageKey)
+  const limits = options.limits
   let state = normalizeAcState({
     ...defaultAcState,
     ...persistedState,
     ...options.initialState,
-  })
+  }, limits)
   const listeners = new Set<AcStoreListener>()
 
   return {
@@ -26,8 +27,8 @@ export function createAirConditionerStore(options: CreateAirConditionerStoreOpti
     },
     dispatch(action: AcAction) {
       const previousState = state
-      const nextState = acReducer(state, action)
-      const notification = getAcActionNotification(previousState, nextState, action)
+      const nextState = acReducer(state, action, limits)
+      const notification = getAcActionNotification(previousState, nextState, action, limits)
       const event: AcChangeEvent = {
         action,
         previousState,

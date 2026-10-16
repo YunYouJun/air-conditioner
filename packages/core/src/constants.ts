@@ -1,4 +1,4 @@
-import type { AcMode, AcSoundMode, AcState } from './types'
+import type { AcLimits, AcMode, AcSoundMode, AcState } from './types'
 
 export const acStorageKey = 'ac:state'
 
@@ -25,6 +25,12 @@ export const acAudioFileNames = {
 
 export const minTemperature = 16
 export const maxTemperature = 31
+
+export const defaultAcLimits: AcLimits = {
+  min: minTemperature,
+  max: maxTemperature,
+  step: 1,
+}
 
 export const recommendedColdTemperature = 26
 export const recommendedHotTemperature = 20

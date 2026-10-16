@@ -27,6 +27,13 @@ describe('public package manifests', () => {
     expect(manifest.publishConfig?.access).toBe('public')
   })
 
+  it('exports the Vue controls subpath and stylesheet', () => {
+    const manifest = readManifest('../../vue/package.json')
+
+    expect(manifest.exports?.['./controls']).toMatchObject({ import: './dist/controls.js', types: './dist/controls.d.ts' })
+    expect(manifest.exports?.['./controls.css']).toBe('./dist/controls.css')
+  })
+
   it('exports the Vue logo asset for host applications', () => {
     const manifest = readManifest('../../vue/package.json')
 
