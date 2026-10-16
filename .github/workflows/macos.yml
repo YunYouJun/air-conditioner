@@ -1,0 +1,46 @@
+name: macOS
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'apps/macos/**'
+      - .github/workflows/macos.yml
+
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - 'apps/macos/**'
+      - .github/workflows/macos.yml
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/macos
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Bundle
+        run: scripts/bundle.sh
+
+      - name: Snapshot
+        run: |
+          .build/release/CuteAC --snapshot "$RUNNER_TEMP/snap"
+          test "$(ls "$RUNNER_TEMP"/snap/*.png | wc -l)" -eq 3
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macos-snapshots
+          path: ${{ runner.temp }}/snap/
+          retention-days: 14
