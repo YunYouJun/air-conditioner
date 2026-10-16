@@ -1,5 +1,6 @@
-import type { AcAction, AcNotification, AcState } from './types'
+import type { AcAction, AcLimits, AcNotification, AcState, AcTone } from './types'
 import {
+  defaultAcLimits,
   defaultAcState,
   maxTemperature,
   minTemperature,
@@ -7,29 +8,55 @@ import {
   recommendedHotTemperature,
 } from './constants'
 
-export function normalizeAcState(state: Partial<AcState> | undefined): AcState {
+/**
+ * Merge a partial state over the defaults and clamp its temperature.
+ *
+ * @param state - Partial or stored state
+ * @param limits - Device limits; omit to keep the default 16–31 °C range
+ */
+export function normalizeAcState(state: Partial<AcState> | undefined, limits?: AcLimits): AcState {
   return {
     ...defaultAcState,
     ...state,
-    temperature: clampTemperature(state?.temperature ?? defaultAcState.temperature),
+    temperature: clampTemperature(state?.temperature ?? defaultAcState.temperature, limits),
   }
 }
 
-export function clampTemperature(temperature: number): number {
-  return Math.min(maxTemperature, Math.max(minTemperature, temperature))
+/**
+ * Clamp a temperature into range. When `limits` are given the value also
+ * snaps to the device step, measured from `limits.min`.
+ *
+ * @param temperature - Requested temperature in Celsius
+ * @param limits - Device limits; omit to clamp to 16–31 °C without snapping
+ */
+export function clampTemperature(temperature: number, limits?: AcLimits): number {
+  if (!limits)
+    return Math.min(maxTemperature, Math.max(minTemperature, temperature))
+  const { min, max, step } = limits
+  const snapped = step > 0 ? Math.round((temperature - min) / step) * step + min : temperature
+  // Round away floating point noise from fractional steps such as 0.5.
+  return Number(Math.min(max, Math.max(min, snapped)).toFixed(4))
 }
 
-export function acReducer(state: AcState, action: AcAction): AcState {
+/**
+ * Apply an action to the state.
+ *
+ * @param state - Current state
+ * @param action - Action to apply
+ * @param limits - Device limits; increments use `limits.step`
+ */
+export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): AcState {
+  const step = limits?.step ?? defaultAcLimits.step
   switch (action.type) {
     case 'increment':
       return {
         ...state,
-        temperature: clampTemperature(state.temperature + 1),
+        temperature: clampTemperature(state.temperature + step, limits),
       }
     case 'decrement':
       return {
         ...state,
-        temperature: clampTemperature(state.temperature - 1),
+        temperature: clampTemperature(state.temperature - step, limits),
       }
     case 'toggleStatus':
       return {
@@ -50,7 +77,7 @@ export function acReducer(state: AcState, action: AcAction): AcState {
       return normalizeAcState({
         ...state,
         ...action.payload,
-      })
+      }, limits)
     default:
       throw new Error('Unexpected Ac Action')
   }
@@ -60,19 +87,31 @@ export function getRecommendedTemperatureMessage(mode: AcState['mode'], temperat
   return `建议将空调的制${mode === 'cold' ? '冷' : '热'}温度调至 ${temperature} 度以${mode === 'cold' ? '上' : '下'}，为节能减排贡献一份力量！`
 }
 
+/**
+ * Visual tone for a state: `idle` when off, otherwise `cool` or `heat`.
+ *
+ * @param state - Current state
+ */
+export function acTone(state: Pick<AcState, 'status' | 'mode'>): AcTone {
+  if (!state.status)
+    return 'idle'
+  return state.mode === 'hot' ? 'heat' : 'cool'
+}
+
 export function getAcActionNotification(
   previousState: AcState,
   nextState: AcState,
   action: AcAction,
+  limits: AcLimits = defaultAcLimits,
 ): AcNotification | undefined {
-  if (action.type === 'increment' && previousState.temperature >= maxTemperature) {
+  if (action.type === 'increment' && previousState.temperature >= limits.max) {
     return {
       message: '已经是最大温度啦！',
       severity: 'error',
     }
   }
 
-  if (action.type === 'decrement' && previousState.temperature <= minTemperature) {
+  if (action.type === 'decrement' && previousState.temperature <= limits.min) {
     return {
       message: '已经是最小温度啦！',
       severity: 'error',
