@@ -22,6 +22,7 @@ export default defineConfig({
             { text: 'React', link: '/guide/react' },
             { text: 'Vue', link: '/guide/vue' },
             { text: 'Web Component', link: '/guide/web-component' },
+            { text: 'macOS', link: '/guide/macos' },
           ],
         },
       ],
