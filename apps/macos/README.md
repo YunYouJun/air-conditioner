@@ -22,6 +22,8 @@ scripts/bundle.sh          # 构建 build/CuteAC.app（不在 Dock 显示，只�
 open build/CuteAC.app
 ```
 
+改动 `apps/macos/` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上执行 release 构建、运行 `scripts/bundle.sh` 打包并做 ad-hoc 签名，再用 `--snapshot` 离屏渲染三张状态图，作为 `macos-snapshots` 产物上传。CI 不运行 Blender，直接使用仓库里的 `CuteAC.usdz`。
+
 调试参数：
 
 | 参数 | 作用 |
