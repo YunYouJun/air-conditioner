@@ -2,6 +2,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "Bundler",
+    "types": [
+      "node",
+      "vite/client"
+    ],
     "noEmit": true
   },
   "include": [
