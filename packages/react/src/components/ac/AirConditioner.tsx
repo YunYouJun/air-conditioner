@@ -1,7 +1,9 @@
 import type { AcMode } from '~/types'
 
-import React from 'react'
+import { acShellSize } from '@yunlefun-home/air-conditioner-core'
+import React, { useRef } from 'react'
 import * as pkg from '~/../package.json'
+import { useAcScale } from '~/lib/useAcScale'
 import { AcDisplay } from './AcDisplay'
 import { EnergyLabel } from './EnergyLabel'
 
@@ -16,18 +18,25 @@ export const acColor = {
   display: '#cccccc',
 }
 
-const AcBorder: React.FC<React.PropsWithChildren> = (props) => {
+const AcBorder: React.FC<React.PropsWithChildren<{ scale: number }>> = (props) => {
+  const { width, height } = acShellSize.wide
   return (
     <div
-      className="bg-white h-38 shadow relative"
+      className="bg-white shadow relative"
       style={{
         border: `1px solid ${acColor.border}`,
         borderRadius: 10,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+        // 窄屏下按设计尺寸整体等比缩小，保持长款比例；负外边距收回缩放后多出来的高度
+        width,
+        height,
+        transform: `scale(${props.scale})`,
+        transformOrigin: '0 0',
+        marginBottom: height * (props.scale - 1),
       }}
-      {...props}
     >
+      {props.children}
     </div>
   )
 }
@@ -113,9 +122,12 @@ const AirConditioner: React.FC<{
   status: boolean
   temperature: number
 }> = (props) => {
+  const unitRef = useRef<HTMLDivElement>(null)
+  const scale = useAcScale(unitRef, acShellSize.wide.width)
+
   return (
-    <div className="ac-unit" data-mode={props.mode} data-status={props.status ? 'on' : 'off'}>
-      <AcBorder>
+    <div ref={unitRef} className="ac-unit" data-mode={props.mode} data-status={props.status ? 'on' : 'off'}>
+      <AcBorder scale={scale}>
         <AcDisplay mode={props.mode} />
         <AcLogo />
         <AirOutlet />
