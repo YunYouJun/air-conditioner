@@ -1,7 +1,9 @@
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
-import { defaultAcState } from '@yunlefun-home/air-conditioner-core'
-import { useState } from 'react'
+import type { CSSProperties } from 'react'
+import { acShellSize, defaultAcState } from '@yunlefun-home/air-conditioner-core'
+import { useRef, useState } from 'react'
 import { useOptionalAirConditionerState } from './context'
+import { useAcScale } from './useAcScale'
 
 export interface AirConditionerProps extends Partial<AcState> {
   title?: string
@@ -39,9 +41,17 @@ export function AirConditioner(props: AirConditionerProps = {}) {
 
   const direction = useChangeDirection(temperature)
   const modeChanged = useHasChanged(mode)
+  const unitRef = useRef<HTMLDivElement>(null)
+  const scale = useAcScale(unitRef, acShellSize.compact.width)
 
   return (
-    <div className="acw-unit" data-mode={mode} data-status={status ? 'on' : 'off'}>
+    <div
+      ref={unitRef}
+      className="acw-unit"
+      data-mode={mode}
+      data-status={status ? 'on' : 'off'}
+      style={{ '--acw-scale': scale } as CSSProperties}
+    >
       <div className="acw-shell">
         <div className="acw-badge">
           <span></span>

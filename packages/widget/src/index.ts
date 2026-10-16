@@ -4,7 +4,7 @@ import type {
   AcState,
   AirConditionerStore,
 } from '@yunlefun-home/air-conditioner-core'
-import { createAirConditionerStore, defaultAcState, renderAcMotionCssVars } from '@yunlefun-home/air-conditioner-core'
+import { acShellSize, createAirConditionerStore, defaultAcState, observeAcScale, renderAcMotionCssVars } from '@yunlefun-home/air-conditioner-core'
 
 export type WidgetAcMode = 'cold' | 'hot'
 
@@ -48,6 +48,8 @@ const defaultTagName = 'air-conditioner-widget'
 const styleText = `
 :host {
   display: inline-block;
+  /* 宽度相对宿主容器确定，避免 inline-block 收缩到遥控器宽度把机身挤窄 */
+  width: min(420px, 100%);
   color: #1f2933;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -70,6 +72,13 @@ const styleText = `
 .acw-shell {
   position: relative;
   height: 152px;
+  /* 窄容器下整体等比缩小，保持长款比例（--acw-scale 由组件按容器宽度写入）。
+     用百分比换算回 360px 设计宽度，避免固定宽度撑大父容器的最小尺寸 */
+  width: calc(100% / var(--acw-scale, 1));
+  transform: scale(var(--acw-scale, 1));
+  transform-origin: 0 0;
+  /* 缩放不改变布局尺寸，用负外边距收回多出来的高度 */
+  margin-bottom: calc(152px * (var(--acw-scale, 1) - 1));
   border: 1px solid #d9dee7;
   border-bottom-right-radius: 20px;
   border-bottom-left-radius: 20px;
@@ -603,6 +612,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private store?: AirConditionerStore
     private unsubscribe?: () => void
     private renderedState?: AcState
+    private stopScaling?: () => void
 
     static get observedAttributes() {
       return ['mode', 'status', 'temperature']
@@ -639,10 +649,21 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.shadowRoot?.addEventListener('click', this.onClick)
       this.renderedState = undefined
       this.render()
+
+      // 窄容器下机身等比缩小，保持长款比例
+      const unit = this.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
+      if (unit) {
+        this.stopScaling?.()
+        this.stopScaling = observeAcScale(unit, acShellSize.compact.width, (scale) => {
+          unit.style.setProperty('--acw-scale', String(scale))
+        })
+      }
     }
 
     disconnectedCallback() {
       this.unsubscribe?.()
+      this.stopScaling?.()
+      this.stopScaling = undefined
       this.shadowRoot?.removeEventListener('click', this.onClick)
     }
 

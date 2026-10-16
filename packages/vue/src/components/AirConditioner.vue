@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
-import { acModeIcons, defaultAcState } from '@yunlefun-home/air-conditioner-core'
-import { computed, ref, watch } from 'vue'
+import { acModeIcons, acShellSize, defaultAcState, observeAcScale } from '@yunlefun-home/air-conditioner-core'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useOptionalAirConditioner } from '../composables/useAirConditioner'
 import EnergyLabel from './EnergyLabel.vue'
 
@@ -40,6 +40,16 @@ watch(() => state.value.temperature, (value, previous) => {
   temperatureDirection.value = value > previous ? 'up' : 'down'
 })
 
+/** 窄容器下机身等比缩小，保持长款比例 */
+const unitRef = ref<HTMLElement>()
+const scale = ref(1)
+let stopObserving: (() => void) | undefined
+onMounted(() => {
+  if (unitRef.value)
+    stopObserving = observeAcScale(unitRef.value, acShellSize.compact.width, value => scale.value = value)
+})
+onBeforeUnmount(() => stopObserving?.())
+
 /** 模式图标仅在切换后弹出，避免首屏就播放 */
 const modeChanged = ref(false)
 watch(() => state.value.mode, () => {
@@ -48,7 +58,13 @@ watch(() => state.value.mode, () => {
 </script>
 
 <template>
-  <div class="acw-unit" :data-mode="state.mode" :data-status="state.status ? 'on' : 'off'">
+  <div
+    ref="unitRef"
+    class="acw-unit"
+    :data-mode="state.mode"
+    :data-status="state.status ? 'on' : 'off'"
+    :style="{ '--acw-scale': scale }"
+  >
     <div class="acw-shell">
       <!-- 能效标签 -->
       <EnergyLabel v-if="showEnergyLabel" />

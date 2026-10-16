@@ -59,6 +59,8 @@ html.dark .acw-root,
   display: flex;
   flex-direction: column;
   align-items: center;
+  /* 显式占满可用宽度：在 flex / grid 居中等收缩布局里也不会被遥控器宽度挤窄 */
+  width: 100%;
   max-width: 420px;
   margin: 0 auto;
   color: var(--acw-text-color);
@@ -88,6 +90,13 @@ html.dark .acw-root,
 .acw-shell {
   position: relative;
   height: 152px;
+  /* 窄容器下整体等比缩小，保持长款比例（--acw-scale 由组件按容器宽度写入）。
+     用百分比换算回 360px 设计宽度，避免固定宽度撑大父容器的最小尺寸 */
+  width: calc(100% / var(--acw-scale, 1));
+  transform: scale(var(--acw-scale, 1));
+  transform-origin: 0 0;
+  /* 缩放不改变布局尺寸，用负外边距收回多出来的高度 */
+  margin-bottom: calc(152px * (var(--acw-scale, 1) - 1));
   background: #fff;
   border: 1px solid var(--acw-border-color);
   border-radius: 10px 10px 20px 20px;

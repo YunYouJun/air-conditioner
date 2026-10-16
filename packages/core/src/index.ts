@@ -1,5 +1,6 @@
 export * from './audio'
 export * from './constants'
+export * from './layout'
 export * from './motion'
 export * from './reducer'
 export * from './storage'
