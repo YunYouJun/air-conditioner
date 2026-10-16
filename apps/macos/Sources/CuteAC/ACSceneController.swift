@@ -90,7 +90,7 @@ final class ACSceneController {
   /// LCD readout drawn once per state change with the Digital-7 seven-segment
   /// face; unlit "88" segments sit behind the digits like a real panel. The
   /// texture is tiny and costs nothing while idle.
-  private static func displayImage(for state: ACState) -> NSImage {
+  static func displayImage(for state: ACState) -> NSImage {
     let size = NSSize(width: 250, height: 100)
     return NSImage(size: size, flipped: false) { rect in
       NSColor(calibratedRed: 0.07, green: 0.09, blue: 0.12, alpha: 1).setFill()

@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   private let store = ACStore()
   private let settings = AppSettings()
   private let visibility = PopoverVisibility()
-  private lazy var sceneController = ACSceneController()
+  private let renderHost = ACRenderHost()
   private var statusItem: NSStatusItem?
   private let popover = NSPopover()
   private var petPanel: DesktopPetPanel?
@@ -33,13 +33,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     NSApp.setActivationPolicy(.accessory)
     ACFonts.registerIfNeeded()
 
-    sceneController.apply(store.state, animated: false)
+    renderHost.prepare(store.state)
 
     popover.behavior = .transient
     popover.animates = true
     popover.delegate = self
     popover.contentViewController = NSHostingController(
-      rootView: PopoverView(store: store, settings: settings, visibility: visibility, sceneController: sceneController)
+      rootView: PopoverView(store: store, settings: settings, visibility: visibility, renderHost: renderHost)
     )
 
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -67,7 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     if visible {
       if petPanel == nil {
         let panel = DesktopPetPanel(
-          content: NSHostingView(rootView: DesktopPetView(store: store, sceneController: sceneController)),
+          content: NSHostingView(rootView: DesktopPetView(store: store, renderHost: renderHost)),
           alwaysOnTop: settings.petAlwaysOnTop
         )
         panel.onDoubleClick = { [weak self] in
@@ -88,7 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
   /// The scene only runs actions while something shows it.
   private func updateSceneActivity() {
-    sceneController.setActive(visibility.isVisible || petPanel != nil)
+    renderHost.setActive(visibility.isVisible || petPanel != nil)
   }
 
   // MARK: Menu bar
@@ -124,11 +124,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   // MARK: Debug
 
   /// `--show-popover` opens the popover on launch (profiling), `--show-pet`
-  /// shows the desktop pet, `--capture <dir>` records the docs demo frames.
+  /// shows the desktop pet, `--bench-cycle` keeps toggling power and
+  /// `--blink-popover` opens then closes the popover (profiling),
+  /// `--capture <dir>` records the docs demo frames.
   private func handleDebugArguments(button: NSStatusBarButton?) {
     let arguments = CommandLine.arguments
     if arguments.contains("--show-pet") {
       settings.showDesktopPet = true
+    }
+    if arguments.contains("--bench-cycle") {
+      // Toggle power every 1.5 s so `top` can sample the cost of transitions.
+      Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
+        MainActor.assumeIsolated { self?.store.togglePower() }
+      }
     }
     guard let button else { return }
 
@@ -150,6 +158,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     else if arguments.contains("--show-popover") {
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
         self?.togglePopover(button)
+      }
+    }
+    else if arguments.contains("--blink-popover") {
+      // Open, then close: measures what keeps running after the popover hides.
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        self?.togglePopover(button)
+      }
+      DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+        self?.popover.performClose(nil)
       }
     }
   }

@@ -96,10 +96,10 @@ final class DesktopPetPanel: NSPanel {
 
 struct DesktopPetView: View {
   @ObservedObject var store: ACStore
-  let sceneController: ACSceneController
+  let renderHost: ACRenderHost
 
   var body: some View {
-    ACSceneView(controller: sceneController, state: store.state, isActive: true, interactive: false)
+    ACModelView(host: renderHost, state: store.state, isActive: true, interactive: false)
       .frame(width: 300, height: 190)
   }
 }

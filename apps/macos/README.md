@@ -29,6 +29,9 @@ open build/CuteAC.app
 | `--show-popover` | 启动后自动打开弹窗，用于测量弹窗打开时的开销 |
 | `--show-pet` | 启动后显示桌面挂件 |
 | `--snapshot <dir>` | 离屏渲染三种状态的 PNG 后退出，用于检查模型和光照 |
+| `--realitykit` / `--realitykit-renderer` | 实验性的 RealityKit 渲染路径（macOS 15+），见 [RealityKit 迁移评估](docs/realitykit-spike.md)。可以和 `--snapshot` 一起用 |
+| `--bench-cycle` | 每 1.5 秒切换一次开关机，用于测量状态切换动画的开销 |
+| `--blink-popover` | 打开弹窗 2.5 秒后关闭，用于测量弹窗关闭后的开销 |
 | `--capture <dir>` | 打开弹窗，按脚本演示一遍（开机 → 调温 → 制热 → 关机），从运行中的视图逐帧导出 PNG 后退出。不需要屏幕录制权限 |
 
 重新生成文档里的 GIF：

@@ -9,14 +9,14 @@ struct PopoverView: View {
   @ObservedObject var store: ACStore
   @ObservedObject var settings: AppSettings
   @ObservedObject var visibility: PopoverVisibility
-  let sceneController: ACSceneController
+  let renderHost: ACRenderHost
 
   private var state: ACState { store.state }
   private var accent: Color { Color(nsColor: ACSceneController.accent(for: state.mode)) }
 
   var body: some View {
     VStack(spacing: 14) {
-      ACSceneView(controller: sceneController, state: state, isActive: visibility.isVisible)
+      ACModelView(host: renderHost, state: state, isActive: visibility.isVisible)
         .frame(height: 190)
         .background(
           RoundedRectangle(cornerRadius: 18, style: .continuous)

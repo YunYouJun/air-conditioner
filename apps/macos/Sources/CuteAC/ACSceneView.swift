@@ -83,17 +83,22 @@ final class ACSceneContainerView: NSView {
     CATransaction.commit()
   }
 
+  private func configureAirflow(for mode: ACMode?) {
+    Self.populateAirflow(airflowLayer, mode: mode, width: bounds.width)
+    positionAirflow()
+  }
+
   /// Cold: a few snowflakes drift down and spin. Hot: warm wavy strokes.
   /// Both are plain repeating CA animations, so the render server runs them
   /// and the app process does no per-frame work (unlike CAEmitterLayer,
-  /// which cost ~10% CPU here).
-  private func configureAirflow(for mode: ACMode?) {
+  /// which cost ~10% CPU here). Shared by the SceneKit and RealityKit views.
+  static func populateAirflow(_ airflowLayer: CALayer, mode: ACMode?, width: CGFloat) {
     airflowLayer.sublayers?.forEach { $0.removeFromSuperlayer() }
     guard let mode else { return }
 
     let color = ACSceneController.accent(for: mode)
     let now = CACurrentMediaTime()
-    let span = min(260, bounds.width * 0.78)
+    let span = min(260, width * 0.78)
 
     switch mode {
     case .cold:
@@ -130,7 +135,6 @@ final class ACSceneContainerView: NSView {
         airflowLayer.addSublayer(line)
       }
     }
-    positionAirflow()
   }
 
   private static func flowAnimation(distance: CGFloat, duration: CFTimeInterval, spin: CGFloat, beginTime: CFTimeInterval) -> CAAnimation {

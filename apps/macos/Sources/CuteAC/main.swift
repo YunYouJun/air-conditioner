@@ -31,8 +31,22 @@ func renderSnapshots(to directory: URL) {
 
 let arguments = CommandLine.arguments
 if let index = arguments.firstIndex(of: "--snapshot"), index + 1 < arguments.count {
+  let directory = URL(fileURLWithPath: arguments[index + 1])
+  if #available(macOS 15, *), RenderBackend.current.usesRealityKit {
+    Task { @MainActor in
+      do {
+        try await renderRealityKitSnapshots(to: directory)
+        exit(0)
+      }
+      catch {
+        print("RealityKit snapshot failed: \(error)")
+        exit(1)
+      }
+    }
+    dispatchMain()
+  }
   MainActor.assumeIsolated {
-    renderSnapshots(to: URL(fileURLWithPath: arguments[index + 1]))
+    renderSnapshots(to: directory)
   }
   exit(0)
 }
