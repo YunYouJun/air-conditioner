@@ -1,6 +1,6 @@
 {
   "name": "air-conditioner",
-  "installCommand": "npm i -g @pnpm/exe@12.11.2 && pnpm install --frozen-lockfile",
+  "installCommand": "npm i -g pnpm@12.11.2 --force && pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run react:build",
   "outputDirectory": "packages/react/dist",
   "rewrites": [
