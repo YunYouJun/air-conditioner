@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { acShellSize, defaultAcState } from '@yunlefun-home/air-conditioner-core'
 import { useRef, useState } from 'react'
 import { useOptionalAirConditionerState } from './context'
-import { useAcScale } from './useAcScale'
+import { useAcScale, useAcTilt } from './useAcScale'
 
 export interface AirConditionerProps extends Partial<AcState> {
   title?: string
@@ -43,6 +43,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
   const modeChanged = useHasChanged(mode)
   const unitRef = useRef<HTMLDivElement>(null)
   const scale = useAcScale(unitRef, acShellSize.compact.width)
+  const [tiltX, tiltY] = useAcTilt(unitRef)
 
   return (
     <div
@@ -50,7 +51,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
       className="acw-unit"
       data-mode={mode}
       data-status={status ? 'on' : 'off'}
-      style={{ '--acw-scale': scale } as CSSProperties}
+      style={{ '--acw-scale': scale, '--acw-tilt-x': `${tiltX}deg`, '--acw-tilt-y': `${tiltY}deg` } as CSSProperties}
     >
       <div className="acw-shell">
         <div className="acw-badge">
@@ -61,8 +62,13 @@ export function AirConditioner(props: AirConditionerProps = {}) {
         <div className="acw-display" aria-live="polite">
           {/* key 变化会重新挂载，从而重播切换动画 */}
           <span key={mode} className="acw-mode" data-animate={modeChanged || undefined}>{mode === 'cold' ? 'cold' : 'hot'}</span>
-          <strong key={temperature} data-dir={direction}>{temperature}</strong>
-          <small>°C</small>
+          <span className="acw-temp">
+            <span className="acw-readout">
+              <strong key={temperature} data-dir={direction}>{temperature}</strong>
+              <small>°C</small>
+            </span>
+            <span className="acw-selftest" aria-hidden="true">88</span>
+          </span>
         </div>
         <div className="acw-logo">{props.title ?? 'Yun AC'}</div>
         <div className="acw-vent" aria-hidden="true"></div>

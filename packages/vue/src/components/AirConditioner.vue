@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
-import { acModeIcons, acShellSize, defaultAcState, observeAcScale } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, acShellSize, defaultAcState, observeAcScale, observeAcTilt } from '@yunlefun-home/air-conditioner-core'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useOptionalAirConditioner } from '../composables/useAirConditioner'
 import EnergyLabel from './EnergyLabel.vue'
@@ -43,12 +43,18 @@ watch(() => state.value.temperature, (value, previous) => {
 /** 窄容器下机身等比缩小，保持长款比例 */
 const unitRef = ref<HTMLElement>()
 const scale = ref(1)
-let stopObserving: (() => void) | undefined
+/** 指针跟随的轻微 3D 倾斜 */
+const tilt = ref<[number, number]>([0, 0])
+const cleanups: (() => void)[] = []
 onMounted(() => {
-  if (unitRef.value)
-    stopObserving = observeAcScale(unitRef.value, acShellSize.compact.width, value => scale.value = value)
+  if (!unitRef.value)
+    return
+  cleanups.push(
+    observeAcScale(unitRef.value, acShellSize.compact.width, value => scale.value = value),
+    observeAcTilt(unitRef.value, (x, y) => tilt.value = [x, y]),
+  )
 })
-onBeforeUnmount(() => stopObserving?.())
+onBeforeUnmount(() => cleanups.forEach(cleanup => cleanup()))
 
 /** 模式图标仅在切换后弹出，避免首屏就播放 */
 const modeChanged = ref(false)
@@ -63,7 +69,7 @@ watch(() => state.value.mode, () => {
     class="acw-unit"
     :data-mode="state.mode"
     :data-status="state.status ? 'on' : 'off'"
-    :style="{ '--acw-scale': scale }"
+    :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg` }"
   >
     <div class="acw-shell">
       <!-- 能效标签 -->
@@ -75,12 +81,15 @@ watch(() => state.value.mode, () => {
           <span :key="state.mode" class="acw-mode-icon" :data-animate="modeChanged || undefined">{{ modeIcon }}</span>
         </div>
         <div class="acw-display-temp">
-          <span
-            :key="state.temperature"
-            class="acw-digit acw-temperature"
-            :data-dir="temperatureDirection"
-          >{{ state.temperature }}</span>
-          <small class="acw-digit">°C</small>
+          <span class="acw-readout">
+            <span
+              :key="state.temperature"
+              class="acw-digit acw-temperature"
+              :data-dir="temperatureDirection"
+            >{{ state.temperature }}</span>
+            <small class="acw-digit">°C</small>
+          </span>
+          <span class="acw-digit acw-selftest" aria-hidden="true">88</span>
         </div>
       </div>
 

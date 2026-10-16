@@ -3,7 +3,7 @@ import type { AcMode } from '~/types'
 import { acShellSize } from '@yunlefun-home/air-conditioner-core'
 import React, { useRef } from 'react'
 import * as pkg from '~/../package.json'
-import { useAcScale } from '~/lib/useAcScale'
+import { useAcScale, useAcTilt } from '~/lib/useAcScale'
 import { AcDisplay } from './AcDisplay'
 import { EnergyLabel } from './EnergyLabel'
 
@@ -22,12 +22,8 @@ const AcBorder: React.FC<React.PropsWithChildren<{ scale: number }>> = (props) =
   const { width, height } = acShellSize.wide
   return (
     <div
-      className="bg-white shadow relative"
+      className="ac-shell relative"
       style={{
-        border: `1px solid ${acColor.border}`,
-        borderRadius: 10,
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
         // 窄屏下按设计尺寸整体等比缩小，保持长款比例；负外边距收回缩放后多出来的高度
         width,
         height,
@@ -46,7 +42,7 @@ const AcBorder: React.FC<React.PropsWithChildren<{ scale: number }>> = (props) =
  */
 const AcLogo: React.FC = () => {
   return (
-    <div className="text-center mt-28">
+    <div className="ac-logo">
       <a
         className="block"
         href={pkg.repository.url}
@@ -71,7 +67,7 @@ const AcLogo: React.FC = () => {
  * 出风口线
  */
 const AirOutlet: React.FC = () => {
-  return <div className="mt-1" style={{ border: `1px solid ${acColor.border}` }}></div>
+  return <div className="ac-outlet"></div>
 }
 
 /**
@@ -94,7 +90,7 @@ const AcStatus: React.FC<{ status: boolean }> = (props) => {
   // 空调状态小灯：亮起的光晕由样式里的伪元素过渡
   return (
     <div
-      className="ac-led absolute h-1 w-1 rounded-full top-32 right-2"
+      className="ac-led absolute h-1 w-1 rounded-full right-2"
       aria-label={props.status ? 'on' : 'off'}
     >
     </div>
@@ -124,9 +120,16 @@ const AirConditioner: React.FC<{
 }> = (props) => {
   const unitRef = useRef<HTMLDivElement>(null)
   const scale = useAcScale(unitRef, acShellSize.wide.width)
+  const [tiltX, tiltY] = useAcTilt(unitRef)
 
   return (
-    <div ref={unitRef} className="ac-unit" data-mode={props.mode} data-status={props.status ? 'on' : 'off'}>
+    <div
+      ref={unitRef}
+      className="ac-unit"
+      data-mode={props.mode}
+      data-status={props.status ? 'on' : 'off'}
+      style={{ '--ac-tilt-x': `${tiltX}deg`, '--ac-tilt-y': `${tiltY}deg` } as React.CSSProperties}
+    >
       <AcBorder scale={scale}>
         <AcDisplay mode={props.mode} />
         <AcLogo />

@@ -4,7 +4,7 @@ import type {
   AcState,
   AirConditionerStore,
 } from '@yunlefun-home/air-conditioner-core'
-import { acShellSize, createAirConditionerStore, defaultAcState, observeAcScale, renderAcMotionCssVars } from '@yunlefun-home/air-conditioner-core'
+import { acShellSize, createAirConditionerStore, defaultAcState, observeAcScale, observeAcTilt, renderAcMotionCssVars } from '@yunlefun-home/air-conditioner-core'
 
 export type WidgetAcMode = 'cold' | 'hot'
 
@@ -67,23 +67,55 @@ const styleText = `
 
 .acw-unit {
   width: min(100%, 360px);
+  /* 指针跟随的轻微 3D 倾斜（--acw-tilt-* 由组件写入，仅精细指针且未开启减少动效时） */
+  transform: perspective(800px) rotateX(var(--acw-tilt-x, 0deg)) rotateY(var(--acw-tilt-y, 0deg));
+  transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard);
 }
 
 .acw-shell {
   position: relative;
-  height: 152px;
+  height: 128px;
   /* 窄容器下整体等比缩小，保持长款比例（--acw-scale 由组件按容器宽度写入）。
      用百分比换算回 360px 设计宽度，避免固定宽度撑大父容器的最小尺寸 */
   width: calc(100% / var(--acw-scale, 1));
   transform: scale(var(--acw-scale, 1));
   transform-origin: 0 0;
   /* 缩放不改变布局尺寸，用负外边距收回多出来的高度 */
-  margin-bottom: calc(152px * (var(--acw-scale, 1) - 1));
+  margin-bottom: calc(128px * (var(--acw-scale, 1) - 1));
   border: 1px solid #d9dee7;
-  border-bottom-right-radius: 20px;
-  border-bottom-left-radius: 20px;
-  background: #fff;
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+  border-radius: 10px 10px 20px 20px;
+  /* 伪 3D：顶部受光、底部弧面渐暗，配合内侧高光与投在墙上的阴影 */
+  background: linear-gradient(to bottom, #fff 0%, #fdfdfd 48%, #eef0f3 100%);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -10px 14px -10px rgba(15, 23, 42, 0.16),
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 14px 26px -12px rgba(15, 23, 42, 0.32);
+}
+
+/* 面板上半部的柔和光泽 */
+.acw-shell::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 6px;
+  left: 6px;
+  height: 42%;
+  border-radius: 8px 8px 50% 50% / 8px 8px 14px 14px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+/* 出风口线：面板与底部弧面的分界 */
+.acw-shell::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 24px;
+  left: 0;
+  border-top: 1px solid #e3e7ee;
+  box-shadow: 0 1px 0 #fff;
+  pointer-events: none;
 }
 
 .acw-badge {
@@ -107,7 +139,7 @@ const styleText = `
 
 .acw-display {
   position: absolute;
-  top: 28px;
+  top: 18px;
   right: 28px;
   color: #9aa3ad;
   text-align: right;
@@ -125,6 +157,53 @@ const styleText = `
   min-width: 48px;
   font-size: 42px;
   line-height: 1;
+}
+
+.acw-temp {
+  position: relative;
+  display: inline-block;
+}
+
+/* 开机自检：先短暂点亮全部笔段「88」，再显示温度 */
+.acw-selftest {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 48px;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.acw-unit[data-status="on"] .acw-selftest {
+  animation: acw-selftest 560ms steps(1, end) both;
+}
+
+.acw-unit[data-status="on"] .acw-readout {
+  animation: acw-selftest-reveal 560ms steps(1, end) both;
+}
+
+@keyframes acw-selftest {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes acw-selftest-reveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .acw-display small {
@@ -169,7 +248,7 @@ const styleText = `
 .acw-logo {
   position: absolute;
   right: 0;
-  bottom: 22px;
+  bottom: 30px;
   left: 0;
   color: #8b95a1;
   font-size: 12px;
@@ -196,7 +275,8 @@ const styleText = `
   left: 28px;
   height: 10px;
   border-radius: 0 0 10px 10px;
-  background: #fff;
+  /* 与机身底部弧面同色，合上时融为一体 */
+  background: linear-gradient(to bottom, #f2f3f6, #eceef1);
   transform-origin: 50% 0;
   transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard) var(--acw-motion-duration-base);
 }
@@ -231,8 +311,8 @@ const styleText = `
 /* 状态指示灯：光晕放在伪元素上，只过渡 opacity / transform */
 .acw-led {
   position: absolute;
-  right: 14px;
-  bottom: 20px;
+  right: 12px;
+  bottom: 13px;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -474,6 +554,15 @@ const styleText = `
     transform: none;
   }
 
+  .acw-unit {
+    transform: none;
+  }
+
+  .acw-unit[data-status="on"] .acw-selftest,
+  .acw-unit[data-status="on"] .acw-readout {
+    animation: none;
+  }
+
   .acw-notification {
     animation-name: acw-fade-in;
   }
@@ -534,7 +623,7 @@ ${renderAcMotionCssVars(':host')}
         <div class="acw-badge" aria-hidden="true"><span></span><span></span><span></span></div>
         <div class="acw-display" aria-live="polite">
           <span class="acw-mode"></span>
-          <strong></strong><small>°C</small>
+          <span class="acw-temp"><span class="acw-readout"><strong></strong><small>°C</small></span><span class="acw-selftest" aria-hidden="true">88</span></span>
         </div>
         <div class="acw-logo"></div>
         <div class="acw-vent" aria-hidden="true"></div>
@@ -612,7 +701,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private store?: AirConditionerStore
     private unsubscribe?: () => void
     private renderedState?: AcState
-    private stopScaling?: () => void
+    private stopObservers: (() => void)[] = []
 
     static get observedAttributes() {
       return ['mode', 'status', 'temperature']
@@ -650,20 +739,26 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.renderedState = undefined
       this.render()
 
-      // 窄容器下机身等比缩小，保持长款比例
+      // 窄容器下机身等比缩小，保持长款比例；精细指针下轻微 3D 倾斜
       const unit = this.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
       if (unit) {
-        this.stopScaling?.()
-        this.stopScaling = observeAcScale(unit, acShellSize.compact.width, (scale) => {
-          unit.style.setProperty('--acw-scale', String(scale))
-        })
+        this.stopObservers.forEach(stop => stop())
+        this.stopObservers = [
+          observeAcScale(unit, acShellSize.compact.width, (scale) => {
+            unit.style.setProperty('--acw-scale', String(scale))
+          }),
+          observeAcTilt(unit, (x, y) => {
+            unit.style.setProperty('--acw-tilt-x', `${x}deg`)
+            unit.style.setProperty('--acw-tilt-y', `${y}deg`)
+          }),
+        ]
       }
     }
 
     disconnectedCallback() {
       this.unsubscribe?.()
-      this.stopScaling?.()
-      this.stopScaling = undefined
+      this.stopObservers.forEach(stop => stop())
+      this.stopObservers = []
       this.shadowRoot?.removeEventListener('click', this.onClick)
     }
 

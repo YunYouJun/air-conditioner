@@ -37,8 +37,14 @@ const AcTemperature: React.FC = () => {
   return (
     <h4 className="text-4xl text-center">
       {/* key 变化会重新挂载，从而重播滚动动画 */}
-      <span key={state.temperature} className="font-digit ac-temperature" data-dir={direction}>{state.temperature}</span>
-      <small className="font-digit">°C</small>
+      <span className="ac-temp">
+        <span className="ac-readout">
+          <span key={state.temperature} className="font-digit ac-temperature" data-dir={direction}>{state.temperature}</span>
+          <small className="font-digit">°C</small>
+        </span>
+        {/* 开机自检：先短暂点亮全部笔段 */}
+        <span className="font-digit ac-selftest" aria-hidden="true">88</span>
+      </span>
     </h4>
   )
 }

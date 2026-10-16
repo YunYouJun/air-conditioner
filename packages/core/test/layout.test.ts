@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { acShellSize, getAcScale, observeAcScale } from '../src'
+import { acShellSize, getAcScale, observeAcScale, observeAcTilt } from '../src'
 
 describe('shell layout', () => {
   afterEach(() => {
@@ -45,5 +45,46 @@ describe('shell layout', () => {
     expect(onScale.mock.calls).toEqual([[0.5], [1]])
     stop()
     expect(disconnect).toHaveBeenCalled()
+  })
+  it('keeps both shells close to a real 3:1 wall unit', () => {
+    for (const { width, height } of Object.values(acShellSize)) {
+      expect(width / height).toBeGreaterThanOrEqual(2.7)
+      expect(width / height).toBeLessThanOrEqual(3.2)
+    }
+  })
+
+  it('skips pointer tilt without a fine pointer or with reduced motion', () => {
+    const target = { addEventListener: vi.fn() } as unknown as HTMLElement
+
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('pointer: fine') }))
+    observeAcTilt(target, vi.fn())
+    vi.stubGlobal('matchMedia', () => ({ matches: true }))
+    observeAcTilt(target, vi.fn())
+
+    expect(target.addEventListener).not.toHaveBeenCalled()
+  })
+
+  it('tilts toward the pointer and resets on leave', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('pointer: fine') }))
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      cb(0)
+      return 1
+    })
+    vi.stubGlobal('cancelAnimationFrame', () => {})
+    const listeners: Record<string, (event: any) => void> = {}
+    const target = {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 100 }),
+      addEventListener: (type: string, listener: (event: any) => void) => listeners[type] = listener,
+      removeEventListener: vi.fn(),
+    } as unknown as HTMLElement
+    const onTilt = vi.fn()
+    const stop = observeAcTilt(target, onTilt, 4)
+
+    listeners.pointermove({ clientX: 200, clientY: 0 })
+    listeners.pointerleave({})
+
+    expect(onTilt.mock.calls).toEqual([[4, 4], [0, 0]])
+    stop()
+    expect(target.removeEventListener).toHaveBeenCalledTimes(2)
   })
 })

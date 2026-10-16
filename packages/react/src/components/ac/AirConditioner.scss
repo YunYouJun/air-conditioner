@@ -9,6 +9,110 @@
 
 /* 时长 / 缓动来自 styles/motion.css（与 core 的 acMotion 同步） */
 
+/* --------------------------------- 机身 ---------------------------------- */
+/* 指针跟随的轻微 3D 倾斜（--ac-tilt-* 由组件写入，仅精细指针且未开启减少动效时） */
+.ac-unit {
+  transform: perspective(1200px) rotateX(var(--ac-tilt-x, 0deg)) rotateY(var(--ac-tilt-y, 0deg));
+  transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard);
+}
+
+/* 伪 3D：顶部受光、底部弧面渐暗，配合内侧高光与投在墙上的阴影 */
+.ac-shell {
+  border: 1px solid var(--ac-c-border);
+  border-radius: 10px 10px 20px 20px;
+  background: linear-gradient(to bottom, #fff 0%, #fdfdfd 50%, #eef0f3 100%);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -12px 18px -12px rgba(15, 23, 42, 0.16),
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 18px 30px -14px rgba(15, 23, 42, 0.3);
+
+  /* 面板上半部的柔和光泽 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: 8px;
+    left: 8px;
+    height: 42%;
+    border-radius: 8px 8px 50% 50% / 8px 8px 18px 18px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+    pointer-events: none;
+  }
+}
+
+.ac-logo {
+  position: absolute;
+  top: 156px;
+  right: 0;
+  left: 0;
+  text-align: center;
+
+  img {
+    display: block;
+    width: 12px;
+    margin: 0 auto;
+  }
+}
+
+/* 出风口线：面板与底部弧面的分界 */
+.ac-outlet {
+  position: absolute;
+  top: 174px;
+  right: 0;
+  left: 0;
+  border-top: 1px solid var(--ac-c-border);
+  box-shadow: 0 1px 0 #fff;
+}
+
+.ac-led {
+  top: 178px;
+}
+
+/* 开机自检：先短暂点亮全部笔段「88」，再显示温度 */
+.ac-temp {
+  position: relative;
+  display: inline-block;
+}
+
+.ac-selftest {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ac-unit[data-status='on'] {
+  .ac-selftest {
+    animation: ac-selftest 560ms steps(1, end) both;
+  }
+
+  .ac-readout {
+    animation: ac-selftest-reveal 560ms steps(1, end) both;
+  }
+}
+
+@keyframes ac-selftest {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes ac-selftest-reveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 /* --------------------------------- 显示屏 -------------------------------- */
 .ac-display {
   opacity: 0;
@@ -85,7 +189,8 @@
   left: 24px;
   height: 10px;
   border-radius: 0 0 10px 10px;
-  background: #fff;
+  /* 与机身底部弧面同色，合上时融为一体 */
+  background: linear-gradient(to bottom, #f2f3f6, #eceef1);
   transform-origin: 50% 0;
   transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard) var(--acw-motion-duration-base);
 
@@ -294,5 +399,14 @@
 
   .ac-unit[data-status='on'] .ac-louver {
     transform: translateY(2px);
+  }
+
+  .ac-unit {
+    transform: none;
+  }
+
+  .ac-unit[data-status='on'] .ac-selftest,
+  .ac-unit[data-status='on'] .ac-readout {
+    animation: none;
   }
 }
