@@ -2,7 +2,7 @@ import type { AcSoundMode } from '@yunlefun-home/air-conditioner-core'
 import { blue, green, grey, red } from '@mui/material/colors'
 import { acSoundModeLabels, nextAcSoundMode } from '@yunlefun-home/air-conditioner-core'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useAc, useAcCtx } from '~/context'
 import { getAssetsUrl } from '~/utils'
 import { getAudioController } from './audio'
@@ -26,13 +26,6 @@ const soundColors: Record<AcSoundMode, string> = {
   mute: grey[500],
 }
 
-/**
- * 切换空调工作状态
- */
-function toggleAC(status: boolean) {
-  getAudioController().toggleStatusAudio(status)
-}
-
 const SOUND_DI_PATH = getAssetsUrl('/assets/audio/di.m4a')
 const SOUND_AC_WORK_PATH = getAssetsUrl('/assets/audio/ac-work.m4a')
 const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
@@ -42,7 +35,14 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
 /**
  * 遥控
  */
-const RemoteControl: React.FC = () => {
+const RemoteControl: React.FC<{
+  /**
+   * 是否播放空调本身的开关机与运行声。独立遥控器页面传 false，
+   * 由显示空调的主页面统一发声，避免两个标签页同时响。
+   * @default true
+   */
+  acSound?: boolean
+}> = ({ acSound = true }) => {
   const { toggleStatus, toggleMode, cycleSound } = useAc()
   const { state: ac } = useAcCtx()
   const sound = ac.sound
@@ -53,6 +53,17 @@ const RemoteControl: React.FC = () => {
   useEffect(() => {
     getAudioController(sound).setSoundMode(sound)
   }, [sound])
+
+  // 开关机声跟随状态变化，而不是跟随按键：独立遥控器在其他标签页开关空调时，
+  // 主页面通过 storage 事件收到新状态，也能及时启动或停止声音
+  const previousStatus = useRef(ac.status)
+  useEffect(() => {
+    if (previousStatus.current === ac.status)
+      return
+    if (acSound)
+      getAudioController(sound).toggleStatusAudio(previousStatus.current)
+    previousStatus.current = ac.status
+  }, [ac.status, acSound, sound])
 
   return (
     <div className="flex my-6 flex-col items-center">
@@ -80,10 +91,7 @@ const RemoteControl: React.FC = () => {
         </RCButton>
         <RCButton
           aria-label="power"
-          onClick={() => {
-            toggleAC(ac.status)
-            toggleStatus()
-          }}
+          onClick={toggleStatus}
           style={{
             backgroundColor: ac.status ? red[600] : green[600],
             color: 'white',
