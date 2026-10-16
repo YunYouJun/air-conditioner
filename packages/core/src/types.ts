@@ -1,5 +1,11 @@
 export type AcMode = 'cold' | 'hot'
 
+/**
+ * Sound mode: `normal` plays everything, `sleep` lowers the volume,
+ * `mute` silences the air conditioner.
+ */
+export type AcSoundMode = 'normal' | 'sleep' | 'mute'
+
 export interface AcState {
   /**
    * Whether the air conditioner is powered on.
@@ -13,12 +19,17 @@ export interface AcState {
    * Target temperature in Celsius.
    */
   temperature: number
+  /**
+   * Sound mode. States saved before this field existed fall back to `normal`.
+   */
+  sound: AcSoundMode
 }
 
 export type AcAction
-  = | { type: 'increment' | 'decrement' | 'toggleStatus' }
+  = | { type: 'increment' | 'decrement' | 'toggleStatus' | 'cycleSound' }
     | { type: 'status', status: AcState['status'] }
     | { type: 'mode', mode: AcState['mode'] }
+    | { type: 'sound', sound: AcState['sound'] }
     | { type: 'update', payload: Partial<AcState> }
 
 export type AcNotificationSeverity = 'success' | 'error' | 'info'
@@ -56,10 +67,21 @@ export interface AirConditionerStore {
   subscribe: (listener: AcStoreListener) => () => void
 }
 
+/**
+ * The subset of `HTMLAudioElement` the audio controller uses. The optional
+ * members let it pause, loop and set volume when they exist.
+ */
 export interface AcAudioElement {
   currentTime: number
   load: () => void
   play: () => Promise<unknown> | unknown
+  pause?: () => void
+  volume?: number
+  muted?: boolean
+  loop?: boolean
+  /** Used to fetch the file for Web Audio playback. */
+  src?: string
+  currentSrc?: string
 }
 
 export interface AcAudioElements {
@@ -71,5 +93,36 @@ export interface AcAudioElements {
 export interface AcAudioController {
   beep: () => void
   toggleStatusAudio: (previousStatus: boolean) => void
+  /**
+   * Change the volume of everything, including sounds already playing.
+   */
+  setSoundMode: (mode: AcSoundMode) => void
   dispose: () => void
+}
+
+export interface CreateAcAudioControllerOptions {
+  /**
+   * Initial sound mode.
+   * @default 'normal'
+   */
+  soundMode?: AcSoundMode
+  /**
+   * Play through the Web Audio API for a gapless loop and smooth fades.
+   * Falls back to the `<audio>` elements when the API is missing or the
+   * files cannot be fetched (for example across origins without CORS).
+   * @default true
+   */
+  webAudio?: boolean
+  /**
+   * Create the `AudioContext`. Defaults to `new AudioContext()`.
+   */
+  createAudioContext?: () => AudioContext
+  /**
+   * Fetch an audio file. Defaults to `fetch(url)`.
+   */
+  loadAudioData?: (url: string) => Promise<ArrayBuffer>
+  /**
+   * Random source for the fan's quiet / busy cycle. Defaults to `Math.random`.
+   */
+  random?: () => number
 }

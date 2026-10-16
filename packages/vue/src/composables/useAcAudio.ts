@@ -1,4 +1,4 @@
-import type { AcAudioController, AcAudioElements, AcChangeEvent } from '@yunlefun-home/air-conditioner-core'
+import type { AcAudioController, AcAudioElements, AcChangeEvent, AcSoundMode } from '@yunlefun-home/air-conditioner-core'
 import { createAcAudioController } from '@yunlefun-home/air-conditioner-core'
 import { onUnmounted } from 'vue'
 
@@ -13,17 +13,19 @@ import { onUnmounted } from 'vue'
 export function useAcAudio(getElements: () => AcAudioElements) {
   let controller: AcAudioController | undefined
 
-  function ensureController() {
-    controller ||= createAcAudioController(getElements())
+  function ensureController(soundMode: AcSoundMode) {
+    controller ||= createAcAudioController(getElements(), { soundMode })
     return controller
   }
 
   /**
-   * 响应一次状态变更：播放按键「嘀」声；若开关状态发生翻转，
+   * 响应一次状态变更：先同步声音模式，再播放按键「嘀」声；若开关状态发生翻转，
    * 则播放启动 / 关闭音效。
    */
   function handleChange(event: AcChangeEvent) {
-    const ctrl = ensureController()
+    const ctrl = ensureController(event.state.sound)
+    if (event.previousState.sound !== event.state.sound)
+      ctrl.setSoundMode(event.state.sound)
     ctrl.beep()
 
     if (event.previousState.status !== event.state.status)

@@ -5,6 +5,7 @@ import {
   acStorageKey,
   defaultAcState as defaultState,
   getAcActionNotification,
+  normalizeAcState,
 } from '@yunlefun-home/air-conditioner-core'
 import { createContext, useContext, useReducer } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
@@ -27,7 +28,8 @@ export const AcProvider: FC<PropsWithChildren> = (props) => {
     return val
   }
 
-  const [state, dispatch] = useReducer(reducer, initState)
+  // 旧版本保存的状态没有 sound 等新字段，读取时补齐
+  const [state, dispatch] = useReducer(reducer, initState, normalizeAcState)
   return (
     <AcContext.Provider value={{ state, dispatch }}>
       {props.children}
@@ -47,6 +49,24 @@ export function useAc() {
   const { state, dispatch } = useAcCtx()
   const { dispatch: dispatchToast } = useToastCtx()
 
+  function dispatchWithToast(action: AcAction) {
+    const nextState = acReducer(state, action)
+    const notification = getAcActionNotification(state, nextState, action)
+
+    dispatch(action)
+
+    if (notification) {
+      dispatchToast({
+        type: 'update',
+        payload: {
+          message: notification.message,
+          open: true,
+          severity: notification.severity,
+        },
+      })
+    }
+  }
+
   return {
     /**
      * 切换开关状态
@@ -55,22 +75,13 @@ export function useAc() {
       dispatch({ type: 'toggleStatus' })
     },
     toggleMode(mode: AcMode) {
-      const action: AcAction = { type: 'mode', mode }
-      const nextState = acReducer(state, action)
-      const notification = getAcActionNotification(state, nextState, action)
-
-      dispatch(action)
-
-      if (notification) {
-        dispatchToast({
-          type: 'update',
-          payload: {
-            message: notification.message,
-            open: true,
-            severity: notification.severity,
-          },
-        })
-      }
+      dispatchWithToast({ type: 'mode', mode })
+    },
+    /**
+     * 声音键：标准 → 睡眠 → 静音
+     */
+    cycleSound() {
+      dispatchWithToast({ type: 'cycleSound' })
     },
   }
 }

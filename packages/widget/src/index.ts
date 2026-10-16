@@ -4,6 +4,7 @@ import type {
   AcIconName,
   AcMode,
   AcNotification,
+  AcSoundMode,
   AcState,
   AirConditionerStore,
 } from '@yunlefun-home/air-conditioner-core'
@@ -12,9 +13,12 @@ import {
   acIconPaths,
   acModeIcons,
   acShellSize,
+  acSoundIcons,
+  acSoundModeLabels,
   createAcAudioController,
   createAirConditionerStore,
   defaultAcState,
+  isAcSoundMode,
   observeAcScale,
   observeAcTilt,
   resolveAcAudioAssets,
@@ -23,10 +27,14 @@ import { widgetStyleText } from './style'
 
 export type WidgetAcMode = 'cold' | 'hot'
 
+/** 声音模式：标准 / 睡眠（音量变小）/ 静音 */
+export type WidgetAcSoundMode = 'normal' | 'sleep' | 'mute'
+
 export interface WidgetAcState {
   status: boolean
   mode: WidgetAcMode
   temperature: number
+  sound: WidgetAcSoundMode
 }
 
 export interface WidgetAcNotification {
@@ -174,6 +182,7 @@ function widgetTemplate(view: WidgetViewOptions) {
       </div>
       <button type="button" class="acw-button acw-button-temp" aria-label="add" data-action="increment">${icon('increase', 28)}</button>
       <button type="button" class="acw-button acw-button-temp" aria-label="reduce" data-action="decrement">${icon('decrease', 28)}</button>
+      <button type="button" class="acw-button acw-button-sound" aria-label="sound" data-action="cycleSound"></button>
     </div>
     <div class="acw-notification-region" role="status"></div>
   </div>
@@ -212,6 +221,13 @@ function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | unde
   root.querySelector('.acw-led')!.setAttribute('aria-label', status)
   root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
   root.querySelector('.acw-button-power')!.classList.toggle('acw-button-on', state.status)
+
+  if (previous?.sound !== state.sound) {
+    const sound = root.querySelector<HTMLElement>('.acw-button-sound')!
+    sound.dataset.sound = state.sound
+    sound.title = `声音：${acSoundModeLabels[state.sound]}`
+    sound.innerHTML = icon(acSoundIcons[state.sound], 20)
+  }
 }
 
 function showNotification(root: ShadowRoot, notification: AcNotification) {
@@ -242,6 +258,10 @@ function modeAttribute(value: string | null): AcMode | undefined {
   return value === 'cold' || value === 'hot' ? value : undefined
 }
 
+function soundAttribute(value: string | null): AcSoundMode | undefined {
+  return isAcSoundMode(value) ? value : undefined
+}
+
 function getInitialState(element: HTMLElement, defaults?: Partial<AcState>): Partial<AcState> {
   const state: Partial<AcState> = {
     ...defaults,
@@ -249,6 +269,7 @@ function getInitialState(element: HTMLElement, defaults?: Partial<AcState>): Par
     // 未设置 status 属性时沿用持久化状态（与 Vue / React 组件一致）
     status: boolAttribute(element.getAttribute('status'), defaults?.status),
     temperature: numberAttribute(element.getAttribute('temperature')) ?? defaults?.temperature,
+    sound: soundAttribute(element.getAttribute('sound')) ?? defaults?.sound,
   }
   // 未指定的字段不能以 undefined 覆盖持久化 / 默认状态（否则 mode 会变成 undefined）
   for (const key of Object.keys(state) as (keyof AcState)[]) {
@@ -272,7 +293,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private audio?: AcAudioController
 
     static get observedAttributes() {
-      return ['mode', 'status', 'temperature']
+      return ['mode', 'status', 'temperature', 'sound']
     }
 
     connectedCallback() {
@@ -306,7 +327,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       })
       this.unsubscribe = this.store.subscribe((event) => {
         this.render()
-        this.playAudio(event.previousState.status !== event.state.status ? event.previousState.status : undefined)
+        this.playAudio(event)
         this.dispatchEvent(new CustomEvent<WidgetAcChangeEvent>('ac-change', {
           detail: event,
           bubbles: true,
@@ -363,14 +384,14 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         this.store.dispatch({ type: 'mode', mode: action })
       else if (action === 'toggleStatus')
         this.store.dispatch({ type: 'toggleStatus' })
-      else if (action === 'increment' || action === 'decrement')
+      else if (action === 'increment' || action === 'decrement' || action === 'cycleSound')
         this.store.dispatch({ type: action })
     }
 
     /**
-     * 按键「嘀」声；开关状态翻转时播放启动 / 关闭音效（与 Vue 版 useAcAudio 一致）。
+     * 同步声音模式后播放按键「嘀」声；开关状态翻转时播放启动 / 关闭音效（与 Vue 版 useAcAudio 一致）。
      */
-    private playAudio(previousStatus?: boolean) {
+    private playAudio(event: { previousState: AcState, state: AcState }) {
       const root = this.shadowRoot
       if (!root?.querySelector('audio'))
         return
@@ -378,10 +399,12 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         beep: root.querySelector<HTMLAudioElement>('[data-audio="beep"]'),
         start: root.querySelector<HTMLAudioElement>('[data-audio="start"]'),
         work: root.querySelector<HTMLAudioElement>('[data-audio="work"]'),
-      })
+      }, { soundMode: event.state.sound })
+      if (event.previousState.sound !== event.state.sound)
+        this.audio.setSoundMode(event.state.sound)
       this.audio.beep()
-      if (previousStatus !== undefined)
-        this.audio.toggleStatusAudio(previousStatus)
+      if (event.previousState.status !== event.state.status)
+        this.audio.toggleStatusAudio(event.previousState.status)
     }
 
     private render() {

@@ -1,24 +1,29 @@
-import { blue, green, red } from '@mui/material/colors'
-import { createAcAudioController } from '@yunlefun-home/air-conditioner-core'
+import type { AcSoundMode } from '@yunlefun-home/air-conditioner-core'
+import { blue, green, grey, red } from '@mui/material/colors'
+import { acSoundModeLabels, nextAcSoundMode } from '@yunlefun-home/air-conditioner-core'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAc, useAcCtx } from '~/context'
 import { getAssetsUrl } from '~/utils'
+import { getAudioController } from './audio'
 import RCButton from './RCButton'
 
 import { useAcTemperature } from './temperature'
 import './index.scss'
 
-let audioController: ReturnType<typeof createAcAudioController> | undefined
+/**
+ * 声音键图标（完整类名写出来，UnoCSS 才能扫描到）
+ */
+const soundIcons: Record<AcSoundMode, string> = {
+  normal: 'i-ic-round-volume-up',
+  sleep: 'i-ic-round-bedtime',
+  mute: 'i-ic-round-volume-off',
+}
 
-function getAudioController() {
-  audioController ||= createAcAudioController({
-    start: document.getElementById('ac-work') as HTMLAudioElement | null,
-    work: document.getElementById('air-extractor-fan') as HTMLAudioElement | null,
-    beep: document.getElementById('di') as HTMLAudioElement | null,
-  })
-
-  return audioController
+const soundColors: Record<AcSoundMode, string> = {
+  normal: grey[700],
+  sleep: '#5e35b1',
+  mute: grey[500],
 }
 
 /**
@@ -38,10 +43,16 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
  * 遥控
  */
 const RemoteControl: React.FC = () => {
-  const { toggleStatus, toggleMode } = useAc()
+  const { toggleStatus, toggleMode, cycleSound } = useAc()
   const { state: ac } = useAcCtx()
+  const sound = ac.sound
 
   const { increase, decrease } = useAcTemperature()
+
+  // 同步声音模式：包括页面加载时恢复的状态，以及独立遥控器在其他标签页的修改
+  useEffect(() => {
+    getAudioController(sound).setSoundMode(sound)
+  }, [sound])
 
   return (
     <div className="flex my-6 flex-col items-center">
@@ -101,6 +112,22 @@ const RemoteControl: React.FC = () => {
         onClick={decrease}
       >
         <div className="i-mdi-triangle-small-down text-4xl" />
+      </RCButton>
+      <RCButton
+        aria-label="sound"
+        title={`声音：${acSoundModeLabels[sound]}`}
+        size="small"
+        beep={false}
+        style={{ color: soundColors[sound] }}
+        onClick={() => {
+          // 先切换音量再「嘀」，按键音就是新模式下的音量
+          const controller = getAudioController(sound)
+          controller.setSoundMode(nextAcSoundMode(sound))
+          controller.beep()
+          cycleSound()
+        }}
+      >
+        <div className={`${soundIcons[sound]} text-xl`} />
       </RCButton>
     </div>
   )

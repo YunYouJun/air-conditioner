@@ -591,6 +591,20 @@ html.dark .acw-root,
   background: #d32f2f;
 }
 
+/* 声音键：标准 → 睡眠 → 静音，图标与颜色随模式变化 */
+.acw-button-sound {
+  width: 40px;
+  height: 40px;
+}
+
+.acw-button-sound[data-sound="sleep"] {
+  color: #5e35b1;
+}
+
+.acw-button-sound[data-sound="mute"] {
+  color: #9e9e9e;
+}
+
 /* -------------------------------- 通知提示 ------------------------------ */
 .acw-notification-region {
   width: 100%;

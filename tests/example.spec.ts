@@ -80,3 +80,21 @@ test('keeps the standalone remote control usable', async ({ page }) => {
   await page.getByRole('button', { name: 'add' }).click()
   await expect.poll(() => readAcState(page)).toMatchObject({ temperature: 27 })
 })
+
+test('cycles the sound mode and keeps it after a reload', async ({ page }) => {
+  // States saved before the sound key existed have no `sound` field
+  await gotoFresh(page, '/', { mode: 'cold', status: false, temperature: 26 })
+
+  const sound = page.getByRole('button', { name: 'sound' })
+  await expect(sound).toHaveAttribute('title', '声音：标准')
+
+  await sound.click()
+  await expect(page.getByText(/睡眠模式/)).toBeVisible()
+  await expect.poll(() => readAcState(page)).toMatchObject({ sound: 'sleep' })
+
+  await sound.click()
+  await expect.poll(() => readAcState(page)).toMatchObject({ sound: 'mute' })
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'sound' })).toHaveAttribute('title', '声音：静音')
+})

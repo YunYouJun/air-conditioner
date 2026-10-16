@@ -19,6 +19,8 @@ export interface AirConditionerContextValue {
   setMode: (mode: AcMode) => AcChangeEvent
   increase: () => AcChangeEvent
   decrease: () => AcChangeEvent
+  /** 声音键：标准 → 睡眠 → 静音 */
+  cycleSound: () => AcChangeEvent
 }
 
 export interface AirConditionerProviderOptions extends CreateAirConditionerStoreOptions {}
@@ -53,6 +55,9 @@ export function createAirConditionerContext(store: AirConditionerStore): AirCond
     },
     decrease() {
       return store.dispatch({ type: 'decrement' })
+    },
+    cycleSound() {
+      return store.dispatch({ type: 'cycleSound' })
     },
   }
 }

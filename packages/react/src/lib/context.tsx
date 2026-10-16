@@ -23,6 +23,8 @@ export interface AirConditionerContextValue {
   setMode: (mode: AcMode) => void
   increase: () => void
   decrease: () => void
+  /** 声音键：标准 → 睡眠 → 静音 */
+  cycleSound: () => void
   store: AirConditionerStore
 }
 
@@ -71,6 +73,9 @@ export function AirConditionerProvider(props: AirConditionerProviderProps) {
     },
     decrease() {
       store.dispatch({ type: 'decrement' })
+    },
+    cycleSound() {
+      store.dispatch({ type: 'cycleSound' })
     },
   }), [notification, state, store])
 

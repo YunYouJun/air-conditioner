@@ -29,34 +29,37 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className={`max-w-600px m-auto ${getClassByMode()}`}>
-      <div className="pt-6">
-        <h1 className="text-center text-3xl">
-          便携小空调
-        </h1>
-        <ProTip />
-        <AirConditioner
-          status={ac.status}
-          temperature={ac.temperature}
-          mode={ac.mode}
-        />
-        <div className="text-center">
-          <div className="mt-2">
-            <Button
-              variant="outlined"
-              onClick={() => {
-                window.open('/rc', '_blank', 'width=300, height=400')
-              }}
-            >
-              独立遥控器
-            </Button>
+    <>
+      <div className={`max-w-600px m-auto ${getClassByMode()}`}>
+        <div className="pt-6">
+          <h1 className="text-center text-3xl">
+            便携小空调
+          </h1>
+          <ProTip />
+          <AirConditioner
+            status={ac.status}
+            temperature={ac.temperature}
+            mode={ac.mode}
+          />
+          <div className="text-center">
+            <div className="mt-2">
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  window.open('/rc', '_blank', 'width=300, height=400')
+                }}
+              >
+                独立遥控器
+              </Button>
+            </div>
           </div>
+          <RemoteControl />
         </div>
-        <RemoteControl />
       </div>
 
+      {/* 放在带 filter 的容器外：filter 会让 position: fixed 的提示条以容器而非视口定位，盖住遥控器 */}
       <Toast />
-    </div>
+    </>
   )
 }
 
