@@ -100,4 +100,21 @@ describe('@air-conditioner/widget', () => {
     expect(notifications).toHaveLength(1)
     expect(JSON.stringify(notifications[0])).toContain('已经是最大温度啦')
   })
+
+  it('cycles the sound mode from the remote and the sound attribute', () => {
+    defineAirConditionerElement({ tagName: 'test-air-conditioner-sound', enableAudio: false, storage: null })
+    const element = document.createElement('test-air-conditioner-sound')
+    document.body.appendChild(element)
+    const button = () => element.shadowRoot!.querySelector<HTMLElement>('.acw-button-sound')!
+
+    expect(button().dataset.sound).toBe('normal')
+    expect(button().querySelector('svg')).not.toBeNull()
+
+    button().click()
+    expect(button().dataset.sound).toBe('sleep')
+    expect(button().title).toBe('声音：睡眠')
+
+    element.setAttribute('sound', 'mute')
+    expect(button().dataset.sound).toBe('mute')
+  })
 })

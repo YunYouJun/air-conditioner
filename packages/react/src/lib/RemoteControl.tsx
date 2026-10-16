@@ -1,5 +1,5 @@
 import type { AcIconName, AcMode } from '@yunlefun-home/air-conditioner-core'
-import { acIconPaths } from '@yunlefun-home/air-conditioner-core'
+import { acIconPaths, acSoundIcons, acSoundModeLabels } from '@yunlefun-home/air-conditioner-core'
 import { useAirConditioner } from './context'
 
 export interface RemoteControlProps {
@@ -17,6 +17,7 @@ function Icon(props: { name: AcIconName, size: number }) {
 export function RemoteControl(props: RemoteControlProps = {}) {
   const airConditioner = useAirConditioner()
   const isOn = airConditioner.state.status
+  const sound = airConditioner.state.sound
 
   function run(command: string, action: () => void) {
     props.onCommand?.(command)
@@ -50,6 +51,16 @@ export function RemoteControl(props: RemoteControlProps = {}) {
       </button>
       <button type="button" className="acw-button acw-button-temp" aria-label="reduce" onClick={() => run('decrease', airConditioner.decrease)}>
         <Icon name="decrease" size={28} />
+      </button>
+      <button
+        type="button"
+        className="acw-button acw-button-sound"
+        aria-label="sound"
+        title={`声音：${acSoundModeLabels[sound]}`}
+        data-sound={sound}
+        onClick={() => run('sound', airConditioner.cycleSound)}
+      >
+        <Icon name={acSoundIcons[sound]} size={20} />
       </button>
     </div>
   )

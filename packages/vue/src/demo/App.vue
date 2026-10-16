@@ -14,7 +14,7 @@ const plan = computed(() => level.value ? planCooling(level.value) : null)
 
 watch(plan, (next) => {
   if (next)
-    state.value = { status: next.status, mode: next.mode, temperature: next.temperature }
+    state.value = { ...state.value, status: next.status, mode: next.mode, temperature: next.temperature }
 })
 
 function step(delta: -1 | 1) {

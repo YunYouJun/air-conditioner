@@ -1,9 +1,12 @@
 import type { AcAction, AcLimits, AcNotification, AcState, AcTone } from './types'
 import {
+  acSoundModeLabels,
   defaultAcLimits,
   defaultAcState,
+  isAcSoundMode,
   maxTemperature,
   minTemperature,
+  nextAcSoundMode,
   recommendedColdTemperature,
   recommendedHotTemperature,
 } from './constants'
@@ -19,6 +22,7 @@ export function normalizeAcState(state: Partial<AcState> | undefined, limits?: A
     ...defaultAcState,
     ...state,
     temperature: clampTemperature(state?.temperature ?? defaultAcState.temperature, limits),
+    sound: isAcSoundMode(state?.sound) ? state.sound : defaultAcState.sound,
   }
 }
 
@@ -73,6 +77,16 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
         ...state,
         mode: action.mode,
       }
+    case 'sound':
+      return {
+        ...state,
+        sound: isAcSoundMode(action.sound) ? action.sound : state.sound,
+      }
+    case 'cycleSound':
+      return {
+        ...state,
+        sound: nextAcSoundMode(state.sound),
+      }
     case 'update':
       return normalizeAcState({
         ...state,
@@ -85,6 +99,15 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
 
 export function getRecommendedTemperatureMessage(mode: AcState['mode'], temperature: number): string {
   return `建议将空调的制${mode === 'cold' ? '冷' : '热'}温度调至 ${temperature} 度以${mode === 'cold' ? '上' : '下'}，为节能减排贡献一份力量！`
+}
+
+export function getSoundModeMessage(sound: AcState['sound']): string {
+  const hints: Record<AcState['sound'], string> = {
+    normal: '风声和按键音恢复正常',
+    sleep: '风声和按键音都调小了，晚安',
+    mute: '空调不再发出任何声音',
+  }
+  return `${acSoundModeLabels[sound]}模式：${hints[sound]}`
 }
 
 /**
@@ -115,6 +138,13 @@ export function getAcActionNotification(
     return {
       message: '已经是最小温度啦！',
       severity: 'error',
+    }
+  }
+
+  if ((action.type === 'sound' || action.type === 'cycleSound') && nextState.sound !== previousState.sound) {
+    return {
+      message: getSoundModeMessage(nextState.sound),
+      severity: 'info',
     }
   }
 

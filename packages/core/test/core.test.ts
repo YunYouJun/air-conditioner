@@ -8,6 +8,8 @@ import {
   defaultAcState,
   maxTemperature,
   minTemperature,
+  nextAcSoundMode,
+  normalizeAcState,
   resolveAcAudioAssets,
 } from '../src'
 
@@ -17,7 +19,30 @@ describe('@yunlefun-home/air-conditioner-core', () => {
       mode: 'cold',
       status: false,
       temperature: 26,
+      sound: 'normal',
     })
+  })
+
+  it('cycles and validates the sound mode', () => {
+    expect(acReducer(defaultAcState, { type: 'cycleSound' }).sound).toBe('sleep')
+    expect(acReducer({ ...defaultAcState, sound: 'sleep' }, { type: 'cycleSound' }).sound).toBe('mute')
+    expect(acReducer({ ...defaultAcState, sound: 'mute' }, { type: 'cycleSound' }).sound).toBe('normal')
+    expect(acReducer(defaultAcState, { type: 'sound', sound: 'mute' }).sound).toBe('mute')
+    // States saved before the field existed count as normal
+    expect(normalizeAcState({ status: true }).sound).toBe('normal')
+    expect(normalizeAcState({ sound: 'loud' as never }).sound).toBe('normal')
+    expect(nextAcSoundMode(undefined)).toBe('sleep')
+  })
+
+  it('announces sound mode changes', () => {
+    const store = createAirConditionerStore({ storage: null })
+
+    expect(store.dispatch({ type: 'cycleSound' }).notification).toMatchObject({
+      message: expect.stringContaining('睡眠模式'),
+      severity: 'info',
+    })
+    expect(store.dispatch({ type: 'sound', sound: 'mute' }).notification?.message).toContain('静音模式')
+    expect(store.dispatch({ type: 'sound', sound: 'mute' }).notification).toBeUndefined()
   })
 
   it('reduces basic actions', () => {

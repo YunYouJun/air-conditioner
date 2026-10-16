@@ -44,7 +44,7 @@ function Notification() {
 }
 
 /**
- * 音效：按键「嘀」声，开关机时播放启动 / 关闭音效（与 Vue 版 useAcAudio 一致）。
+ * 音效：按键「嘀」声，开关机时播放启动 / 关闭音效，声音键切换音量（与 Vue 版 useAcAudio 一致）。
  */
 function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBaseUrl' | 'audioExt'>>) {
   const { store } = useAirConditioner()
@@ -56,7 +56,12 @@ function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBas
   useEffect(() => {
     let controller: AcAudioController | undefined
     const unsubscribe = store.subscribe((event) => {
-      controller ||= createAcAudioController({ beep: beep.current, start: start.current, work: work.current })
+      controller ||= createAcAudioController(
+        { beep: beep.current, start: start.current, work: work.current },
+        { soundMode: event.state.sound },
+      )
+      if (event.previousState.sound !== event.state.sound)
+        controller.setSoundMode(event.state.sound)
       controller.beep()
       if (event.previousState.status !== event.state.status)
         controller.toggleStatusAudio(event.previousState.status)

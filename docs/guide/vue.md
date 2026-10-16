@@ -139,12 +139,13 @@ const ac = useAirConditioner()
 // ac.toggleStatus()      开 / 关
 // ac.setMode('hot')      切换模式
 // ac.increase() / ac.decrease()  调温
+// ac.cycleSound()        声音：标准 → 睡眠 → 静音
 </script>
 ```
 
 ### 接入音效 {#接入音效}
 
-手动组合时若想要音效，用 `useAcAudio` 把 [core 的音频控制器](/api/)接到你自己的 `<audio>` 元素上，并在 Provider 的 `@change` 中调用：
+手动组合时若想要音效，用 `useAcAudio` 把 [core 的音频控制器](/api/#音效与声音模式)接到你自己的 `<audio>` 元素上，并在 Provider 的 `@change` 中调用。它会跟随遥控器「声音」键切换的标准 / 睡眠 / 静音模式：
 
 ```vue
 <script setup lang="ts">
