@@ -2,14 +2,15 @@
 # The SPA fallback lives in packages/react/public/_redirects.
 
 [build]
-  command = "pnpm run react:build"
-  publish = "packages/react/dist"
+command = "pnpm run react:build"
+publish = "packages/react/dist"
 
 [build.environment]
-  NODE_VERSION = "22"
-  PNPM_VERSION = "10.13.1"
+NODE_VERSION = "22"
+PNPM_VERSION = "10.13.1"
 
 [[headers]]
-  for = "/manifest.webmanifest"
-  [headers.values]
-    Content-Type = "application/manifest+json"
+for = "/manifest.webmanifest"
+
+[headers.values]
+Content-Type = "application/manifest+json"
