@@ -10,6 +10,7 @@ import { ToastProvider } from './context/toast'
 import '@unocss/reset/tailwind.css'
 // your custom styles here
 import './styles/css-vars.scss'
+import './styles/motion.css'
 import './styles/index.scss'
 import 'uno.css'
 
