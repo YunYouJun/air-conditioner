@@ -2,7 +2,10 @@ import { defineConfig } from 'tsdown'
 import Vue from 'unplugin-vue/rolldown'
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: {
+    index: 'src/index.ts',
+    controls: 'src/controls/index.ts',
+  },
   format: ['esm', 'cjs'],
   dts: {
     vue: true,

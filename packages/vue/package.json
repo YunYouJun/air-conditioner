@@ -21,7 +21,8 @@
     "vue3"
   ],
   "sideEffects": [
-    "./dist/style.css"
+    "./dist/style.css",
+    "./dist/controls.css"
   ],
   "exports": {
     ".": {
@@ -29,8 +30,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./controls": {
+      "types": "./dist/controls.d.ts",
+      "import": "./dist/controls.js",
+      "require": "./dist/controls.cjs"
+    },
     "./style.css": "./dist/style.css",
-    "./yun-logo.svg": "./dist/yun-logo.svg"
+    "./yun-logo.svg": "./dist/yun-logo.svg",
+    "./controls.css": "./dist/controls.css"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -45,13 +52,13 @@
     "dev": "vite",
     "build": "pnpm run build:lib",
     "build:app": "vite build --outDir dist-app",
-    "build:lib": "tsdown && cp src/style.css dist/style.css && cp -r public/assets dist/assets && cp public/yun-logo.svg dist/yun-logo.svg",
+    "build:lib": "tsdown && cp src/style.css dist/style.css && cp src/controls/controls.css dist/controls.css && cp -r public/assets dist/assets && cp public/yun-logo.svg dist/yun-logo.svg",
     "prepack": "pnpm run build",
     "serve": "vite preview dist-app",
     "typecheck": "vue-tsc --noEmit"
   },
   "peerDependencies": {
-    "vue": ">=3.4"
+    "vue": ">=3.5"
   },
   "dependencies": {
     "@yunlefun-home/air-conditioner-core": "workspace:^"
