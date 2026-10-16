@@ -47,6 +47,8 @@ const { handleChange: handleAudio } = useAcAudio(() => ({
 }))
 
 const notification = shallowRef<AcNotification | undefined>()
+/** 每次通知自增，用作 key 让重复的提示也能重新播放进入动画 */
+const notificationId = ref(0)
 
 function onChange(event: AcChangeEvent) {
   if (props.enableAudio)
@@ -56,6 +58,7 @@ function onChange(event: AcChangeEvent) {
 
 function onNotify(value: AcNotification, event: AcChangeEvent) {
   notification.value = value
+  notificationId.value++
   emit('notify', value, event)
 }
 </script>
@@ -81,13 +84,18 @@ function onNotify(value: AcNotification, event: AcChangeEvent) {
         <AirConditioner :logo-url="logoUrl" :show-energy-label="showEnergyLabel" />
         <RemoteControl />
 
-        <div
-          v-if="notification"
-          class="acw-notification"
-          :data-severity="notification.severity"
-          role="status"
-        >
-          {{ notification.message }}
+        <!-- 常驻的 live region，内部提示切换时才会被读屏正确播报 -->
+        <div class="acw-notification-region" role="status">
+          <Transition name="acw-notify" mode="out-in">
+            <div
+              v-if="notification"
+              :key="notificationId"
+              class="acw-notification"
+              :data-severity="notification.severity"
+            >
+              {{ notification.message }}
+            </div>
+          </Transition>
         </div>
       </div>
     </template>

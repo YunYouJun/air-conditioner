@@ -1,3 +1,23 @@
 .rc-button {
   margin: 8px !important;
 }
+
+/* 按下回缩、松开轻微回弹（重复类名以覆盖 MUI 的 transition） */
+.rc-button.rc-button {
+  transition:
+    background-color var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+    box-shadow var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+    transform var(--acw-motion-duration-fast) var(--acw-motion-ease-spring);
+
+  &:active {
+    transform: scale(0.92);
+    transition-duration: var(--acw-motion-duration-base), var(--acw-motion-duration-base), var(--acw-motion-duration-instant);
+    transition-timing-function: var(--acw-motion-ease-standard);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active {
+      transform: none;
+    }
+  }
+}

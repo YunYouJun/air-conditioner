@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
 import { acModeIcons, defaultAcState } from '@yunlefun-home/air-conditioner-core'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useOptionalAirConditioner } from '../composables/useAirConditioner'
 import EnergyLabel from './EnergyLabel.vue'
 
@@ -31,6 +31,20 @@ const state = computed<AcState>(() => ({
 }))
 
 const modeIcon = computed(() => acModeIcons[state.value.mode])
+
+/**
+ * 数字切换方向：升温从下方滚入，降温从上方滚入；首次渲染不播放。
+ */
+const temperatureDirection = ref<'up' | 'down'>()
+watch(() => state.value.temperature, (value, previous) => {
+  temperatureDirection.value = value > previous ? 'up' : 'down'
+})
+
+/** 模式图标仅在切换后弹出，避免首屏就播放 */
+const modeChanged = ref(false)
+watch(() => state.value.mode, () => {
+  modeChanged.value = true
+})
 </script>
 
 <template>
@@ -42,10 +56,14 @@ const modeIcon = computed(() => acModeIcons[state.value.mode])
       <!-- 显示屏（仅开机时显示） -->
       <div class="acw-display" aria-live="polite">
         <div class="acw-display-mode">
-          {{ modeIcon }}
+          <span :key="state.mode" class="acw-mode-icon" :data-animate="modeChanged || undefined">{{ modeIcon }}</span>
         </div>
         <div class="acw-display-temp">
-          <span class="acw-digit acw-temperature">{{ state.temperature }}</span>
+          <span
+            :key="state.temperature"
+            class="acw-digit acw-temperature"
+            :data-dir="temperatureDirection"
+          >{{ state.temperature }}</span>
           <small class="acw-digit">°C</small>
         </div>
       </div>
@@ -59,6 +77,10 @@ const modeIcon = computed(() => acModeIcons[state.value.mode])
 
       <!-- 出风口线 -->
       <div class="acw-outlet" />
+
+      <!-- 出风口与导风板（开机时打开） -->
+      <div class="acw-vent" aria-hidden="true" />
+      <div class="acw-louver" aria-hidden="true" />
 
       <!-- 状态指示灯 -->
       <span class="acw-led" :aria-label="state.status ? 'on' : 'off'" />

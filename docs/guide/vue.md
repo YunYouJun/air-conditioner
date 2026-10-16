@@ -110,6 +110,14 @@ import '@yunlefun-home/air-conditioner/style.css'
 
 机身本身始终为白色（实体空调外观），仅周围文字 / 通知颜色随主题变化。
 
+## 动效
+
+开关机时依次点亮指示灯与显示屏、打开导风板、淡入出风；温度数字按升 / 降方向滚动，模式图标切换时轻微弹出，遥控按钮有按下回缩反馈。
+
+- 时长与缓动统一来自 core 导出的 `acMotion`，在 `style.css` 里对应 `--acw-motion-*` CSS 变量，可在宿主页面覆盖（例如 `--acw-motion-duration-slow: 600ms`）。
+- 动画只使用 `transform` / `opacity`；关机时出风循环处于暂停状态，不会空转。
+- 系统开启「减少动态效果」（`prefers-reduced-motion: reduce`）时，会关闭出风循环、数字滚动、图标弹出与按钮缩放，只保留短促的淡入淡出。
+
 ## 组合式 API
 
 ### `useAirConditioner()`

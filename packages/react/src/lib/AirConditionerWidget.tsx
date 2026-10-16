@@ -1,4 +1,5 @@
 import type { AirConditionerProviderProps } from './context'
+import { useState } from 'react'
 import { AirConditioner } from './AirConditioner'
 import { AirConditionerProvider, useAirConditioner } from './context'
 import { RemoteControl } from './RemoteControl'
@@ -9,13 +10,22 @@ export interface AirConditionerWidgetProps extends AirConditionerProviderProps {
 
 function Notification() {
   const { notification } = useAirConditioner()
+  // 每条新通知自增 key，让重复的提示也能重新播放进入动画
+  const [current, setCurrent] = useState(notification)
+  const [count, setCount] = useState(0)
+  if (notification !== current) {
+    setCurrent(notification)
+    setCount(count + 1)
+  }
 
-  if (!notification)
-    return null
-
+  // 常驻的 live region，内部提示切换时才会被读屏正确播报
   return (
-    <div className="acw-notification" data-severity={notification.severity} role="status">
-      {notification.message}
+    <div className="acw-notification-region" role="status">
+      {notification && (
+        <div key={count} className="acw-notification" data-severity={notification.severity}>
+          {notification.message}
+        </div>
+      )}
     </div>
   )
 }

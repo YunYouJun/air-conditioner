@@ -1,16 +1,43 @@
 import type { AcMode } from '~/types'
-import React from 'react'
+import React, { useState } from 'react'
 import { useAcCtx } from '~/context'
 import { acColor } from './AirConditioner'
+
+/**
+ * 记录数值的变化方向（首次渲染为 undefined，不播放动画）。
+ * 按 React 文档「存储前一次渲染的信息」的写法在渲染期间更新 state。
+ */
+function useChangeDirection(value: number) {
+  const [previous, setPrevious] = useState(value)
+  const [direction, setDirection] = useState<'up' | 'down'>()
+  if (value !== previous) {
+    setPrevious(value)
+    setDirection(value > previous ? 'up' : 'down')
+  }
+  return direction
+}
+
+/**
+ * 是否已经切换过（首次渲染不播放动画）
+ */
+function useHasChanged<T>(value: T) {
+  const [initial] = useState(value)
+  const [changed, setChanged] = useState(false)
+  if (!changed && value !== initial)
+    setChanged(true)
+  return changed || value !== initial
+}
 
 /**
  * 空调温度
  */
 const AcTemperature: React.FC = () => {
   const { state } = useAcCtx()
+  const direction = useChangeDirection(state.temperature)
   return (
     <h4 className="text-4xl text-center">
-      <span className="font-digit ac-temperature">{state.temperature}</span>
+      {/* key 变化会重新挂载，从而重播滚动动画 */}
+      <span key={state.temperature} className="font-digit ac-temperature" data-dir={direction}>{state.temperature}</span>
       <small className="font-digit">°C</small>
     </h4>
   )
@@ -20,22 +47,21 @@ const AcTemperature: React.FC = () => {
  * 显示屏（温度/图标）
  * @param props
  */
-export const AcDisplay: React.FC<{ mode: AcMode }> = React.forwardRef(
-  (props, ref) => {
-    return (
-      <div
-        ref={ref as React.RefObject<HTMLDivElement>}
-        className="absolute top-6 right-8"
-        style={{
-          color: acColor.display,
-        }}
-      >
-        <h6 className="text-left text-sm">
-          <span>{props.mode === 'cold' ? '❄' : '☀️'}</span>
-          ️️
-        </h6>
-        <AcTemperature />
-      </div>
-    )
-  },
-)
+export const AcDisplay: React.FC<{ mode: AcMode }> = (props) => {
+  const modeChanged = useHasChanged(props.mode)
+  return (
+    <div
+      className="ac-display absolute top-6 right-8"
+      style={{
+        color: acColor.display,
+      }}
+    >
+      <h6 className="text-left text-sm">
+        <span key={props.mode} className="ac-mode-icon" data-animate={modeChanged || undefined}>
+          {props.mode === 'cold' ? '❄' : '☀️'}
+        </span>
+      </h6>
+      <AcTemperature />
+    </div>
+  )
+}

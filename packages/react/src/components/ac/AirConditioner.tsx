@@ -2,7 +2,6 @@ import type { AcMode } from '~/types'
 
 import React from 'react'
 import * as pkg from '~/../package.json'
-import { Fade } from '../Fade'
 import { AcDisplay } from './AcDisplay'
 import { EnergyLabel } from './EnergyLabel'
 
@@ -15,7 +14,6 @@ import './AirConditioner.scss'
 export const acColor = {
   border: '#e0e0e0',
   display: '#cccccc',
-  wind: '#bbbbbb',
 }
 
 const AcBorder: React.FC<React.PropsWithChildren> = (props) => {
@@ -68,19 +66,27 @@ const AirOutlet: React.FC = () => {
 }
 
 /**
+ * 出风口与导风板（开机时打开）
+ */
+const AirLouver: React.FC = () => {
+  return (
+    <>
+      <div className="ac-vent" aria-hidden="true"></div>
+      <div className="ac-louver" aria-hidden="true"></div>
+    </>
+  )
+}
+
+/**
  * 空调状态
  * @param props
  */
 const AcStatus: React.FC<{ status: boolean }> = (props) => {
-  // 空调状态小灯
-  const led = { backgroundColor: props.status ? '#38F709' : acColor.border }
-
+  // 空调状态小灯：亮起的光晕由样式里的伪元素过渡
   return (
     <div
-      className="absolute h-1 w-1 rounded-full top-32 right-2"
-      style={{
-        backgroundColor: led.backgroundColor || 'transparent',
-      }}
+      className="ac-led absolute h-1 w-1 rounded-full top-32 right-2"
+      aria-label={props.status ? 'on' : 'off'}
     >
     </div>
   )
@@ -88,25 +94,16 @@ const AcStatus: React.FC<{ status: boolean }> = (props) => {
 
 /**
  * 风特效
- * @param props
  */
-const WindEffect = React.forwardRef((props, ref) => {
+const WindEffect: React.FC<{ hidden: boolean }> = (props) => {
   return (
-    <div ref={ref as React.RefObject<HTMLDivElement>} className="wind-effect flex justify-center my-5">
-      <div
-        className="wind-line h-10 w-1"
-        style={{ backgroundColor: acColor.wind, transform: 'rotate(10deg)' }}
-      >
-      </div>
-      <div className="wind-line h-10 w-1 mx-20" style={{ backgroundColor: acColor.wind }}></div>
-      <div
-        className="wind-line h-10 w-1"
-        style={{ backgroundColor: acColor.wind, transform: 'rotate(-10deg)' }}
-      >
-      </div>
+    <div className="wind-effect flex justify-center my-5" aria-hidden={props.hidden}>
+      <div className="wind-line h-10 w-1"></div>
+      <div className="wind-line h-10 w-1 mx-20"></div>
+      <div className="wind-line h-10 w-1"></div>
     </div>
   )
-})
+}
 
 /**
  * 空调
@@ -117,20 +114,17 @@ const AirConditioner: React.FC<{
   temperature: number
 }> = (props) => {
   return (
-    <div>
+    <div className="ac-unit" data-mode={props.mode} data-status={props.status ? 'on' : 'off'}>
       <AcBorder>
-        <Fade in={props.status}>
-          <AcDisplay mode={props.mode} />
-        </Fade>
+        <AcDisplay mode={props.mode} />
         <AcLogo />
         <AirOutlet />
+        <AirLouver />
         <AcStatus status={props.status} />
         <EnergyLabel titleLength={6} />
         {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
       </AcBorder>
-      <Fade in={props.status}>
-        <WindEffect />
-      </Fade>
+      <WindEffect hidden={!props.status} />
     </div>
   )
 }
