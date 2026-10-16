@@ -87,3 +87,4 @@ gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/
 - 接入 YunLeFun/home 的真实设备绑定，从 Home Assistant 读取并控制真实空调。令牌存在钥匙串里。
 - WidgetKit 小组件：每种状态用一张 `Model/renders` 里的预渲染图片。
 - 签名、公证并发布 Release。
+- 渲染器暂时继续用 SceneKit。为什么不现在迁到 RealityKit、什么时候迁，见 [RealityKit 迁移评估与渲染器选型](docs/realitykit-spike.md)。
