@@ -1,12 +1,20 @@
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
 import type { CSSProperties } from 'react'
-import { acShellSize, defaultAcState } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, acShellSize, defaultAcState } from '@yunlefun-home/air-conditioner-core'
 import { useRef, useState } from 'react'
 import { useOptionalAirConditionerState } from './context'
+import { EnergyLabel } from './EnergyLabel'
 import { useAcScale, useAcTilt } from './useAcScale'
 
 export interface AirConditionerProps extends Partial<AcState> {
+  /** Logo 的替代文字 / 链接标题 */
   title?: string
+  /** 中央 Logo 图片地址，传空字符串则不显示 */
+  logoUrl?: string
+  /** Logo 链接 */
+  logoHref?: string
+  /** 是否显示能效标签 */
+  showEnergyLabel?: boolean
 }
 
 /**
@@ -34,6 +42,11 @@ function useHasChanged<T>(value: T) {
 }
 
 export function AirConditioner(props: AirConditionerProps = {}) {
+  const {
+    logoUrl = '/yun-logo.svg',
+    logoHref = 'https://github.com/YunYouJun/air-conditioner',
+    showEnergyLabel = true,
+  } = props
   const state = useOptionalAirConditionerState(props)
   const mode = props.mode ?? state.mode
   const status = props.status ?? state.status
@@ -45,6 +58,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
   const scale = useAcScale(unitRef, acShellSize.compact.width)
   const [tiltX, tiltY] = useAcTilt(unitRef)
 
+  // 结构与 Vue 版 AirConditioner.vue 一致，共用同一份样式
   return (
     <div
       ref={unitRef}
@@ -54,31 +68,48 @@ export function AirConditioner(props: AirConditionerProps = {}) {
       style={{ '--acw-scale': scale, '--acw-tilt-x': `${tiltX}deg`, '--acw-tilt-y': `${tiltY}deg` } as CSSProperties}
     >
       <div className="acw-shell">
-        <div className="acw-badge">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+        {/* 能效标签 */}
+        {showEnergyLabel && <EnergyLabel />}
+
+        {/* 显示屏（仅开机时显示）；key 变化会重新挂载，从而重播切换动画 */}
         <div className="acw-display" aria-live="polite">
-          {/* key 变化会重新挂载，从而重播切换动画 */}
-          <span key={mode} className="acw-mode" data-animate={modeChanged || undefined}>{mode === 'cold' ? 'cold' : 'hot'}</span>
-          <span className="acw-temp">
+          <div className="acw-display-mode">
+            <span key={mode} className="acw-mode-icon" data-animate={modeChanged || undefined}>{acModeIcons[mode]}</span>
+          </div>
+          <div className="acw-display-temp">
             <span className="acw-readout">
-              <strong key={temperature} data-dir={direction}>{temperature}</strong>
-              <small>°C</small>
+              <span key={temperature} className="acw-digit acw-temperature" data-dir={direction}>{temperature}</span>
+              <small className="acw-digit">°C</small>
             </span>
-            <span className="acw-selftest" aria-hidden="true">88</span>
-          </span>
+            <span className="acw-digit acw-selftest" aria-hidden="true">88</span>
+          </div>
         </div>
-        <div className="acw-logo">{props.title ?? 'Yun AC'}</div>
-        <div className="acw-vent" aria-hidden="true"></div>
-        <div className="acw-louver" aria-hidden="true"></div>
-        <span className="acw-led" aria-label={status ? 'on' : 'off'}></span>
+
+        {/* 中央 Logo */}
+        {logoUrl && (
+          <div className="acw-logo">
+            <a href={logoHref} target="_blank" rel="noreferrer noopener" title={props.title}>
+              <img src={logoUrl} alt={props.title ?? 'logo'} />
+            </a>
+          </div>
+        )}
+
+        {/* 出风口线 */}
+        <div className="acw-outlet" />
+
+        {/* 出风口与导风板（开机时打开） */}
+        <div className="acw-vent" aria-hidden="true" />
+        <div className="acw-louver" aria-hidden="true" />
+
+        {/* 状态指示灯 */}
+        <span className="acw-led" aria-label={status ? 'on' : 'off'} />
       </div>
+
+      {/* 风特效 */}
       <div className="acw-wind" aria-hidden={!status}>
-        <span></span>
-        <span></span>
-        <span></span>
+        <span className="acw-wind-line" />
+        <span className="acw-wind-line" />
+        <span className="acw-wind-line" />
       </div>
     </div>
   )

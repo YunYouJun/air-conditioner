@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
 
-import { defaultAcState } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, defaultAcState } from '@yunlefun-home/air-conditioner-core'
 import { describe, expect, it } from 'vitest'
 import { defineAirConditionerElement, mountAirConditioner } from '../src'
 
 describe('@air-conditioner/widget', () => {
   it('defines and mounts a native custom element', () => {
-    defineAirConditionerElement({ tagName: 'test-air-conditioner-widget' })
+    defineAirConditionerElement({ tagName: 'test-air-conditioner-widget', enableAudio: false })
     document.body.innerHTML = '<div id="target"></div>'
 
     const element = mountAirConditioner('#target', {
@@ -15,7 +15,11 @@ describe('@air-conditioner/widget', () => {
     })
 
     expect(element.localName).toBe('test-air-conditioner-widget')
-    expect(element.shadowRoot?.textContent).toContain('Yun AC')
+    // 与 Vue 版一致：能效标签、数码管温度、Logo
+    expect(element.shadowRoot?.querySelector('.acw-energy-label')).not.toBeNull()
+    expect(element.shadowRoot?.querySelector('.acw-temperature.acw-digit')?.textContent).toBe(String(defaultAcState.temperature))
+    expect(element.shadowRoot?.querySelector('.acw-logo img')?.getAttribute('src')).toBe('/yun-logo.svg')
+    expect(document.getElementById('acw-digit-font')?.textContent).toContain('/assets/fonts/digital-7-mono.ttf')
   })
 
   it('keeps the persisted mode when no mode attribute is given', () => {
@@ -33,12 +37,32 @@ describe('@air-conditioner/widget', () => {
 
     const unit = element.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
     expect(unit?.dataset.mode).toBe('hot')
-    expect(element.shadowRoot?.querySelector('.acw-mode')?.textContent).toBe('hot')
-    expect(element.shadowRoot?.querySelector('.acw-display strong')?.textContent).toBe('22')
+    expect(element.shadowRoot?.querySelector('.acw-mode-icon')?.textContent).toBe(acModeIcons.hot)
+    expect(element.shadowRoot?.querySelector('.acw-temperature')?.textContent).toBe('22')
+  })
+
+  it('restores the persisted power state unless a status attribute is set', () => {
+    const storage = new Map<string, string>([['test:status', JSON.stringify({ mode: 'cold', status: true, temperature: 24 })]])
+    defineAirConditionerElement({
+      tagName: 'test-air-conditioner-status',
+      enableAudio: false,
+      storageKey: 'test:status',
+      storage: {
+        getItem: key => storage.get(key) ?? null,
+        setItem: (key, value) => storage.set(key, value),
+      },
+    })
+    const restored = document.createElement('test-air-conditioner-status')
+    const forcedOff = document.createElement('test-air-conditioner-status')
+    forcedOff.setAttribute('status', 'false')
+    document.body.append(restored, forcedOff)
+
+    expect(restored.shadowRoot?.querySelector<HTMLElement>('.acw-unit')?.dataset.status).toBe('on')
+    expect(forcedOff.shadowRoot?.querySelector<HTMLElement>('.acw-unit')?.dataset.status).toBe('off')
   })
 
   it('patches the rendered DOM instead of rebuilding it', () => {
-    defineAirConditionerElement({ tagName: 'test-air-conditioner-patch', storage: null })
+    defineAirConditionerElement({ tagName: 'test-air-conditioner-patch', storage: null, enableAudio: false })
     const element = document.createElement('test-air-conditioner-patch')
     document.body.appendChild(element)
 
@@ -48,9 +72,10 @@ describe('@air-conditioner/widget', () => {
     power.click()
     expect(root.querySelector('[data-action="toggleStatus"]')).toBe(power)
     expect(unit.dataset.status).toBe('on')
+    expect(power.classList.contains('acw-button-on')).toBe(true)
 
     root.querySelector<HTMLButtonElement>('[data-action="increment"]')!.click()
-    const temperature = root.querySelector<HTMLElement>('.acw-display strong')!
+    const temperature = root.querySelector<HTMLElement>('.acw-temperature')!
     expect(temperature.textContent).toBe(String(defaultAcState.temperature + 1))
     expect(temperature.dataset.dir).toBe('up')
   })

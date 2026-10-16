@@ -1,42 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
-interface DotRow {
-  num: number
-  size: number
-  mx: number
-  my: number
-  color: string
-}
+import { acEnergyLabel } from '@yunlefun-home/air-conditioner-core'
 
 /**
- * 一组「黑点 / 白点」文字占位，模拟能效标签上的细密文字。
+ * 能效标签：点阵与等级条布局来自 core，与 React / Web Component 保持一致。
  */
-const dotRows: DotRow[] = [
-  { num: 6, size: 4, mx: 2, my: 0, color: 'white' },
-]
-
-const detailRows: DotRow[] = [
-  { num: 11, size: 2, mx: 0.8, my: 2, color: 'black' },
-  { num: 9, size: 1.5, mx: 0.8, my: 2, color: 'black' },
-  { num: 10, size: 1.2, mx: 0.8, my: 0, color: 'black' },
-]
-
-const footerRow: DotRow = { num: 8, size: 2, mx: 0.8, my: 0, color: 'white' }
+const dotRows = acEnergyLabel.top
+const detailRows = acEnergyLabel.detail
+const footerRow = acEnergyLabel.footer
+const levels = acEnergyLabel.levels
 
 function dots(num: number) {
   return Array.from({ length: num }, (_, i) => i)
 }
-
-/**
- * 能效条（绿→红渐变等级）
- */
-const levels = computed(() => [
-  { background: 'lightgreen', width: '50%' },
-  { background: '#ffc107', width: '60%' },
-  { background: 'orange', width: '70%' },
-  { background: 'red', width: '80%' },
-])
 </script>
 
 <template>

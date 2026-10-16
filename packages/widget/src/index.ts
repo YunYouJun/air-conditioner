@@ -1,10 +1,25 @@
 import type {
+  AcAudioController,
+  AcDotRow,
+  AcIconName,
   AcMode,
   AcNotification,
   AcState,
   AirConditionerStore,
 } from '@yunlefun-home/air-conditioner-core'
-import { acShellSize, createAirConditionerStore, defaultAcState, observeAcScale, observeAcTilt, renderAcMotionCssVars } from '@yunlefun-home/air-conditioner-core'
+import {
+  acEnergyLabel,
+  acIconPaths,
+  acModeIcons,
+  acShellSize,
+  createAcAudioController,
+  createAirConditionerStore,
+  defaultAcState,
+  observeAcScale,
+  observeAcTilt,
+  resolveAcAudioAssets,
+} from '@yunlefun-home/air-conditioner-core'
+import { widgetStyleText } from './style'
 
 export type WidgetAcMode = 'cold' | 'hot'
 
@@ -34,548 +49,181 @@ export interface WidgetAcStorage {
 
 export interface DefineAirConditionerElementOptions {
   tagName?: string
+  /** Logo 的替代文字 / 链接标题 */
   title?: string
   initialState?: Partial<WidgetAcState>
   storage?: WidgetAcStorage | null
   storageKey?: string
+  /** 中央 Logo 图片地址，传空字符串则不显示，默认 `/yun-logo.svg` */
+  logoUrl?: string
+  /** Logo 链接 */
+  logoHref?: string
+  /** 静态资源基础路径（字体 / 音频所在目录），默认 `/assets` */
+  assetsBaseUrl?: string
+  /** 音频扩展名，默认 `m4a` */
+  audioExt?: string
+  /** 是否启用音效，默认 `true` */
+  enableAudio?: boolean
+  /** 是否显示能效标签，默认 `true` */
+  showEnergyLabel?: boolean
   onNotify?: (notification: WidgetAcNotification, event: WidgetAcChangeEvent) => void
 }
 
 export interface MountAirConditionerOptions extends DefineAirConditionerElementOptions {}
 
 const defaultTagName = 'air-conditioner-widget'
-
-const styleText = `
-:host {
-  display: inline-block;
-  /* 宽度相对宿主容器确定，避免 inline-block 收缩到遥控器宽度把机身挤窄 */
-  width: min(420px, 100%);
-  color: #1f2933;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-.acw-root {
-  display: grid;
-  gap: 16px;
-  justify-items: center;
-  width: min(420px, 100%);
-}
-
-.acw-unit {
-  width: min(100%, 360px);
-  /* 指针跟随的轻微 3D 倾斜（--acw-tilt-* 由组件写入，仅精细指针且未开启减少动效时） */
-  transform: perspective(800px) rotateX(var(--acw-tilt-x, 0deg)) rotateY(var(--acw-tilt-y, 0deg));
-  transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard);
-}
-
-.acw-shell {
-  position: relative;
-  height: 128px;
-  /* 窄容器下整体等比缩小，保持长款比例（--acw-scale 由组件按容器宽度写入）。
-     用百分比换算回 360px 设计宽度，避免固定宽度撑大父容器的最小尺寸 */
-  width: calc(100% / var(--acw-scale, 1));
-  transform: scale(var(--acw-scale, 1));
-  transform-origin: 0 0;
-  /* 缩放不改变布局尺寸，用负外边距收回多出来的高度 */
-  margin-bottom: calc(128px * (var(--acw-scale, 1) - 1));
-  border: 1px solid #d9dee7;
-  border-radius: 10px 10px 20px 20px;
-  /* 伪 3D：顶部受光、底部弧面渐暗，配合内侧高光与投在墙上的阴影 */
-  background: linear-gradient(to bottom, #fff 0%, #fdfdfd 48%, #eef0f3 100%);
-  box-shadow:
-    inset 0 1px 0 #fff,
-    inset 0 -10px 14px -10px rgba(15, 23, 42, 0.16),
-    0 1px 2px rgba(15, 23, 42, 0.08),
-    0 14px 26px -12px rgba(15, 23, 42, 0.32);
-}
-
-/* 面板上半部的柔和光泽 */
-.acw-shell::before {
-  content: "";
-  position: absolute;
-  top: 1px;
-  right: 6px;
-  left: 6px;
-  height: 42%;
-  border-radius: 8px 8px 50% 50% / 8px 8px 14px 14px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
-  pointer-events: none;
-}
-
-/* 出风口线：面板与底部弧面的分界 */
-.acw-shell::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 24px;
-  left: 0;
-  border-top: 1px solid #e3e7ee;
-  box-shadow: 0 1px 0 #fff;
-  pointer-events: none;
-}
-
-.acw-badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: grid;
-  grid-template-columns: repeat(3, 4px);
-  gap: 4px;
-  padding: 12px;
-  border-radius: 3px;
-  background: #4ea5f5;
-}
-
-.acw-badge span {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #fff;
-}
-
-.acw-display {
-  position: absolute;
-  top: 18px;
-  right: 28px;
-  color: #9aa3ad;
-  text-align: right;
-  opacity: 0.45;
-  transition: opacity var(--acw-motion-duration-base) var(--acw-motion-ease-exit);
-}
-
-.acw-unit[data-status="on"] .acw-display {
-  opacity: 1;
-  transition-timing-function: var(--acw-motion-ease-enter);
-}
-
-.acw-display strong {
-  display: inline-block;
-  min-width: 48px;
-  font-size: 42px;
-  line-height: 1;
-}
-
-.acw-temp {
-  position: relative;
-  display: inline-block;
-}
-
-/* 开机自检：先短暂点亮全部笔段「88」，再显示温度 */
-.acw-selftest {
-  position: absolute;
-  top: 0;
-  left: 0;
-  min-width: 48px;
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: right;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.acw-unit[data-status="on"] .acw-selftest {
-  animation: acw-selftest 560ms steps(1, end) both;
-}
-
-.acw-unit[data-status="on"] .acw-readout {
-  animation: acw-selftest-reveal 560ms steps(1, end) both;
-}
-
-@keyframes acw-selftest {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes acw-selftest-reveal {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.acw-display small {
-  font-size: 18px;
-}
-
-/* 温度切换：升温从下方滚入、降温从上方滚入 */
-.acw-display strong[data-dir="up"] {
-  animation: acw-digit-up var(--acw-motion-duration-base) var(--acw-motion-ease-enter) both;
-}
-
-.acw-display strong[data-dir="down"] {
-  animation: acw-digit-down var(--acw-motion-duration-base) var(--acw-motion-ease-enter) both;
-}
-
-.acw-mode {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-/* 模式切换：文字从上方轻轻落下 */
-.acw-mode[data-animate] {
-  animation: acw-digit-down var(--acw-motion-duration-base) var(--acw-motion-ease-spring) both;
-}
-
-@keyframes acw-digit-up {
-  from {
-    opacity: 0;
-    transform: translateY(40%);
-  }
-}
-
-@keyframes acw-digit-down {
-  from {
-    opacity: 0;
-    transform: translateY(-40%);
-  }
-}
-
-.acw-logo {
-  position: absolute;
-  right: 0;
-  bottom: 30px;
-  left: 0;
-  color: #8b95a1;
-  font-size: 12px;
-  text-align: center;
-}
-
-/* 出风口：开机时缝隙变暗、导风板向外翻开；关机时等出风淡出后再合上 */
-.acw-vent {
-  position: absolute;
-  right: 28px;
-  bottom: 13px;
-  left: 28px;
-  height: 5px;
-  border-radius: 0 0 4px 4px;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.16), rgba(15, 23, 42, 0.03));
-  opacity: 0;
-  transition: opacity var(--acw-motion-duration-slow) var(--acw-motion-ease-standard) var(--acw-motion-duration-base);
-}
-
-.acw-louver {
-  position: absolute;
-  right: 28px;
-  bottom: 6px;
-  left: 28px;
-  height: 10px;
-  border-radius: 0 0 10px 10px;
-  /* 与机身底部弧面同色，合上时融为一体 */
-  background: linear-gradient(to bottom, #f2f3f6, #eceef1);
-  transform-origin: 50% 0;
-  transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard) var(--acw-motion-duration-base);
-}
-
-.acw-louver::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 1px solid #d9dee7;
-  border-top: 0;
-  border-radius: inherit;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.06), transparent);
-  opacity: 0;
-  transition: opacity var(--acw-motion-duration-slow) var(--acw-motion-ease-standard) var(--acw-motion-duration-base);
-}
-
-.acw-unit[data-status="on"] .acw-vent,
-.acw-unit[data-status="on"] .acw-louver,
-.acw-unit[data-status="on"] .acw-louver::before {
-  transition-delay: 0ms;
-}
-
-.acw-unit[data-status="on"] .acw-vent,
-.acw-unit[data-status="on"] .acw-louver::before {
-  opacity: 1;
-}
-
-.acw-unit[data-status="on"] .acw-louver {
-  transform: translateY(4px) perspective(80px) rotateX(-38deg);
-}
-
-/* 状态指示灯：光晕放在伪元素上，只过渡 opacity / transform */
-.acw-led {
-  position: absolute;
-  right: 12px;
-  bottom: 13px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #d9dee7;
-}
-
-.acw-led::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: #38f709;
-  box-shadow: 0 0 10px rgba(56, 247, 9, 0.72);
-  opacity: 0;
-  transform: scale(0.4);
-  transition:
-    opacity var(--acw-motion-duration-fast) var(--acw-motion-ease-standard),
-    transform var(--acw-motion-duration-fast) var(--acw-motion-ease-spring);
-}
-
-.acw-unit[data-status="on"] .acw-led::after {
-  opacity: 1;
-  transform: none;
-}
-
-/* 开机：导风板打开后出风再淡入；关机：出风先淡出 */
-.acw-wind {
-  display: flex;
-  justify-content: center;
-  gap: 58px;
-  height: 56px;
-  margin-top: 14px;
-  opacity: 0;
-  transition: opacity var(--acw-motion-duration-base) var(--acw-motion-ease-exit);
-}
-
-.acw-unit[data-status="on"] .acw-wind {
-  opacity: 1;
-  transition: opacity var(--acw-motion-duration-slow) var(--acw-motion-ease-enter) var(--acw-motion-duration-base);
-}
-
-.acw-wind span {
-  position: relative;
-  overflow: hidden;
-  width: 5px;
-  height: 44px;
-  border-radius: 999px;
-  background: rgba(174, 183, 193, 0.3);
-}
-
-/* 气流：冷 / 暖两层渐变条沿出风线向下流动，切换模式时交叉淡化 */
-.acw-wind span::before,
-.acw-wind span::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 60%;
-  border-radius: inherit;
-  background: linear-gradient(to bottom, transparent, #8cc4f2, transparent);
-  transform: translateY(-110%);
-  transition: opacity var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
-  animation: acw-wind-flow var(--acw-motion-duration-flow) cubic-bezier(0.45, 0, 0.55, 1) var(--acw-wind-delay, 0ms) infinite;
-  /* 关机时暂停，静止状态不跑循环 */
-  animation-play-state: paused;
-}
-
-.acw-wind span::after {
-  background: linear-gradient(to bottom, transparent, #f6ad7b, transparent);
-  opacity: 0;
-}
-
-.acw-unit[data-mode="hot"] .acw-wind span::before {
-  opacity: 0;
-}
-
-.acw-unit[data-mode="hot"] .acw-wind span::after {
-  opacity: 1;
-}
-
-.acw-unit[data-status="on"] .acw-wind span::before,
-.acw-unit[data-status="on"] .acw-wind span::after {
-  animation-play-state: running;
-}
-
-.acw-wind span:first-child {
-  --acw-wind-delay: -600ms;
-  transform: rotate(10deg);
-}
-
-.acw-wind span:last-child {
-  --acw-wind-delay: -1200ms;
-  transform: rotate(-10deg);
-}
-
-@keyframes acw-wind-flow {
-  from {
-    transform: translateY(-110%);
-  }
-
-  to {
-    transform: translateY(180%);
-  }
-}
-
-.acw-remote {
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-}
-
-.acw-remote-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.acw-button {
-  position: relative;
-  min-width: 54px;
-  min-height: 44px;
-  border: 0;
-  border-radius: 7px;
-  background: #edf2f7;
-  color: #1f2933;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  /* 松开：带一点回弹 */
-  transition: transform var(--acw-motion-duration-fast) var(--acw-motion-ease-spring);
-}
-
-/* 悬停 / 按下的明暗变化放在遮罩层上，只过渡 opacity */
-.acw-button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: currentColor;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--acw-motion-duration-fast) var(--acw-motion-ease-standard);
-}
-
-.acw-button:hover::after {
-  opacity: 0.08;
-}
-
-.acw-button:active {
-  transform: scale(0.92);
-  transition-duration: var(--acw-motion-duration-instant);
-  transition-timing-function: var(--acw-motion-ease-standard);
-}
-
-.acw-button:active::after {
-  opacity: 0.16;
-  transition-duration: var(--acw-motion-duration-instant);
-}
-
-.acw-button:focus-visible {
-  outline: 2px solid #1976d2;
-  outline-offset: 3px;
-}
-
-.acw-button-cold {
-  background: #1976d2;
-  color: #fff;
-}
-
-.acw-button-hot {
-  background: #f59e0b;
-  color: #fff;
-}
-
-.acw-button-power {
-  background: #16a34a;
-  color: #fff;
-}
-
-.acw-button-temp {
-  width: 54px;
-  border-radius: 50%;
-  font-size: 22px;
-}
-
-.acw-notification-region {
-  width: 100%;
-}
-
-/* 常驻的 live region 为空时不占用网格间距 */
-.acw-notification-region:empty {
-  margin-top: -16px;
-}
-
-.acw-notification {
-  width: 100%;
-  min-height: 38px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: #edf8f0;
-  color: #155724;
-  font-size: 13px;
-  animation: acw-notify-in var(--acw-motion-duration-base) var(--acw-motion-ease-enter) both;
-}
-
-@keyframes acw-notify-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-
-.acw-notification[data-severity="error"] {
-  background: #fdecec;
-  color: #8a1f17;
-}
-
-/* 减少动效：时长已由 token 缩短；这里关掉循环与位移类动画，只保留短促的淡入淡出 */
-@media (prefers-reduced-motion: reduce) {
-  .acw-wind span::before,
-  .acw-wind span::after {
-    height: 100%;
-    transform: none;
-    animation: none;
-  }
-
-  .acw-display strong[data-dir],
-  .acw-mode[data-animate] {
-    animation: none;
-  }
-
-  .acw-unit[data-status="on"] .acw-louver {
-    transform: translateY(2px);
-  }
-
-  .acw-button:active {
-    transform: none;
-  }
-
-  .acw-unit {
-    transform: none;
-  }
-
-  .acw-unit[data-status="on"] .acw-selftest,
-  .acw-unit[data-status="on"] .acw-readout {
-    animation: none;
-  }
-
-  .acw-notification {
-    animation-name: acw-fade-in;
-  }
-}
-
-@keyframes acw-fade-in {
-  from {
-    opacity: 0;
-  }
-}
+const digitFontStyleId = 'acw-digit-font'
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, char => `&#${char.charCodeAt(0)};`)
+}
+
+/**
+ * Shadow DOM 内声明的 @font-face 不会生效，数码管字体需注入到 document（只注入一次）。
+ */
+function ensureDigitFont(assetsBaseUrl: string) {
+  if (typeof document === 'undefined' || document.getElementById(digitFontStyleId))
+    return
+
+  const style = document.createElement('style')
+  style.id = digitFontStyleId
+  style.textContent = `@font-face {
+  font-family: "Digital-7 Mono";
+  src: url("${assetsBaseUrl.replace(/\/$/, '')}/fonts/digital-7-mono.ttf") format("truetype");
+  font-display: swap;
+}`
+  document.head.appendChild(style)
+}
+
+function icon(name: AcIconName, size: number) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" d="${acIconPaths[name]}" /></svg>`
+}
+
+function dotRow(row: AcDotRow, extra = '') {
+  const dots = Array.from({ length: row.num }).fill(`<span class="acw-dot" style="width: ${row.size}px; height: ${row.size}px; margin: ${row.my}px ${row.mx}px"></span>`).join('')
+  return `<div class="acw-dot-row" style="--acw-dot-color: ${row.color}">${dots}${extra}</div>`
+}
+
+function energyLabel() {
+  const levels = acEnergyLabel.levels
+    .map(level => `<div class="acw-energy-level" style="background-color: ${level.background}; width: ${level.width}"></div>`)
+    .join('')
+  return `<div class="acw-energy-label">
+    ${acEnergyLabel.top.map(row => dotRow(row)).join('')}
+    <div class="acw-energy-grades">
+      <div class="acw-energy-arrow"><div class="acw-arrow-bar"></div><div class="acw-arrow-tip"></div><div class="acw-arrow-bar acw-arrow-bar-sm"></div></div>
+      ${levels}
+    </div>
+    <div class="acw-energy-detail">
+      ${acEnergyLabel.detail.map((row, i) => dotRow(row, i === 0 ? '<div class="acw-energy-detail-line"></div>' : '')).join('')}
+    </div>
+    ${dotRow(acEnergyLabel.footer)}
+  </div>`
+}
+
+interface WidgetViewOptions {
+  title?: string
+  logoUrl: string
+  logoHref: string
+  showEnergyLabel: boolean
+  audio?: ReturnType<typeof resolveAcAudioAssets>
+}
+
+/**
+ * 只在挂载时写入一次的骨架（结构与 Vue 版 AirConditionerWidget 一致）；之后的状态变化通过
+ * `updateWidget` 增量更新，这样 CSS 过渡才能播放，按钮的键盘焦点也不会因整块重建而丢失。
+ */
+function widgetTemplate(view: WidgetViewOptions) {
+  const audio = view.audio
+    ? `<audio data-audio="beep" src="${escapeHtml(view.audio.beep)}" preload="auto"></audio>
+      <audio data-audio="start" src="${escapeHtml(view.audio.start)}" preload="auto"></audio>
+      <audio data-audio="work" src="${escapeHtml(view.audio.work)}" preload="auto"></audio>`
+    : ''
+  const logo = view.logoUrl
+    ? `<div class="acw-logo"><a href="${escapeHtml(view.logoHref)}" target="_blank" rel="noreferrer noopener"${view.title ? ` title="${escapeHtml(view.title)}"` : ''}><img src="${escapeHtml(view.logoUrl)}" alt="${escapeHtml(view.title ?? 'logo')}"></a></div>`
+    : ''
+  return `
+  <style>${widgetStyleText}</style>
+  <div class="acw-root">
+    ${audio}
+    <div class="acw-unit">
+      <div class="acw-shell">
+        ${view.showEnergyLabel ? energyLabel() : ''}
+        <div class="acw-display" aria-live="polite">
+          <div class="acw-display-mode"><span class="acw-mode-icon"></span></div>
+          <div class="acw-display-temp">
+            <span class="acw-readout"><span class="acw-digit acw-temperature"></span><small class="acw-digit">°C</small></span>
+            <span class="acw-digit acw-selftest" aria-hidden="true">88</span>
+          </div>
+        </div>
+        ${logo}
+        <div class="acw-outlet"></div>
+        <div class="acw-vent" aria-hidden="true"></div>
+        <div class="acw-louver" aria-hidden="true"></div>
+        <span class="acw-led"></span>
+      </div>
+      <div class="acw-wind">
+        <span class="acw-wind-line"></span><span class="acw-wind-line"></span><span class="acw-wind-line"></span>
+      </div>
+    </div>
+    <div class="acw-remote" role="group" aria-label="Air conditioner remote control">
+      <div class="acw-remote-row">
+        <button type="button" class="acw-button acw-button-cold" aria-label="cold" data-action="cold">${icon('cold', 22)}</button>
+        <button type="button" class="acw-button acw-button-power" aria-label="power" data-action="toggleStatus">${icon('power', 22)}</button>
+        <button type="button" class="acw-button acw-button-hot" aria-label="hot" data-action="hot">${icon('hot', 22)}</button>
+      </div>
+      <button type="button" class="acw-button acw-button-temp" aria-label="add" data-action="increment">${icon('increase', 28)}</button>
+      <button type="button" class="acw-button acw-button-temp" aria-label="reduce" data-action="decrement">${icon('decrease', 28)}</button>
+    </div>
+    <div class="acw-notification-region" role="status"></div>
+  </div>
 `
+}
 
-function boolAttribute(value: string | null, fallback: boolean): boolean {
+/**
+ * 用新节点替换旧节点，以便重新播放进入动画。
+ */
+function replaceAnimated(current: Element, text: string, attribute: [string, string]) {
+  const next = current.cloneNode(false) as HTMLElement
+  next.textContent = text
+  next.setAttribute(...attribute)
+  current.replaceWith(next)
+}
+
+function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | undefined) {
+  const status = state.status ? 'on' : 'off'
+  for (const element of root.querySelectorAll<HTMLElement>('.acw-root, .acw-unit')) {
+    element.dataset.mode = state.mode
+    element.dataset.status = status
+  }
+
+  const mode = root.querySelector('.acw-mode-icon')!
+  if (!previous)
+    mode.textContent = acModeIcons[state.mode]
+  else if (previous.mode !== state.mode)
+    replaceAnimated(mode, acModeIcons[state.mode], ['data-animate', ''])
+
+  const temperature = root.querySelector('.acw-temperature')!
+  if (!previous)
+    temperature.textContent = String(state.temperature)
+  else if (previous.temperature !== state.temperature)
+    replaceAnimated(temperature, String(state.temperature), ['data-dir', state.temperature > previous.temperature ? 'up' : 'down'])
+
+  root.querySelector('.acw-led')!.setAttribute('aria-label', status)
+  root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
+  root.querySelector('.acw-button-power')!.classList.toggle('acw-button-on', state.status)
+}
+
+function showNotification(root: ShadowRoot, notification: AcNotification) {
+  const region = root.querySelector('.acw-notification-region')!
+  const element = document.createElement('div')
+  element.className = 'acw-notification'
+  element.dataset.severity = notification.severity
+  element.textContent = notification.message
+  region.replaceChildren(element)
+}
+
+function boolAttribute(value: string | null, fallback?: boolean): boolean | undefined {
   if (value === null)
     return fallback
 
@@ -598,7 +246,8 @@ function getInitialState(element: HTMLElement, defaults?: Partial<AcState>): Par
   const state: Partial<AcState> = {
     ...defaults,
     mode: modeAttribute(element.getAttribute('mode')) ?? defaults?.mode,
-    status: boolAttribute(element.getAttribute('status'), defaults?.status ?? defaultAcState.status),
+    // 未设置 status 属性时沿用持久化状态（与 Vue / React 组件一致）
+    status: boolAttribute(element.getAttribute('status'), defaults?.status),
     temperature: numberAttribute(element.getAttribute('temperature')) ?? defaults?.temperature,
   }
   // 未指定的字段不能以 undefined 覆盖持久化 / 默认状态（否则 mode 会变成 undefined）
@@ -607,88 +256,6 @@ function getInitialState(element: HTMLElement, defaults?: Partial<AcState>): Par
       delete state[key]
   }
   return state
-}
-
-/**
- * 只在挂载时写入一次的骨架；之后的状态变化通过 `updateWidget` 增量更新，
- * 这样 CSS 过渡才能播放，按钮的键盘焦点也不会因整块重建而丢失。
- */
-const widgetTemplate = `
-  <style>${styleText}
-${renderAcMotionCssVars(':host')}
-  </style>
-  <div class="acw-root">
-    <div class="acw-unit">
-      <div class="acw-shell">
-        <div class="acw-badge" aria-hidden="true"><span></span><span></span><span></span></div>
-        <div class="acw-display" aria-live="polite">
-          <span class="acw-mode"></span>
-          <span class="acw-temp"><span class="acw-readout"><strong></strong><small>°C</small></span><span class="acw-selftest" aria-hidden="true">88</span></span>
-        </div>
-        <div class="acw-logo"></div>
-        <div class="acw-vent" aria-hidden="true"></div>
-        <div class="acw-louver" aria-hidden="true"></div>
-        <span class="acw-led"></span>
-      </div>
-      <div class="acw-wind">
-        <span></span><span></span><span></span>
-      </div>
-    </div>
-    <div class="acw-remote" role="group" aria-label="Air conditioner remote control">
-      <div class="acw-remote-row">
-        <button type="button" class="acw-button acw-button-cold" aria-label="cold" data-action="cold">Cold</button>
-        <button type="button" class="acw-button acw-button-power" aria-label="power" data-action="toggleStatus">Power</button>
-        <button type="button" class="acw-button acw-button-hot" aria-label="hot" data-action="hot">Hot</button>
-      </div>
-      <button type="button" class="acw-button acw-button-temp" aria-label="add" data-action="increment">+</button>
-      <button type="button" class="acw-button acw-button-temp" aria-label="reduce" data-action="decrement">-</button>
-    </div>
-    <div class="acw-notification-region" role="status"></div>
-  </div>
-`
-
-/**
- * 用新节点替换旧节点，以便重新播放进入动画。
- */
-function replaceAnimated<K extends keyof HTMLElementTagNameMap>(current: Element, tagName: K, className: string, text: string, attribute?: [string, string]) {
-  const next = document.createElement(tagName)
-  if (className)
-    next.className = className
-  next.textContent = text
-  if (attribute)
-    next.setAttribute(...attribute)
-  current.replaceWith(next)
-}
-
-function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | undefined, title: string) {
-  const unit = root.querySelector<HTMLElement>('.acw-unit')!
-  unit.dataset.mode = state.mode
-  unit.dataset.status = state.status ? 'on' : 'off'
-
-  const mode = root.querySelector('.acw-mode')!
-  if (!previous)
-    mode.textContent = state.mode
-  else if (previous.mode !== state.mode)
-    replaceAnimated(mode, 'span', 'acw-mode', state.mode, ['data-animate', ''])
-
-  const temperature = root.querySelector('.acw-display strong')!
-  if (!previous)
-    temperature.textContent = String(state.temperature)
-  else if (previous.temperature !== state.temperature)
-    replaceAnimated(temperature, 'strong', '', String(state.temperature), ['data-dir', state.temperature > previous.temperature ? 'up' : 'down'])
-
-  root.querySelector('.acw-logo')!.textContent = title
-  root.querySelector('.acw-led')!.setAttribute('aria-label', state.status ? 'on' : 'off')
-  root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
-}
-
-function showNotification(root: ShadowRoot, notification: AcNotification) {
-  const region = root.querySelector('.acw-notification-region')!
-  const element = document.createElement('div')
-  element.className = 'acw-notification'
-  element.dataset.severity = notification.severity
-  element.textContent = notification.message
-  region.replaceChildren(element)
 }
 
 export function defineAirConditionerElement(options: DefineAirConditionerElementOptions = {}): CustomElementConstructor {
@@ -702,14 +269,24 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private unsubscribe?: () => void
     private renderedState?: AcState
     private stopObservers: (() => void)[] = []
+    private audio?: AcAudioController
 
     static get observedAttributes() {
       return ['mode', 'status', 'temperature']
     }
 
     connectedCallback() {
+      const assetsBaseUrl = options.assetsBaseUrl ?? '/assets'
+      const enableAudio = options.enableAudio ?? true
+      ensureDigitFont(assetsBaseUrl)
       if (!this.shadowRoot) {
-        this.attachShadow({ mode: 'open' }).innerHTML = widgetTemplate
+        this.attachShadow({ mode: 'open' }).innerHTML = widgetTemplate({
+          title: this.getAttribute('title') ?? options.title,
+          logoUrl: options.logoUrl ?? '/yun-logo.svg',
+          logoHref: options.logoHref ?? 'https://github.com/YunYouJun/air-conditioner',
+          showEnergyLabel: options.showEnergyLabel ?? true,
+          audio: enableAudio ? resolveAcAudioAssets(`${assetsBaseUrl}/audio`, options.audioExt ?? 'm4a') : undefined,
+        })
       }
 
       this.store = createAirConditionerStore({
@@ -729,6 +306,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       })
       this.unsubscribe = this.store.subscribe((event) => {
         this.render()
+        this.playAudio(event.previousState.status !== event.state.status ? event.previousState.status : undefined)
         this.dispatchEvent(new CustomEvent<WidgetAcChangeEvent>('ac-change', {
           detail: event,
           bubbles: true,
@@ -757,6 +335,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
 
     disconnectedCallback() {
       this.unsubscribe?.()
+      this.audio?.dispose()
+      this.audio = undefined
       this.stopObservers.forEach(stop => stop())
       this.stopObservers = []
       this.shadowRoot?.removeEventListener('click', this.onClick)
@@ -773,7 +353,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     private onClick = (event: Event) => {
-      const target = event.target as HTMLElement | null
+      // 按钮内是 SVG 图标，点击目标可能是 path，向上查找带 data-action 的按钮
+      const target = (event.target as Element | null)?.closest<HTMLElement>('[data-action]')
       const action = target?.dataset.action
       if (!action || !this.store)
         return
@@ -786,11 +367,27 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         this.store.dispatch({ type: action })
     }
 
+    /**
+     * 按键「嘀」声；开关状态翻转时播放启动 / 关闭音效（与 Vue 版 useAcAudio 一致）。
+     */
+    private playAudio(previousStatus?: boolean) {
+      const root = this.shadowRoot
+      if (!root?.querySelector('audio'))
+        return
+      this.audio ||= createAcAudioController({
+        beep: root.querySelector<HTMLAudioElement>('[data-audio="beep"]'),
+        start: root.querySelector<HTMLAudioElement>('[data-audio="start"]'),
+        work: root.querySelector<HTMLAudioElement>('[data-audio="work"]'),
+      })
+      this.audio.beep()
+      if (previousStatus !== undefined)
+        this.audio.toggleStatusAudio(previousStatus)
+    }
+
     private render() {
       const state = this.store?.getState() ?? defaultAcState
-      const title = this.getAttribute('title') ?? options.title ?? 'Yun AC'
       if (this.shadowRoot)
-        updateWidget(this.shadowRoot, state, this.renderedState, title)
+        updateWidget(this.shadowRoot, state, this.renderedState)
       this.renderedState = state
     }
   }

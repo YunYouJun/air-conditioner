@@ -30,6 +30,7 @@
   ],
   "scripts": {
     "build": "tsdown",
+    "sync:style": "node scripts/sync-style.mjs",
     "test": "vitest run --environment happy-dom",
     "typecheck": "tsc --noEmit"
   },
