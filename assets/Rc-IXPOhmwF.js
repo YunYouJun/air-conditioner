@@ -1,0 +1,1 @@
+import{i as e,t}from"./hooks-DkxFyfuE.js";import{w as n,y as r}from"./index-DDvhU9lA.js";n();var i=r(),a=()=>(t(),(0,i.jsx)(e,{acSound:!1}));export{a as default};
