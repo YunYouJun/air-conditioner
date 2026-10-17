@@ -31,6 +31,15 @@
         { "value": "sleep", "label": "睡眠", "symbol": "moon.zzz", "action": { "type": "sound", "sound": "sleep" } },
         { "value": "mute", "label": "静音", "symbol": "speaker.slash", "action": { "type": "sound", "sound": "mute" } }
       ]
+    },
+    {
+      "type": "segmented",
+      "bind": "swing",
+      "label": "扫风",
+      "options": [
+        { "value": false, "label": "关", "symbol": "arrow.down", "action": { "type": "swing", "swing": false } },
+        { "value": true, "label": "开", "symbol": "arrow.left.and.right", "action": { "type": "swing", "swing": true } }
+      ]
     }
   ]
 }
