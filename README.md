@@ -109,6 +109,12 @@ pnpm release
 
 首次使用前，需要在 npmjs.com 两个包的 Settings → Trusted publishing 中添加 GitHub Actions：仓库 `YunYouJun/air-conditioner`，工作流 `release.yml`。
 
+`v*` Tag 的 Release 还会把 Yun Home 设备插件 `air-conditioner.yunplugin` 及其 SHA-256 上传到 GitHub Release。插件由 [`packages/home-plugin`](packages/home-plugin) 构建：`state.js` 直接打包 core 的 reducer，在 Yun Home 的沙箱中运行，控件以 `controls.json` 声明，由宿主原生渲染。本地构建：
+
+```bash
+pnpm -C packages/home-plugin build
+```
+
 ## Todo
 
 - [x] 空调

@@ -73,3 +73,36 @@ jobs:
             tarball=$(pnpm -C "$pkg" pack --pack-destination "$out" | tail -n 1)
             npm publish "$tarball" --access public --tag "$dist_tag"
           done
+
+  # Attach the Yun Home plugin package to the GitHub Release for this tag.
+  plugin:
+    if: github.ref_type == 'tag'
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build plugin
+        run: |
+          pnpm -C packages/core run build
+          pnpm -C packages/home-plugin run build
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          gh release upload "$GITHUB_REF_NAME" --clobber \
+            packages/home-plugin/dist/air-conditioner.yunplugin \
+            packages/home-plugin/dist/air-conditioner.yunplugin.sha256
