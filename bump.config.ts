@@ -2,6 +2,7 @@ import { defineConfig } from 'bumpp'
 
 const packages = [
   'core',
+  'home-plugin',
   'vue',
 ]
 
