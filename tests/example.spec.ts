@@ -98,3 +98,28 @@ test('cycles the sound mode and keeps it after a reload', async ({ page }) => {
   await page.reload()
   await expect(page.getByRole('button', { name: 'sound' })).toHaveAttribute('title', '声音：静音')
 })
+
+// #184: the optional 3D mode shares the native app's model and falls back to the CSS unit.
+test('switches to the 3D model and back', async ({ page }) => {
+  await gotoFresh(page)
+  await page.evaluate(() => localStorage.removeItem('ac-view'))
+  await page.reload()
+
+  const toggle = page.getByRole('button', { name: '3D' })
+  test.skip(await toggle.isDisabled(), 'WebGL is not available in this browser')
+
+  await toggle.click()
+  await expect(page.locator('.ac-3d__canvas')).toBeVisible()
+  await expect(page.locator('.ac-unit')).toHaveCount(0)
+  await page.getByRole('group', { name: '机型' }).getByRole('button', { name: '柜机' }).click()
+  await expect(page.locator('.ac-3d')).toHaveAttribute('data-form', 'tower')
+
+  // The choice is remembered across reloads.
+  await page.reload()
+  await expect(page.locator('.ac-3d')).toHaveAttribute('data-form', 'tower')
+
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await toggle.click()
+  await expect(page.locator('.ac-unit')).toBeVisible()
+  await expect(page.locator('.ac-3d')).toHaveCount(0)
+})

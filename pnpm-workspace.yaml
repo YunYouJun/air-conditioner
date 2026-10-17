@@ -23,6 +23,7 @@ catalog:
   '@types/react': ^19.3.0
   '@types/react-dom': ^19.3.0
   '@types/react-gtm-module': 2.0.4
+  '@types/three': ^0.186.0
   '@unocss/reset': ^66.11.0
   '@vitejs/plugin-react': ^6.1.2
   '@vitejs/plugin-vue': ^6.0.10
@@ -33,6 +34,7 @@ catalog:
   react-dom: ^19.3.1
   react-gtm-module: 2.0.11
   sass: ^1.105.1
+  three: ^0.186.1
   tsdown: ^0.23.1
   typescript: ^6.0.3
   unocss: ^66.11.0

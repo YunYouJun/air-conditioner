@@ -1,0 +1,36 @@
+// 3D 空调：挂机横长、柜机竖长；下方 / 右侧留出出风的空间
+.ac-3d {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  margin: 0 auto;
+
+  &[data-form='tower'] {
+    max-width: 360px;
+    aspect-ratio: 3 / 4;
+    // 节能小纸条从出风口下方吹出，给柜机的底座留点距离
+    margin-bottom: 24px;
+  }
+
+  &__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    // 横向拖动旋转，纵向仍可滚动页面
+    touch-action: pan-y;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    opacity: 0.5;
+  }
+}

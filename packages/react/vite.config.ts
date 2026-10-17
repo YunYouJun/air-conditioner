@@ -16,6 +16,10 @@ export default defineConfig({
       '~/': `${path.resolve(import.meta.dirname, 'src')}/`,
     },
   },
+  build: {
+    // 3D 模式的按需分包里有整个 Three.js（约 160 kB gzip），不影响首屏
+    chunkSizeWarningLimit: 700,
+  },
   plugins: [
     react(),
 
@@ -24,6 +28,17 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt'],
+      workbox: {
+        // 3D 模式（Three.js 与模型）只在打开时下载，不预缓存；用过一次后再缓存下来，离线也能用
+        globIgnores: ['**/Ac3DView-*.js'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/(?:assets\/Ac3DView-[^/]+\.js|models\/[^/]+\.glb)$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'ac-3d' },
+          },
+        ],
+      },
       manifest: {
         name: '便携小空调',
         short_name: '云空调',

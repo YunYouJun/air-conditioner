@@ -97,6 +97,67 @@ html.dark .hot-color .ac-chip {
   --ac-chip-accent: #ffb74d;
 }
 
+/* 不可用时（浏览器不支持 WebGL）变淡、不可点 */
+.ac-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+/* 3D 模式下的机型切换：挂机 / 柜机，和 chip 同一套样式 */
+.ac-segment {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  background: #f1f3f5;
+
+  button {
+    appearance: none;
+    min-height: 30px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #5f6368;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition:
+      background-color var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+      color var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
+
+    &[aria-pressed='true'] {
+      background: #fff;
+      color: var(--ac-chip-accent, #0288d1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ac-chip-accent, #0288d1);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.hot-color .ac-segment {
+  --ac-chip-accent: #fb8c00;
+}
+
+html.dark .ac-segment {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: #15181d;
+
+  button {
+    color: #aab0b8;
+
+    &[aria-pressed='true'] {
+      background: #2a2f36;
+      color: #4fc3f7;
+    }
+  }
+}
+
 /* 遥控器去了悬浮窗：原位留一个虚线挂座，点「放回」收回来 */
 .ac-remote-dock {
   display: grid;

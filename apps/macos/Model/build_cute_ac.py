@@ -8,8 +8,10 @@ SceneKit / RealityKit.
 Pass form names after `--` to build only those (default: wall and tower).
 
 Outputs:
-  Kit/Sources/CuteACKit/Resources/CuteAC.usdz        wall split unit (挂机)
+  Kit/Sources/CuteACKit/Resources/CuteAC.usdz        wall split unit (挂机), SceneKit / RealityKit
   Kit/Sources/CuteACKit/Resources/CuteACTower.usdz   floor-standing tower (柜机)
+  packages/react/public/models/CuteAC.glb            the same models for the web 3D mode (Three.js)
+  packages/react/public/models/CuteACTower.glb
   Model/renders/<form>-*.png                         previews (cold / hot / off)
 
 Named nodes the apps drive, identical in both forms: Louver, Display (a
@@ -30,6 +32,8 @@ from mathutils import Matrix, Vector
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESOURCES = os.path.join(ROOT, 'Kit', 'Sources', 'CuteACKit', 'Resources')
 RENDER_DIR = os.path.join(ROOT, 'Model', 'renders')
+# apps/macos -> repository root -> the site's static models
+WEB_MODELS = os.path.join(os.path.dirname(os.path.dirname(ROOT)), 'packages', 'react', 'public', 'models')
 
 # Wall split unit proportions (~3.2 : 1). Front faces -Y, up is +Z.
 BODY_W, BODY_D, BODY_H = 1.8, 0.42, 0.56
@@ -297,6 +301,24 @@ def export_usdz(path):
     )
 
 
+def export_glb(path):
+    """The same scene as glTF binary for the web. glTF is Y-up, so the exporter
+    converts axes just like the USD export; node names (Louver, Display, Led)
+    and the Principled BSDF colours carry over as-is."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    bpy.ops.export_scene.gltf(
+        filepath=path,
+        export_format='GLB',
+        export_yup=True,
+        export_texcoords=True,
+        export_normals=True,
+        export_materials='EXPORT',
+        export_cameras=False,
+        export_lights=False,
+        export_animations=False,
+    )
+
+
 def render_previews(form, materials, camera_spec, louver_spec):
     os.makedirs(RENDER_DIR, exist_ok=True)
     scene = bpy.context.scene
@@ -362,5 +384,6 @@ for form in requested:
     form_materials = build()
     path = os.path.join(RESOURCES, file_name)
     export_usdz(path)
+    export_glb(os.path.join(WEB_MODELS, file_name.replace('.usdz', '.glb')))
     render_previews(form, form_materials, camera_spec, louver_spec)
     print('Exported', path)

@@ -47,7 +47,7 @@ open build/CuteAC.app
 
 ## 模型
 
-挂机和柜机两个模型都由 `apps/macos/Model/build_cute_ac.py` 在 Blender 里用脚本生成，导出 USDZ 给 SceneKit 和 RealityKit 使用：
+挂机和柜机两个模型都由 `apps/macos/Model/build_cute_ac.py` 在 Blender 里用脚本生成，导出 USDZ 给 SceneKit 和 RealityKit 使用，同时导出 GLB 给网页的 3D 模式（Three.js）使用，三处用的是同一个模型，部件名约定见 [3D 模型约定](/api/#3d-模型约定)：
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender -b -P apps/macos/Model/build_cute_ac.py

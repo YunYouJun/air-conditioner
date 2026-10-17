@@ -87,9 +87,10 @@ gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/
 /Applications/Blender.app/Contents/MacOS/Blender -b -P Model/build_cute_ac.py -- tower   # 只生成柜机
 ```
 
-- 输出 `Kit/Sources/CuteACKit/Resources/` 下的 `CuteAC.usdz`（挂机）和 `CuteACTower.usdz`（柜机），CuteAC 和 Yun Home 共用；同时在 `Model/renders/` 生成 `<形态>-cold/hot/off.png` 预渲染图，以后可以给 WidgetKit 小组件用。
+- 输出 `Kit/Sources/CuteACKit/Resources/` 下的 `CuteAC.usdz`（挂机）和 `CuteACTower.usdz`（柜机），CuteAC 和 Yun Home 共用；同一个场景还会导出 `packages/react/public/models/` 下的 `CuteAC.glb` 和 `CuteACTower.glb`，给网页的 3D 模式用。另外在 `Model/renders/` 生成 `<形态>-cold/hot/off.png` 预渲染图，以后可以给 WidgetKit 小组件用。
+- 重新导出时 USDZ 即使几何没变也可能产生二进制差异；只改了网页相关部分时，可以用 `git checkout` 还原 USDZ。
 - 挂机参照真实壁挂空调：顶部进风格栅、分成三个斜面的前面板、底部出风口和导风板、右侧显示窗。柜机：顶部显示窗和指示灯，中上部是带竖向导风条的出风口，外面盖一排横向百叶，下部是三个竖向斜面的面板和底座。全部用平面着色，保留低多边形的棱角感。
-- 应用会控制这几个命名节点，两种形态名字相同：`Louver`、`Display`（0.25 × 0.1、UV 为 0–1 的平面，用来贴温度画面）、`Led`（指示灯）。挂机的 `Louver` 是一块导风板，转轴在顶边，整体绕本地 X 轴转；柜机的 `Louver` 是一组百叶，每个子节点绕自己中线的本地 X 轴转（见 `ACModel.louver(for:)`）。改模型时请保持这些名字不变。
+- 应用会控制这几个命名节点，两种形态名字相同（网页端对应的常量在 core 的 `model.ts` 里，`packages/core/test/model.test.ts` 会检查 GLB 和 `ACModel` 是否一致）：`Louver`、`Display`（0.25 × 0.1、UV 为 0–1 的平面，用来贴温度画面）、`Led`（指示灯）。挂机的 `Louver` 是一块导风板，转轴在顶边，整体绕本地 X 轴转；柜机的 `Louver` 是一组百叶，每个子节点绕自己中线的本地 X 轴转（见 `ACModel.louver(for:)`）。改模型时请保持这些名字不变。
 - `chamfer_box` 会把位置烘焙进顶点，需要绕自身转动的部件要用 `set_origin` 设好原点。
 - 坐标约定：导出时已转换成 Y 轴朝上，但每个节点内部仍沿用 Blender 的局部坐标轴（Z 轴朝上）。
 

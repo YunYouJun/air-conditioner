@@ -51,6 +51,20 @@ store.dispatch({ type: 'swing', swing: true })
 
 视图在空调根元素上输出 `data-drip="on" | "off"`，并写入 CSS 变量 `--acw-mist` 与 `--acw-drip-cycle`。滴水声由音频控制器合成（`audio.drip()`），不需要额外的音频文件；只在标准声音下响，睡眠和静音时不响。开启「减少动态效果」时，雾气静止地挂在出风口下方，不滴水。
 
+## 3D 模型约定
+
+网页的 3D 模式和原生应用（CuteAC、Yun Home）用的是同一个模型：`apps/macos/Model/build_cute_ac.py` 在 Blender 里生成场景，同时导出原生用的 USDZ 和网页用的 GLB（站点的 `public/models/`）。两边都按下面的约定控制模型，core 里的常量与 Swift 共享包的 `ACModel` 一一对应，测试会检查两边以及 GLB 文件是否一致：
+
+| 常量 | 内容 |
+| --- | --- |
+| `acModelFiles` | `{ wall: 'CuteAC.glb', tower: 'CuteACTower.glb' }` |
+| `acModelParts` | 命名节点：`Louver`（导风板）、`Display`（0.25 × 0.1、UV 为 0–1 的平面，贴温度画面）、`Led`（指示灯） |
+| `acLouverMotion` | 都绕本地 X 轴转：挂机整块转 40°，柜机每片百叶各转 30° |
+| `acAirflowAnchors` | 出风起点相对导风板的偏移、出风口宽度和方向（挂机向下，柜机从侧面） |
+| `getAcLedColor(state)` | 开机时为模式色，关机为灰色 |
+
+渲染时把 Blender 导出的 PBR 材质换成平面着色的 Lambert 材质，显示窗不受光照，保留低多边形的棱角感，两边看起来一样。
+
 ## 风速
 
 遥控器上的「风速」键依次切换四档，状态保存在 `AcState.fan` 中（旧版本保存的状态视为 `auto`）：

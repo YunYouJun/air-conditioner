@@ -1,5 +1,9 @@
-import React from 'react'
+import type { AcForm } from '@yunlefun-home/air-conditioner-core'
+import { acFormLabels, acForms, isAcForm } from '@yunlefun-home/air-conditioner-core'
+import React, { useState } from 'react'
 
+import { useLocalStorage } from 'usehooks-ts'
+import Ac3D, { supportsWebGL } from '~/components/ac3d'
 import AirConditioner from '~/components/ac/AirConditioner'
 import ComputerCooling from '~/components/ComputerCooling'
 import ProTip from '~/components/ProTip'
@@ -17,6 +21,13 @@ import { useDetectStorage } from '~/hooks'
 const Home: React.FC = () => {
   const { state: ac } = useAcCtx()
   const floating = useFloatingRemote()
+  // 3D 模式（#184）：记住选择；WebGL 不可用或加载失败时退回 CSS 版
+  const [view, setView] = useLocalStorage<'2d' | '3d'>('ac-view', '2d')
+  const [storedForm, setForm] = useLocalStorage<AcForm>('ac-form', 'wall')
+  const form = isAcForm(storedForm) ? storedForm : 'wall'
+  const [webgl] = useState(supportsWebGL)
+  const [failed, setFailed] = useState(false)
+  const show3D = view === '3d' && webgl && !failed
 
   useDetectStorage()
 
@@ -38,13 +49,17 @@ const Home: React.FC = () => {
             便携小空调
           </h1>
           <ProTip />
-          <AirConditioner
-            status={ac.status}
-            temperature={ac.temperature}
-            mode={ac.mode}
-            swing={ac.swing}
-            fan={ac.fan}
-          />
+          {show3D
+            ? <Ac3D state={ac} form={form} onError={() => setFailed(true)} />
+            : (
+                <AirConditioner
+                  status={ac.status}
+                  temperature={ac.temperature}
+                  mode={ac.mode}
+                  swing={ac.swing}
+                  fan={ac.fan}
+                />
+              )}
           {/* 紧贴出风口：节能建议从这里被风吹出来 */}
           <Toast />
           <div className="ac-actions">
@@ -58,6 +73,26 @@ const Home: React.FC = () => {
               <span className="i-mdi-remote ac-chip__icon" aria-hidden="true" />
               {floating.window ? '收回遥控器' : floating.supported ? '遥控器悬浮窗' : '独立遥控器'}
             </button>
+            <button
+              type="button"
+              className="ac-chip"
+              aria-pressed={show3D}
+              disabled={!webgl || failed}
+              title={!webgl ? '这个浏览器不支持 WebGL' : failed ? '3D 模型没加载出来' : show3D ? '换回平面版' : '和桌面版共用同一个 3D 模型，拖动可以转一转'}
+              onClick={() => setView(show3D ? '2d' : '3d')}
+            >
+              <span className="i-mdi-cube-outline ac-chip__icon" aria-hidden="true" />
+              3D
+            </button>
+            {show3D && (
+              <div className="ac-segment" role="group" aria-label="机型">
+                {acForms.map(item => (
+                  <button key={item} type="button" aria-pressed={form === item} onClick={() => setForm(item)}>
+                    {acFormLabels[item]}
+                  </button>
+                ))}
+              </div>
+            )}
             <ComputerCooling />
           </div>
           <RemoteControl floating={floating.window} />
