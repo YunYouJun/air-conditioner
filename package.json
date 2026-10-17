@@ -46,7 +46,6 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
-    "@iconify-json/ic": "catalog:",
     "@iconify-json/mdi": "catalog:",
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",

@@ -101,6 +101,37 @@ describe('@air-conditioner/widget', () => {
     expect(JSON.stringify(notifications[0])).toContain('已经是最大温度啦')
   })
 
+  it('blows a note for tips, shakes the LCD at limits and only announces settings', () => {
+    defineAirConditionerElement({
+      tagName: 'test-air-conditioner-notes',
+      initialState: { status: true, mode: 'hot', temperature: 31, temperatures: { cold: 20, hot: 31 } },
+      enableAudio: false,
+      storage: null,
+    })
+    const element = document.createElement('test-air-conditioner-notes')
+    document.body.appendChild(element)
+    const root = element.shadowRoot!
+    const press = (action: string) => root.querySelector<HTMLElement>(`[data-action="${action}"]`)!.click()
+    const announced = () => root.querySelector('.acw-notification-region .acw-sr-only')!.textContent
+
+    // At the limit: no note, the LCD shakes and the message is only announced.
+    press('increment')
+    expect(root.querySelector('.acw-note')).toBeNull()
+    expect(root.querySelector('.acw-lcd')!.hasAttribute('data-alert')).toBe(true)
+    expect(announced()).toBe('已经是最大温度啦！')
+
+    // An energy tip is a note blown from the outlet, tinted by mode.
+    press('cold')
+    const note = root.querySelector<HTMLElement>('.acw-note')!
+    expect(note.dataset.mode).toBe('cold')
+    expect(note.textContent).toContain('制冷调到 26°C 以上更省电')
+
+    // Settings are on the LCD already: announced, no new note.
+    press('cycleFan')
+    expect(root.querySelectorAll('.acw-note')).toHaveLength(1)
+    expect(announced()).toBe('风速：低风')
+  })
+
   it('cycles the sound mode from the remote and the sound attribute', () => {
     defineAirConditionerElement({ tagName: 'test-air-conditioner-sound', enableAudio: false, storage: null })
     const element = document.createElement('test-air-conditioner-sound')

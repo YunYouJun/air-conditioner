@@ -1,4 +1,5 @@
 import type { AcRemoteCommand } from '@yunlefun-home/air-conditioner-core'
+import { useLcdAlert } from './BreezeNote'
 import { useAirConditioner } from './context'
 import { RemoteControlView } from './RemoteControlView'
 
@@ -8,6 +9,7 @@ export interface RemoteControlProps {
 
 export function RemoteControl(props: RemoteControlProps = {}) {
   const airConditioner = useAirConditioner()
+  const alert = useLcdAlert(airConditioner.notification)
 
   const actions: Record<AcRemoteCommand, () => void> = {
     power: airConditioner.toggleStatus,
@@ -23,6 +25,7 @@ export function RemoteControl(props: RemoteControlProps = {}) {
   return (
     <RemoteControlView
       state={airConditioner.state}
+      alert={alert}
       onCommand={(command) => {
         props.onCommand?.(command)
         actions[command]()

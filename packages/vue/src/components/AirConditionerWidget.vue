@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AcChangeEvent, AcNotification, AcState } from '@yunlefun-home/air-conditioner-core'
-import { resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
-import { computed, ref, shallowRef } from 'vue'
+import { acIconPaths, createAcNotificationPresenter, resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
+import { computed, onUnmounted, ref, shallowRef } from 'vue'
 import { useAcAudio } from '../composables/useAcAudio'
 import AirConditioner from './AirConditioner.vue'
 import AirConditionerProvider from './AirConditionerProvider.vue'
@@ -46,9 +46,27 @@ const { handleChange: handleAudio } = useAcAudio(() => ({
   work: workEl.value,
 }))
 
-const notification = shallowRef<AcNotification | undefined>()
-/** 每次通知自增，用作 key 让重复的提示也能重新播放进入动画 */
-const notificationId = ref(0)
+/** 节能建议以「出风口吹出的小纸条」显示，其余提示只给读屏播报 */
+const present = createAcNotificationPresenter()
+const note = shallowRef<AcNotification | undefined>()
+/** 纸条吹出时的模式：之后再切换模式，已经吹出的纸条不变色 */
+const noteMode = ref<AcState['mode']>('cold')
+/** 每张纸条自增，用作 key 让新的建议重新播放「吹出」动画 */
+const noteId = ref(0)
+const announcement = ref('')
+let hideTimer: ReturnType<typeof setTimeout> | undefined
+
+function showNote(value: AcNotification, mode: AcState['mode']) {
+  note.value = value
+  noteMode.value = mode
+  noteId.value++
+  clearTimeout(hideTimer)
+  hideTimer = setTimeout(() => {
+    note.value = undefined
+  }, 3600)
+}
+
+onUnmounted(() => clearTimeout(hideTimer))
 
 function onChange(event: AcChangeEvent) {
   if (props.enableAudio)
@@ -57,8 +75,11 @@ function onChange(event: AcChangeEvent) {
 }
 
 function onNotify(value: AcNotification, event: AcChangeEvent) {
-  notification.value = value
-  notificationId.value++
+  const how = present(value, event.state)
+  if (how === 'note')
+    showNote(value, event.state.mode)
+  else if (how !== 'skip')
+    announcement.value = value.message
   emit('notify', value, event)
 }
 </script>
@@ -82,21 +103,24 @@ function onNotify(value: AcNotification, event: AcChangeEvent) {
         <audio v-if="enableAudio" ref="workEl" :src="audioSrc.work" preload="auto" />
 
         <AirConditioner :logo-url="logoUrl" :show-energy-label="showEnergyLabel" />
-        <RemoteControl />
 
-        <!-- 常驻的 live region，内部提示切换时才会被读屏正确播报 -->
+        <!-- 常驻的 live region，紧贴出风口；内部提示切换时才会被读屏正确播报 -->
         <div class="acw-notification-region" role="status">
-          <Transition name="acw-notify" mode="out-in">
-            <div
-              v-if="notification"
-              :key="notificationId"
-              class="acw-notification"
-              :data-severity="notification.severity"
-            >
-              {{ notification.message }}
+          <Transition name="acw-note">
+            <div v-if="note" :key="noteId" class="acw-note" :data-severity="note.severity" :data-mode="noteMode">
+              <span class="acw-note-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" :d="acIconPaths.leaf" /></svg>
+              </span>
+              <span class="acw-note-text">
+                <strong>{{ note.message }}</strong>
+                <small v-if="note.detail">{{ note.detail }}</small>
+              </span>
             </div>
           </Transition>
+          <span class="acw-sr-only">{{ announcement }}</span>
         </div>
+
+        <RemoteControl />
       </div>
     </template>
   </AirConditionerProvider>

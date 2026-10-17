@@ -55,6 +55,35 @@ html.dark .acw-root,
   }
 }
 
+/* 暗色下换成深色纸，仍按模式着色 */
+html.dark .acw-note,
+.acw-root.dark .acw-note {
+  --acw-note-bg: #1d2733;
+  --acw-note-text: #e3ecf5;
+  --acw-note-accent: #64b5f6;
+}
+
+html.dark .acw-note[data-mode="hot"],
+.acw-root.dark .acw-note[data-mode="hot"] {
+  --acw-note-bg: #2d241d;
+  --acw-note-text: #f5e9de;
+  --acw-note-accent: #ffb74d;
+}
+
+@media (prefers-color-scheme: dark) {
+  .acw-root:not(.light) .acw-note {
+    --acw-note-bg: #1d2733;
+    --acw-note-text: #e3ecf5;
+    --acw-note-accent: #64b5f6;
+  }
+
+  .acw-root:not(.light) .acw-note[data-mode="hot"] {
+    --acw-note-bg: #2d241d;
+    --acw-note-text: #f5e9de;
+    --acw-note-accent: #ffb74d;
+  }
+}
+
 /* ---------------------------------- 布局 ---------------------------------- */
 .acw-root {
   box-sizing: border-box;
@@ -907,42 +936,172 @@ html.dark .acw-root,
 }
 
 /* -------------------------------- 通知提示 ------------------------------ */
+/* 「出风口吹出的小纸条」：提示区紧贴在空调下方，节能建议像一张便签被风从出风口
+   吹出来，在风里轻轻摆动，几秒后被吹走。只有节能建议会弹出；设置变化只在遥控器
+   小屏上体现，温度到上下限时小屏抖一下（见 .acw-lcd[data-alert]）。 */
 .acw-notification-region {
+  position: relative;
+  z-index: 3;
   width: 100%;
+  height: 0;
 }
 
-.acw-notify-enter-active {
-  transition:
-    opacity var(--acw-motion-duration-base) var(--acw-motion-ease-enter),
-    transform var(--acw-motion-duration-base) var(--acw-motion-ease-enter);
-}
-
-.acw-notify-leave-active {
-  transition:
-    opacity var(--acw-motion-duration-fast) var(--acw-motion-ease-exit),
-    transform var(--acw-motion-duration-fast) var(--acw-motion-ease-exit);
-}
-
-.acw-notify-enter-from,
-.acw-notify-leave-to {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-.acw-notification {
-  width: 100%;
-  min-height: 38px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: #edf8f0;
-  color: #155724;
+.acw-note {
+  --acw-note-bg: #f4f9ff;
+  --acw-note-text: #22313f;
+  --acw-note-accent: #1e88e5;
+  /* 顶边落在出风线的下半截：风线仍在纸条上方，看起来是被风推出来的 */
+  position: absolute;
+  top: calc(-1 * var(--acw-note-lift, 42px));
+  left: 50%;
+  /* 只是一闪而过的提示，不挡住下方的按钮 */
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(300px, 92%);
+  padding: 9px 14px 8px 9px;
+  border-radius: 3px 3px 10px 10px;
+  background: var(--acw-note-bg);
+  color: var(--acw-note-text);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.04),
+    0 10px 18px -10px rgba(0, 0, 0, 0.45);
   font-size: 13px;
-  text-align: center;
+  line-height: 1.35;
+  translate: -50% 0;
+  transform-origin: 50% 0;
+  /* 吹出来，然后在风里轻轻摆动 */
+  animation:
+    acw-note-blow 620ms var(--acw-motion-ease-enter) both,
+    acw-note-flutter 2600ms ease-in-out 620ms infinite;
 }
 
-.acw-notification[data-severity="error"] {
-  background: #fdecec;
-  color: #8a1f17;
+.acw-note[data-mode="hot"] {
+  --acw-note-bg: #fff6ee;
+  --acw-note-text: #3d2a1c;
+  --acw-note-accent: #fb8c00;
+}
+
+/* 顶边一排小圆齿，像从便签本上撕下来的 */
+.acw-note::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: 4px;
+  left: 4px;
+  height: 4px;
+  background: radial-gradient(circle at 3px 4px, var(--acw-note-bg) 2.6px, transparent 3px) 0 0 / 6px 4px repeat-x;
+}
+
+.acw-note-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--acw-note-accent) 14%, transparent);
+  color: var(--acw-note-accent);
+}
+
+.acw-note-text {
+  display: grid;
+  gap: 1px;
+}
+
+.acw-note-text strong {
+  font-weight: 600;
+}
+
+.acw-note-text small {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* 被风吹走：向下飘、转一点、淡出 */
+.acw-note-leave-active,
+.acw-note[data-leaving] {
+  animation: acw-note-away 460ms var(--acw-motion-ease-exit) forwards;
+}
+
+@keyframes acw-note-blow {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.6, 0.4) rotate(-6deg);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(4px) scale(1.02, 1.04) rotate(2deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes acw-note-flutter {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+
+  50% {
+    transform: translateY(2px) rotate(1.4deg);
+  }
+}
+
+@keyframes acw-note-away {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(18px, 26px) rotate(9deg);
+  }
+}
+
+/* 读屏专用：设置变化与温度上下限只播报，不显示 */
+.acw-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 温度到上下限：小屏抖一下，数字变红，像真遥控器「嘀嘀」报警 */
+.acw-lcd[data-alert] {
+  animation: acw-lcd-shake 360ms var(--acw-motion-ease-standard);
+}
+
+.acw-lcd[data-alert] .acw-lcd-temp {
+  color: var(--acw-remote-power);
+}
+
+@keyframes acw-lcd-shake {
+  20% {
+    transform: translateX(-3px);
+  }
+
+  40% {
+    transform: translateX(3px);
+  }
+
+  60% {
+    transform: translateX(-2px);
+  }
+
+  80% {
+    transform: translateX(1px);
+  }
 }
 
 /* ------------------------------ 减少动效 ------------------------------- */
@@ -981,9 +1140,24 @@ html.dark .acw-root,
     animation: none;
   }
 
-  .acw-notify-enter-from,
-  .acw-notify-leave-to {
-    transform: none;
+  /* 小纸条只淡入淡出，不飘不摆；小屏不抖，只变色 */
+  .acw-note {
+    animation: acw-note-fade var(--acw-motion-duration-base) var(--acw-motion-ease-enter) both;
+  }
+
+  .acw-note-leave-active,
+  .acw-note[data-leaving] {
+    animation: acw-note-fade var(--acw-motion-duration-fast) var(--acw-motion-ease-exit) reverse forwards;
+  }
+
+  .acw-lcd[data-alert] {
+    animation: none;
+  }
+}
+
+@keyframes acw-note-fade {
+  from {
+    opacity: 0;
   }
 }
 `

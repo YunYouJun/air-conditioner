@@ -3,6 +3,7 @@ import {
   acModeIcons,
   acReducer,
   acStorageKey,
+  createAcNotificationPresenter,
   createAirConditionerStore,
   createMemoryStorage,
   defaultAcState,
@@ -60,6 +61,31 @@ describe('@yunlefun-home/air-conditioner-core', () => {
     expect(normalizeAcState({}).fan).toBe('auto')
     const event = createAirConditionerStore({ storage: null }).dispatch({ type: 'fan', fan: 'low' })
     expect(event.notification?.message).toBe('风速：低风')
+  })
+
+  it('tags notifications with how views should present them', () => {
+    const hot = normalizeAcState({ mode: 'hot', temperature: 27, temperatures: { cold: 22, hot: 27 } })
+    const cold = acReducer(hot, { type: 'mode', mode: 'cold' })
+    expect(getAcActionNotification(hot, cold, { type: 'mode', mode: 'cold' })).toEqual({
+      message: '制冷调到 26°C 以上更省电',
+      detail: '少开一度，为节能减排出一份力',
+      severity: 'success',
+      kind: 'tip',
+    })
+    const top = normalizeAcState({ temperature: 31 })
+    expect(getAcActionNotification(top, top, { type: 'increment' })?.kind).toBe('limit')
+    expect(getAcActionNotification(defaultAcState, acReducer(defaultAcState, { type: 'cycleFan' }), { type: 'cycleFan' })?.kind).toBe('setting')
+
+    const present = createAcNotificationPresenter()
+    const tip = getAcActionNotification(hot, cold, { type: 'mode', mode: 'cold' })!
+    expect(present(tip, cold)).toBe('note')
+    // The same tip for the same mode and temperature is not repeated.
+    expect(present(tip, cold)).toBe('skip')
+    expect(present(tip, { ...cold, temperature: 21 })).toBe('note')
+    expect(present({ message: '已经是最大温度啦！', severity: 'error', kind: 'limit' }, cold)).toBe('shake')
+    expect(present({ message: '风速：低风', severity: 'info', kind: 'setting' }, cold)).toBe('announce')
+    // Notifications without a kind (older custom ones) still show.
+    expect(createAcNotificationPresenter()({ message: 'hi', severity: 'info' }, cold)).toBe('note')
   })
 
   it('migrates states saved before per-mode temperatures', () => {

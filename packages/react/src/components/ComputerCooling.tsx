@@ -1,6 +1,5 @@
 import type { HeatLevel } from '@yunlefun-home/air-conditioner-core'
 import type { FC } from 'react'
-import { Button } from '@mui/material'
 import { useComputerCooling } from '~/hooks'
 
 const levelLabels: Record<HeatLevel, string> = {
@@ -11,7 +10,9 @@ const levelLabels: Record<HeatLevel, string> = {
 }
 
 /**
- * 电脑降温开关：根据 CPU 压力自动开启制冷。浏览器读不到 CPU 温度，只能读到负载等级。
+ * 电脑降温开关：根据 CPU 压力自动开启制冷。浏览器读不到 CPU 温度，只能读到负载等级
+ * （Compute Pressure API，目前只有 Chrome / Edge 桌面版支持，其余浏览器不显示）。
+ * 放在操作区里，开关是一个胶囊按钮，状态说明换行显示在按钮下方。
  */
 const ComputerCooling: FC = () => {
   const { supported, enabled, setEnabled, level, error } = useComputerCooling()
@@ -20,20 +21,22 @@ const ComputerCooling: FC = () => {
     return null
 
   return (
-    <div className="computer-cooling mt-4 text-center">
-      <Button
-        variant={enabled ? 'contained' : 'outlined'}
+    <>
+      <button
+        type="button"
+        className="ac-chip"
         aria-pressed={enabled}
         onClick={() => setEnabled(!enabled)}
       >
+        <span className="i-mdi-chip ac-chip__icon" aria-hidden="true" />
         {enabled ? '电脑降温中' : '电脑降温'}
-      </Button>
-      <p className="computer-cooling__status text-sm op-70 mt-2" aria-live="polite">
+      </button>
+      <p className="ac-actions__caption" aria-live="polite">
         {error ?? (enabled
           ? `CPU 状态：${level ? levelLabels[level] : '读取中…'}，电脑忙起来时会自动制冷`
           : '跟随电脑 CPU 负载自动开启制冷')}
       </p>
-    </div>
+    </>
   )
 }
 

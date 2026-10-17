@@ -47,7 +47,7 @@ export function useAcCtx() {
 
 export function useAc() {
   const { state, dispatch } = useAcCtx()
-  const { dispatch: dispatchToast } = useToastCtx()
+  const { notify } = useToastCtx()
 
   function dispatchWithToast(action: AcAction) {
     const nextState = acReducer(state, action)
@@ -55,16 +55,8 @@ export function useAc() {
 
     dispatch(action)
 
-    if (notification) {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: notification.message,
-          open: true,
-          severity: notification.severity,
-        },
-      })
-    }
+    if (notification)
+      notify(notification, nextState)
   }
 
   return {

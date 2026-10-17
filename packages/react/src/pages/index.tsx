@@ -1,4 +1,3 @@
-import { Button } from '@mui/material'
 import React from 'react'
 
 import AirConditioner from '~/components/ac/AirConditioner'
@@ -6,6 +5,7 @@ import ComputerCooling from '~/components/ComputerCooling'
 import ProTip from '~/components/ProTip'
 
 import RemoteControl from '~/components/RemoteControl'
+import { useFloatingRemote } from '~/components/RemoteControl/floating'
 import Toast from '~/components/Toast'
 
 import { useAcCtx } from '~/context'
@@ -16,6 +16,7 @@ import { useDetectStorage } from '~/hooks'
  */
 const Home: React.FC = () => {
   const { state: ac } = useAcCtx()
+  const floating = useFloatingRemote()
 
   useDetectStorage()
 
@@ -44,25 +45,32 @@ const Home: React.FC = () => {
             swing={ac.swing}
             fan={ac.fan}
           />
-          <div className="text-center">
-            <div className="mt-2">
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  window.open(`${import.meta.env.BASE_URL}rc`, '_blank', 'width=300, height=520')
-                }}
-              >
-                独立遥控器
-              </Button>
-            </div>
+          {/* 紧贴出风口：节能建议从这里被风吹出来 */}
+          <Toast />
+          <div className="ac-actions">
+            <button
+              type="button"
+              className="ac-chip"
+              aria-pressed={!!floating.window}
+              title={floating.supported ? '把遥控器放进始终置顶的小窗' : '在新窗口打开遥控器'}
+              onClick={() => (floating.window ? floating.close() : floating.open())}
+            >
+              <span className="i-mdi-remote ac-chip__icon" aria-hidden="true" />
+              {floating.window ? '收回遥控器' : floating.supported ? '遥控器悬浮窗' : '独立遥控器'}
+            </button>
             <ComputerCooling />
           </div>
-          <RemoteControl />
+          <RemoteControl floating={floating.window} />
+          {/* 遥控器被拿去悬浮窗时，原位留一个挂座 */}
+          {floating.window && (
+            <div className="ac-remote-dock">
+              <span className="i-mdi-remote ac-remote-dock__icon" aria-hidden="true" />
+              <p>遥控器在悬浮窗里</p>
+              <button type="button" className="ac-chip" onClick={floating.close}>放回</button>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* 放在带 filter 的容器外：filter 会让 position: fixed 的提示条以容器而非视口定位，盖住遥控器 */}
-      <Toast />
     </>
   )
 }

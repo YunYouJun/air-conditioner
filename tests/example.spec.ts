@@ -26,7 +26,7 @@ test('renders the current home experience', async ({ page }) => {
   await expect(page).toHaveTitle(/便携小空调/)
   await expect(page.getByRole('heading', { name: '便携小空调' })).toBeVisible()
   await expect(page.locator('.ac-temperature')).toHaveText('26')
-  await expect(page.getByRole('button', { name: '独立遥控器' })).toBeVisible()
+  await expect(page.getByRole('button', { name: /遥控器悬浮窗|独立遥控器/ })).toBeVisible()
 })
 
 test('toggles power and modes without breaking persisted state', async ({ page }) => {

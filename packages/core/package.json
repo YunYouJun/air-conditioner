@@ -41,9 +41,11 @@
     "build": "tsdown",
     "prepack": "pnpm run build",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gen:icons": "node scripts/gen-icons.mjs"
   },
   "devDependencies": {
+    "@iconify-json/mdi": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

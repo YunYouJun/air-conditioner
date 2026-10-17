@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AcIconName, AcMode, AcRemoteCommand } from '@yunlefun-home/air-conditioner-core'
 import { acIconPaths, acSoundIcons, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
-import { computed } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useAirConditioner } from '../composables/useAirConditioner'
 
 const emit = defineEmits<{
@@ -16,6 +16,23 @@ const modes: { mode: AcMode, icon: AcIconName }[] = [
 const airConditioner = useAirConditioner()
 const state = computed(() => airConditioner.state.value)
 const text = computed(() => getAcRemoteText(state.value))
+
+/** 温度到上下限时小屏抖一下，代替弹出提示 */
+const alert = ref(false)
+let alertTimer: ReturnType<typeof setTimeout> | undefined
+watch(airConditioner.notification, (notification) => {
+  if (notification?.kind !== 'limit')
+    return
+  alert.value = false
+  clearTimeout(alertTimer)
+  requestAnimationFrame(() => {
+    alert.value = true
+    alertTimer = setTimeout(() => {
+      alert.value = false
+    }, 400)
+  })
+})
+onUnmounted(() => clearTimeout(alertTimer))
 
 function run(command: AcRemoteCommand, action: () => void) {
   emit('command', command)
@@ -37,6 +54,7 @@ function setMode(mode: AcMode) {
       :data-mode="state.mode"
       :data-swing="state.swing ? 'on' : 'off'"
       :data-fan="state.fan ?? 'auto'"
+      :data-alert="alert ? '' : undefined"
     >
       <div class="acw-lcd-main">
         <svg class="acw-lcd-mode" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" :d="acIconPaths[state.mode]" /></svg>

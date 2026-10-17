@@ -27,7 +27,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://127.0.0.1:5179',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -63,8 +63,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm -C packages/react run dev -- --host 127.0.0.1 --port 5173',
-    url: 'http://localhost:5173',
+    // A port of its own, and strictPort: if it is taken the run fails loudly
+    // instead of reusing (and testing) whatever else is listening there.
+    command: 'pnpm -C packages/react exec vite --host 127.0.0.1 --port 5179 --strictPort',
+    url: 'http://127.0.0.1:5179',
     reuseExistingServer: !process.env.CI,
   },
 })

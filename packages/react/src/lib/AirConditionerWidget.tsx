@@ -1,8 +1,9 @@
 import type { AcAudioController } from '@yunlefun-home/air-conditioner-core'
 import type { AirConditionerProviderProps } from './context'
-import { createAcAudioController, resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
+import { createAcAudioController, createAcNotificationPresenter, resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
 import { useEffect, useRef, useState } from 'react'
 import { AirConditioner } from './AirConditioner'
+import { BreezeNote, useBreezeNote } from './BreezeNote'
 import { AirConditionerProvider, useAirConditioner } from './context'
 import { RemoteControl } from './RemoteControl'
 
@@ -22,23 +23,29 @@ export interface AirConditionerWidgetProps extends AirConditionerProviderProps {
 }
 
 function Notification() {
-  const { notification } = useAirConditioner()
-  // 每条新通知自增 key，让重复的提示也能重新播放进入动画
-  const [current, setCurrent] = useState(notification)
-  const [count, setCount] = useState(0)
-  if (notification !== current) {
-    setCurrent(notification)
-    setCount(count + 1)
-  }
+  const { notification, state } = useAirConditioner()
+  const [present] = useState(createAcNotificationPresenter)
+  const { note, show } = useBreezeNote()
+  const [announcement, setAnnouncement] = useState('')
+  // 呈现方式要按提示发出时的状态判断，用 ref 读取最新状态而不把它列为依赖
+  const stateRef = useRef(state)
+  stateRef.current = state
 
-  // 常驻的 live region，内部提示切换时才会被读屏正确播报
+  useEffect(() => {
+    if (!notification)
+      return
+    const how = present(notification, stateRef.current)
+    if (how === 'note')
+      show(notification, stateRef.current.mode)
+    else if (how !== 'skip')
+      setAnnouncement(notification.message)
+  }, [notification])
+
+  // 常驻的 live region，紧贴出风口；节能建议是小纸条，其余提示只给读屏播报
   return (
     <div className="acw-notification-region" role="status">
-      {notification && (
-        <div key={count} className="acw-notification" data-severity={notification.severity}>
-          {notification.message}
-        </div>
-      )}
+      {note && <BreezeNote key={note.id} notification={note.notification} mode={note.mode} leaving={note.leaving} />}
+      <span className="acw-sr-only">{announcement}</span>
     </div>
   )
 }
@@ -58,10 +65,12 @@ function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBas
     const unsubscribe = store.subscribe((event) => {
       controller ||= createAcAudioController(
         { beep: beep.current, start: start.current, work: work.current },
-        { soundMode: event.state.sound },
+        { soundMode: event.state.sound, fanSpeed: event.state.fan ?? 'auto' },
       )
       if (event.previousState.sound !== event.state.sound)
         controller.setSoundMode(event.state.sound)
+      if (event.previousState.fan !== event.state.fan)
+        controller.setFanSpeed(event.state.fan ?? 'auto')
       controller.beep()
       if (event.previousState.status !== event.state.status)
         controller.toggleStatusAudio(event.previousState.status)
@@ -95,8 +104,8 @@ function WidgetContent(props: Omit<AirConditionerWidgetProps, keyof AirCondition
     <div className="acw-root" data-mode={state.mode} data-status={state.status ? 'on' : 'off'}>
       {enableAudio && <AudioEffects assetsBaseUrl={assetsBaseUrl} audioExt={audioExt} />}
       <AirConditioner title={props.title} logoUrl={props.logoUrl} showEnergyLabel={showEnergyLabel} />
-      <RemoteControl />
       <Notification />
+      <RemoteControl />
     </div>
   )
 }

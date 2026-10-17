@@ -4,6 +4,8 @@ import { acIconPaths, acSoundIcons, getAcRemoteText } from '@yunlefun-home/air-c
 export interface RemoteControlViewProps {
   state: AcState
   onCommand: (command: AcRemoteCommand) => void
+  /** 温度到上下限时为 true，小屏抖一下 */
+  alert?: boolean
 }
 
 const modes: { mode: AcMode, icon: AcIconName }[] = [
@@ -22,7 +24,7 @@ function Icon(props: { name: AcIconName, size: number, className?: string, sound
 /**
  * 遥控器的纯展示部分：组件库的 `RemoteControl` 与主站遥控器共用，保证两者外观一致。
  */
-export function RemoteControlView({ state, onCommand }: RemoteControlViewProps) {
+export function RemoteControlView({ state, onCommand, alert }: RemoteControlViewProps) {
   const text = getAcRemoteText(state)
 
   return (
@@ -35,6 +37,7 @@ export function RemoteControlView({ state, onCommand }: RemoteControlViewProps) 
         data-mode={state.mode}
         data-swing={state.swing ? 'on' : 'off'}
         data-fan={state.fan ?? 'auto'}
+        data-alert={alert ? '' : undefined}
       >
         <div className="acw-lcd-main">
           <Icon className="acw-lcd-mode" name={state.mode} size={22} />

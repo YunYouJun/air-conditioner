@@ -1,9 +1,5 @@
 import type { FC } from 'react'
-import { Suspense, useEffect } from 'react'
-import { BrowserRouter as Router, useRoutes } from 'react-router-dom'
-
-// @ts-expect-error vite-plugin-pages
-import routes from '~react-pages'
+import { lazy, Suspense, useEffect } from 'react'
 import Copyright from '~/components/layouts/Copyright'
 import pkg from '../package.json'
 
@@ -39,14 +35,19 @@ function Loading() {
   )
 }
 
+const Home = lazy(() => import('~/pages/index'))
+const StandaloneRemote = lazy(() => import('~/pages/Rc'))
+
 /**
- * https://github.com/hannoeru/vite-plugin-pages
- * Must use Suspense
+ * 只有两个页面：首页和独立遥控器（`/rc`，弹出窗口用）。按路径直接选择，
+ * 不必为此引入路由库。
  */
-function Routes() {
+function Page() {
+  const path = window.location.pathname.slice(import.meta.env.BASE_URL.length).replace(/\/+$/, '')
+  const Current = path.toLowerCase() === 'rc' ? StandaloneRemote : Home
   return (
     <Suspense fallback={<Loading />}>
-      {useRoutes(routes)}
+      <Current />
     </Suspense>
   )
 }
@@ -60,9 +61,7 @@ const App: FC = () => {
   return (
     <main className="p-2">
       <div className="max-w-600px m-auto">
-        <Router basename={import.meta.env.BASE_URL}>
-          <Routes />
-        </Router>
+        <Page />
 
         <Copyright />
       </div>

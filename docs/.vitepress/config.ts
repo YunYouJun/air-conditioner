@@ -12,6 +12,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/react' },
       { text: 'Design', link: '/design/architecture' },
       { text: 'API', link: '/api/' },
+      { text: '更新日志', link: '/changelog' },
       { text: 'GitHub', link: 'https://github.com/YunYouJun/air-conditioner' },
     ],
     sidebar: {

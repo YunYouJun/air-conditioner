@@ -142,6 +142,43 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
   }
 }
 
+/**
+ * 节能建议的短文案（显示在小纸条上）与补充说明。
+ */
+export function getEnergyTip(mode: AcState['mode'], temperature: number): { message: string, detail: string } {
+  return mode === 'cold'
+    ? { message: `制冷调到 ${temperature}°C 以上更省电`, detail: '少开一度，为节能减排出一份力' }
+    : { message: `制热调到 ${temperature}°C 以下更省电`, detail: '少开一度，为节能减排出一份力' }
+}
+
+/**
+ * 视图如何呈现一条提示：
+ *
+ * - `note`：节能建议，以小纸条显示
+ * - `shake`：温度到了上下限，遥控器小屏抖一下
+ * - `announce`：设置变化，小屏已经显示，只给读屏播报
+ * - `skip`：同一模式、同一温度的建议已经提示过，不再重复
+ */
+export type AcNotificationPresentation = 'note' | 'shake' | 'announce' | 'skip'
+
+/**
+ * 创建一个提示「呈现器」：每个视图实例一个，记住提示过的节能建议，避免重复打扰。
+ */
+export function createAcNotificationPresenter(): (notification: AcNotification, state: Pick<AcState, 'mode' | 'temperature'>) => AcNotificationPresentation {
+  let lastTip: string | undefined
+  return (notification, state) => {
+    if (notification.kind === 'limit')
+      return 'shake'
+    if (notification.kind === 'setting')
+      return 'announce'
+    const key = `${state.mode}:${state.temperature}`
+    if (key === lastTip)
+      return 'skip'
+    lastTip = key
+    return 'note'
+  }
+}
+
 export function getRecommendedTemperatureMessage(mode: AcState['mode'], temperature: number): string {
   return `建议将空调的制${mode === 'cold' ? '冷' : '热'}温度调至 ${temperature} 度以${mode === 'cold' ? '上' : '下'}，为节能减排贡献一份力量！`
 }
@@ -184,6 +221,7 @@ export function getAcActionNotification(
     return {
       message: '已经是最大温度啦！',
       severity: 'error',
+      kind: 'limit',
     }
   }
 
@@ -191,6 +229,7 @@ export function getAcActionNotification(
     return {
       message: '已经是最小温度啦！',
       severity: 'error',
+      kind: 'limit',
     }
   }
 
@@ -198,6 +237,7 @@ export function getAcActionNotification(
     return {
       message: getSoundModeMessage(nextState.sound),
       severity: 'info',
+      kind: 'setting',
     }
   }
 
@@ -205,6 +245,7 @@ export function getAcActionNotification(
     return {
       message: getFanSpeedMessage(nextState.fan),
       severity: 'info',
+      kind: 'setting',
     }
   }
 
@@ -212,21 +253,24 @@ export function getAcActionNotification(
     return {
       message: getSwingMessage(nextState.swing),
       severity: 'info',
+      kind: 'setting',
     }
   }
 
   // The temperature a mode switch lands on (each mode remembers its own).
   if (action.type === 'mode' && nextState.mode === 'cold' && nextState.temperature < recommendedColdTemperature) {
     return {
-      message: getRecommendedTemperatureMessage('cold', recommendedColdTemperature),
+      ...getEnergyTip('cold', recommendedColdTemperature),
       severity: 'success',
+      kind: 'tip',
     }
   }
 
   if (action.type === 'mode' && nextState.mode === 'hot' && nextState.temperature > recommendedHotTemperature) {
     return {
-      message: getRecommendedTemperatureMessage('hot', recommendedHotTemperature),
+      ...getEnergyTip('hot', recommendedHotTemperature),
       severity: 'success',
+      kind: 'tip',
     }
   }
 

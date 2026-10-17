@@ -62,6 +62,27 @@ audio.setFanSpeed('low') // createAcAudioController 也可以用 fanSpeed 选项
 
 和真的遥控器一样，制冷和制热各自记住上一次的设定温度：制冷调到 20°C 后切到制热，是制热上次的温度；再切回制冷，又回到 20°C。记录保存在 `AcState.temperatures`（`{ cold, hot }`）里，`normalizeAcState` 会补齐旧版本保存的状态（两个模式都取保存时的温度），并保证当前模式的那一项始终等于 `temperature`。手写的 `AcState` 可以不带这个字段。
 
+## 提示
+
+每次操作后，core 的 `getAcActionNotification` 可能给出一条提示（`AcNotification`）。`kind` 决定视图怎么呈现，`createAcNotificationPresenter()` 把判断集中在一处，各框架共用：
+
+| `kind` | 例子 | 呈现（`present()` 的返回值） |
+| --- | --- | --- |
+| `tip` | 制冷调到 26°C 以上更省电 | `note`：「出风口吹出的小纸条」。同一模式、同一温度只提示一次，重复时返回 `skip` |
+| `limit` | 已经是最大温度啦！ | `shake`：遥控器小屏抖一下、数字变红，不弹提示 |
+| `setting` | 风速：低风 | `announce`：小屏已经显示，只给读屏播报 |
+
+```ts
+import { createAcNotificationPresenter, getAcActionNotification } from '@yunlefun-home/air-conditioner-core'
+
+const present = createAcNotificationPresenter() // 每个视图实例一个
+const notification = getAcActionNotification(previous, next, action)
+if (notification)
+  present(notification, next) // 'note' | 'shake' | 'announce' | 'skip'
+```
+
+小纸条由 `.acw-note` 绘制：顶边一排撕口小圆齿，左侧是叶子图标，`data-mode` 决定冰蓝 / 暖橙的纸色，暗色下换成深色纸。它从出风口被风吹出（`acw-note-blow`），在风里轻轻摆动（`acw-note-flutter`），约 3.6 秒后被吹走（`acw-note-away`）；开启「减少动态效果」时只淡入淡出。纸条不接收点击，不会挡住下方的按钮。`--acw-note-lift` 可以调整它与出风口的距离。没有 `kind` 的旧提示按 `tip` 处理。
+
 ## 能效标签
 
 机身左上角的能效标签是缩小版的「中国能效标识」：蓝白背景，顶部是标识名称和能效信息码（二维码），中间是等级条（1 级绿色、最高，箭头指向云空调的 1 级），下面是参数区和依据的国家标准编号，小字用点阵示意。版式依据《房间空气调节器能源效率标识实施规则》（CEL 010—2019）。

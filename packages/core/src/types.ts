@@ -76,9 +76,22 @@ export type AcAction
 
 export type AcNotificationSeverity = 'success' | 'error' | 'info'
 
+/**
+ * What a notification is about, which decides how views present it:
+ *
+ * - `tip`：节能建议，以「出风口吹出的小纸条」显示
+ * - `limit`：温度到了上下限，遥控器小屏抖一下，不弹提示
+ * - `setting`：风速、声音、扫风等设置变化，小屏已经显示，只给读屏播报
+ */
+export type AcNotificationKind = 'tip' | 'limit' | 'setting'
+
 export interface AcNotification {
   message: string
   severity: AcNotificationSeverity
+  /** Absent on notifications from before kinds existed; treat as `tip`. */
+  kind?: AcNotificationKind
+  /** A second, quieter line, e.g. why a tip matters. */
+  detail?: string
 }
 
 export interface AcChangeEvent {

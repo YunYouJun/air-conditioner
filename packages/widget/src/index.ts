@@ -5,6 +5,7 @@ import type {
   AcIconName,
   AcMode,
   AcNotification,
+  AcNotificationPresentation,
   AcSoundMode,
   AcState,
   AirConditionerStore,
@@ -17,6 +18,7 @@ import {
   acShellSize,
   acSoundIcons,
   createAcAudioController,
+  createAcNotificationPresenter,
   createAirConditionerStore,
   defaultAcState,
   getAcEnergyLabelText,
@@ -188,6 +190,7 @@ function widgetTemplate(view: WidgetViewOptions) {
         <span class="acw-wind-line"></span><span class="acw-wind-line"></span><span class="acw-wind-line"></span>
       </div>
     </div>
+    <div class="acw-notification-region" role="status"><span class="acw-sr-only"></span></div>
     <div class="acw-remote" role="group" aria-label="Air conditioner remote control">
       <div class="acw-lcd" role="img">
         <div class="acw-lcd-main">
@@ -215,7 +218,6 @@ function widgetTemplate(view: WidgetViewOptions) {
         <button type="button" class="acw-button acw-button-sound" aria-label="sound" data-action="cycleSound"></button>
       </div>
     </div>
-    <div class="acw-notification-region" role="status"></div>
   </div>
 `
 }
@@ -303,13 +305,48 @@ function updateRemote(root: ShadowRoot, state: AcState, previous: AcState | unde
   }
 }
 
-function showNotification(root: ShadowRoot, notification: AcNotification) {
+/** 纸条停留多久后被风吹走，以及吹走动画的时长（与样式里的 acw-note-away 一致） */
+const noteStayMs = 3600
+const noteAwayMs = 460
+
+/**
+ * 按 core 的呈现方式显示一条提示：节能建议是「出风口吹出的小纸条」，温度到上下限时
+ * 小屏抖一下，设置变化只给读屏播报（结构与 Vue / React 一致）。
+ */
+function presentNotification(root: ShadowRoot, notification: AcNotification, how: AcNotificationPresentation, state: AcState) {
+  if (how === 'skip')
+    return
+  if (how === 'shake')
+    shakeLcd(root)
+  if (how !== 'note') {
+    root.querySelector('.acw-notification-region .acw-sr-only')!.textContent = notification.message
+    return
+  }
+
   const region = root.querySelector('.acw-notification-region')!
-  const element = document.createElement('div')
-  element.className = 'acw-notification'
-  element.dataset.severity = notification.severity
-  element.textContent = notification.message
-  region.replaceChildren(element)
+  region.querySelector('.acw-note')?.remove()
+  const note = document.createElement('div')
+  note.className = 'acw-note'
+  note.dataset.severity = notification.severity
+  note.dataset.mode = state.mode
+  note.innerHTML = `<span class="acw-note-icon" aria-hidden="true">${icon('leaf', 14)}</span><span class="acw-note-text"><strong></strong>${notification.detail ? '<small></small>' : ''}</span>`
+  note.querySelector('strong')!.textContent = notification.message
+  if (notification.detail)
+    note.querySelector('small')!.textContent = notification.detail
+  region.prepend(note)
+  setTimeout(() => {
+    note.dataset.leaving = ''
+    setTimeout(() => note.remove(), noteAwayMs)
+  }, noteStayMs)
+}
+
+function shakeLcd(root: ShadowRoot) {
+  const lcd = root.querySelector<HTMLElement>('.acw-lcd')!
+  lcd.removeAttribute('data-alert')
+  // 重新触发动画
+  void lcd.offsetWidth
+  lcd.setAttribute('data-alert', '')
+  setTimeout(() => lcd.removeAttribute('data-alert'), 400)
 }
 
 function boolAttribute(value: string | null, fallback?: boolean): boolean | undefined {
@@ -370,6 +407,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private renderedState?: AcState
     private stopObservers: (() => void)[] = []
     private audio?: AcAudioController
+    private present = createAcNotificationPresenter()
 
     static get observedAttributes() {
       return ['mode', 'status', 'temperature', 'sound', 'swing', 'fan']
@@ -395,7 +433,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         initialState: getInitialState(this, options.initialState),
         onNotify: (notification, event) => {
           if (this.shadowRoot)
-            showNotification(this.shadowRoot, notification)
+            presentNotification(this.shadowRoot, notification, this.present(notification, event.state), event.state)
           this.dispatchEvent(new CustomEvent('ac-notify', {
             detail: { notification, event },
             bubbles: true,

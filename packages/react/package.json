@@ -57,32 +57,22 @@
   },
   "dependencies": {
     "@yunlefun-home/air-conditioner-core": "workspace:*",
-    "react-ga": "catalog:",
     "react-gtm-module": "catalog:",
-    "react-router-dom": "catalog:",
-    "sass": "catalog:",
-    "web-vitals": "catalog:"
+    "sass": "catalog:"
   },
   "devDependencies": {
-    "@emotion/react": "catalog:",
-    "@emotion/styled": "catalog:",
-    "@iconify-json/ic": "catalog:",
     "@iconify-json/mdi": "catalog:",
-    "@mui/material": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/react-gtm-module": "catalog:",
-    "@types/react-router-dom": "catalog:",
     "@unocss/reset": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-transition-group": "catalog:",
     "tsdown": "catalog:",
     "unocss": "catalog:",
     "usehooks-ts": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-pages": "catalog:",
     "vite-plugin-pwa": "catalog:"
   }
 }

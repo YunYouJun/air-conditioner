@@ -12,7 +12,7 @@ export { maxTemperature, minTemperature }
 
 export function useAcTemperature() {
   const { state, dispatch } = useAcCtx()
-  const { dispatch: dispatchToast } = useToastCtx()
+  const { notify } = useToastCtx()
 
   /**
    * 增加温度
@@ -24,16 +24,9 @@ export function useAcTemperature() {
 
     dispatch(action)
 
-    if (notification) {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: notification.message,
-          open: true,
-          severity: notification.severity,
-        },
-      })
-    }
+    // 到上下限时遥控器小屏抖一下（见 Toast / RemoteControl）
+    if (notification)
+      notify(notification, nextState)
   }
 
   /**
@@ -46,16 +39,9 @@ export function useAcTemperature() {
 
     dispatch(action)
 
-    if (notification) {
-      dispatchToast({
-        type: 'update',
-        payload: {
-          message: notification.message,
-          open: true,
-          severity: notification.severity,
-        },
-      })
-    }
+    // 到上下限时遥控器小屏抖一下（见 Toast / RemoteControl）
+    if (notification)
+      notify(notification, nextState)
   }
 
   return {

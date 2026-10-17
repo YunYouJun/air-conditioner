@@ -67,7 +67,7 @@ public/
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `change` | `(event: AcChangeEvent)` | 每次状态变更 |
-| `notify` | `(notification: AcNotification, event: AcChangeEvent)` | 触发温度 / 模式提示时 |
+| `notify` | `(notification: AcNotification, event: AcChangeEvent)` | 触发提示时（节能建议、温度上下限、设置变化，见 [提示](/api/#提示)） |
 
 ## 手动组合
 

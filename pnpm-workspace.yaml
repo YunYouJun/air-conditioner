@@ -17,17 +17,12 @@ allowBuilds:
 
 catalog:
   '@antfu/eslint-config': ^9.5.1
-  '@emotion/react': ^11.14.0
-  '@emotion/styled': ^11.14.1
-  '@iconify-json/ic': ^1.2.4
   '@iconify-json/mdi': ^1.2.3
-  '@mui/material': ^9.5.0
   '@playwright/test': ^1.64.1
   '@types/node': ^26.6.5
   '@types/react': ^19.3.0
   '@types/react-dom': ^19.3.0
   '@types/react-gtm-module': 2.0.4
-  '@types/react-router-dom': ^5.3.3
   '@unocss/reset': ^66.11.0
   '@vitejs/plugin-react': ^6.1.2
   '@vitejs/plugin-vue': ^6.0.10
@@ -36,10 +31,7 @@ catalog:
   happy-dom: ^21.0.1
   react: ^19.3.1
   react-dom: ^19.3.1
-  react-ga: ^3.3.1
   react-gtm-module: 2.0.11
-  react-router-dom: ^7.18.4
-  react-transition-group: ^4.4.5
   sass: ^1.105.1
   tsdown: ^0.23.1
   typescript: ^6.0.3
@@ -47,10 +39,8 @@ catalog:
   unplugin-vue: ^8.0.0
   usehooks-ts: ^3.1.1
   vite: ^8.3.4
-  vite-plugin-pages: ^0.33.3
   vite-plugin-pwa: ^2.0.0
   vitepress: ^1.6.4
   vitest: ^5.0.4
   vue: ^3.5.44
   vue-tsc: ^3.3.13
-  web-vitals: ^6.2.3

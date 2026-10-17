@@ -2,7 +2,10 @@ import type { AcRemoteCommand } from '@yunlefun-home/air-conditioner-core'
 import { nextAcSoundMode } from '@yunlefun-home/air-conditioner-core'
 
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useAc, useAcCtx } from '~/context'
+import { useToastCtx } from '~/context/toast'
+import { useLcdAlert } from '~/lib/BreezeNote'
 import { RemoteControlView } from '~/lib/RemoteControlView'
 import { getAssetsUrl } from '~/utils'
 import { getAudioController } from './audio'
@@ -25,9 +28,16 @@ const RemoteControl: React.FC<{
    * @default true
    */
   acSound?: boolean
-}> = ({ acSound = true }) => {
+  /**
+   * 遥控器悬浮窗：遥控器画到这个窗口里（音频元素仍留在页面上，声音照常）。
+   */
+  floating?: Window | null
+}> = ({ acSound = true, floating }) => {
   const { toggleStatus, toggleMode, cycleSound, toggleSwing, cycleFan } = useAc()
   const { state: ac } = useAcCtx()
+  const { state: toast } = useToastCtx()
+  // 温度到上下限：小屏抖一下，代替弹出提示
+  const alert = useLcdAlert(toast.how === 'shake' ? toast.notification : undefined)
   const sound = ac.sound
   const fan = ac.fan ?? 'auto'
 
@@ -84,7 +94,9 @@ const RemoteControl: React.FC<{
         preload="auto"
       >
       </audio>
-      <RemoteControlView state={ac} onCommand={onCommand} />
+      {floating
+        ? createPortal(<RemoteControlView state={ac} onCommand={onCommand} alert={alert} />, floating.document.body)
+        : <RemoteControlView state={ac} onCommand={onCommand} alert={alert} />}
     </div>
   )
 }

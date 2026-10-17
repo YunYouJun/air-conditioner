@@ -5,3 +5,140 @@
 .cold-color {
   filter: saturate(90%);
 }
+
+/* 操作区：空调下方一排带图标的胶囊按钮，状态说明换行显示（替代原来的 MUI Button） */
+.ac-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ac-actions__caption {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.65;
+}
+
+/* 与遥控器按键同一套语言：白底、圆润、轻阴影，按下时内陷并着色 */
+.ac-chip {
+  --ac-chip-accent: #0288d1;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 16px 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  background: #fff;
+  color: #3c4043;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 6px 14px -8px rgba(0, 0, 0, 0.25);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    transform var(--acw-motion-duration-fast) var(--acw-motion-ease-spring),
+    box-shadow var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+    background-color var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+    color var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.06),
+      0 10px 18px -8px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ac-chip-accent);
+    outline-offset: 2px;
+  }
+
+  &[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--ac-chip-accent) 12%, #fff);
+    color: var(--ac-chip-accent);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.ac-chip__icon {
+  font-size: 18px;
+  color: var(--ac-chip-accent);
+}
+
+.hot-color .ac-chip {
+  --ac-chip-accent: #fb8c00;
+}
+
+html.dark .ac-chip {
+  --ac-chip-accent: #4fc3f7;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: #1f2329;
+  color: #e3e6ea;
+
+  &[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--ac-chip-accent) 18%, #1f2329);
+    color: var(--ac-chip-accent);
+  }
+}
+
+html.dark .hot-color .ac-chip {
+  --ac-chip-accent: #ffb74d;
+}
+
+/* 遥控器去了悬浮窗：原位留一个虚线挂座，点「放回」收回来 */
+.ac-remote-dock {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 200px;
+  margin: 24px auto;
+  padding: 56px 16px;
+  border: 2px dashed rgba(0, 0, 0, 0.14);
+  border-radius: 40px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+}
+
+.ac-remote-dock__icon {
+  font-size: 40px;
+  opacity: 0.35;
+}
+
+html.dark .ac-remote-dock {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* 悬浮窗里只有遥控器：居中、去掉外边距，背景随亮 / 暗模式 */
+body.ac-pip {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--ac-bg-color, #fff);
+
+  .acw-remote {
+    margin: 0;
+  }
+}
+
+html.dark body.ac-pip {
+  background: #121212;
+}
