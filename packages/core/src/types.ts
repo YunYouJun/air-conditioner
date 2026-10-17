@@ -165,6 +165,11 @@ export interface AcAudioController {
    * speeds hold the fan sound at a steady level.
    */
   setFanSpeed: (fan: AcFanSpeed) => void
+  /**
+   * A soft synthesized drop of condensation (#21). Only in the `normal`
+   * sound mode and only through Web Audio; otherwise silent.
+   */
+  drip: () => void
   dispose: () => void
 }
 

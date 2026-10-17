@@ -39,6 +39,18 @@ store.dispatch({ type: 'swing', swing: true })
 
 视图层在空调根元素上输出 `data-swing="on" | "off"`，自定义样式可以据此调整。
 
+## 雾气与冷凝水
+
+制冷开机时，几团冷雾从导风板下方飘出、边飘边散（[#70](https://github.com/YunYouJun/air-conditioner/issues/70)）；开得很冷时，导风板边缘会慢慢聚起一颗水珠再落下，落下时「嗒」一声（[#21](https://github.com/YunYouJun/air-conditioner/issues/21)）。规则都在 core 里，各个视图（以及以后的 3D 渲染器）只负责画：
+
+| 函数 | 返回 | 规则 |
+| --- | --- | --- |
+| `getAcMist(state)` | 雾气浓度 0–1 | 只在制冷开机时有；设定温度越低、风越大越浓 |
+| `getAcDripInterval(state)` | 两滴水的间隔（ms），不滴水时 `undefined` | 只在制冷开机、设定温度不高于 `acDripMaxTemperature`（22 °C）时滴水；16 °C 时 9 秒一滴，22 °C 时 18 秒一滴，高风再快 20% |
+| `getAcCondensationStyle(state)` | `{ mist, dripCycle, drip }` | 视图直接写到空调根元素上 |
+
+视图在空调根元素上输出 `data-drip="on" | "off"`，并写入 CSS 变量 `--acw-mist` 与 `--acw-drip-cycle`。滴水声由音频控制器合成（`audio.drip()`），不需要额外的音频文件；只在标准声音下响，睡眠和静音时不响。开启「减少动态效果」时，雾气静止地挂在出风口下方，不滴水。
+
 ## 风速
 
 遥控器上的「风速」键依次切换四档，状态保存在 `AcState.fan` 中（旧版本保存的状态视为 `auto`）：

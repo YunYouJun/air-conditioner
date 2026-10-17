@@ -49,6 +49,17 @@ html.dark .acw-root,
   --acw-text-color: #fafafa;
 }
 
+html.dark .acw-mist,
+.acw-root.dark .acw-mist {
+  --acw-mist-color: rgba(214, 234, 252, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .acw-root:not(.light) .acw-mist {
+    --acw-mist-color: rgba(214, 234, 252, 0.5);
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   .acw-root:not(.light) {
     --acw-text-color: #fafafa;
@@ -297,6 +308,140 @@ html.dark .acw-note[data-mode="hot"],
 
   100% {
     transform: skewX(0deg);
+  }
+}
+
+/*
+ * 雾气（#70）：制冷开机时，几团冷雾从导风板下方飘出、边飘边散。
+ * 浓度 --acw-mist（0–1）由 core 的 getAcMist 按设定温度和风速算出；风速同时改变飘散的快慢。
+ */
+.acw-mist {
+  --acw-mist-color: rgba(176, 214, 242, 0.85);
+
+  position: absolute;
+  top: calc(100% - 8px);
+  right: 36px;
+  left: 36px;
+  height: 56px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--acw-motion-duration-slow) var(--acw-motion-ease-exit);
+}
+
+.acw-unit[data-status="on"][data-mode="cold"] .acw-mist {
+  opacity: var(--acw-mist, 0);
+  transition-timing-function: var(--acw-motion-ease-enter);
+  transition-delay: var(--acw-motion-duration-slow);
+}
+
+.acw-mist i {
+  position: absolute;
+  top: 0;
+  left: var(--acw-mist-x);
+  width: 76px;
+  height: 26px;
+  margin-left: -38px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--acw-mist-color), transparent);
+  opacity: 0;
+  animation: acw-mist-drift calc(var(--acw-motion-duration-flow) * 2.4 * var(--acw-wind-pace, 1)) ease-out var(--acw-mist-delay) infinite;
+  animation-play-state: paused;
+}
+
+.acw-unit[data-status="on"][data-mode="cold"] .acw-mist i {
+  animation-play-state: running;
+}
+
+.acw-mist i:nth-child(1) {
+  --acw-mist-x: 10%;
+  --acw-mist-dx: -14px;
+  --acw-mist-delay: 0ms;
+}
+
+.acw-mist i:nth-child(2) {
+  --acw-mist-x: 30%;
+  --acw-mist-dx: -6px;
+  --acw-mist-delay: -1700ms;
+}
+
+.acw-mist i:nth-child(3) {
+  --acw-mist-x: 50%;
+  --acw-mist-dx: 2px;
+  --acw-mist-delay: -850ms;
+}
+
+.acw-mist i:nth-child(4) {
+  --acw-mist-x: 70%;
+  --acw-mist-dx: 8px;
+  --acw-mist-delay: -2600ms;
+}
+
+.acw-mist i:nth-child(5) {
+  --acw-mist-x: 90%;
+  --acw-mist-dx: 14px;
+  --acw-mist-delay: -3500ms;
+}
+
+@keyframes acw-mist-drift {
+  0% {
+    opacity: 0;
+    transform: translate(0, -6px) scale(0.4);
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--acw-mist-dx), 34px) scale(1.8);
+  }
+}
+
+/*
+ * 冷凝水（#21）：开得很冷时，导风板边缘慢慢聚起一颗水珠，再「嗒」地落下。
+ * 间隔 --acw-drip-cycle 由 core 的 getAcDripInterval 算出；不滴水时根元素是 data-drip="off"。
+ * 落下的那一刻（每轮动画结束）视图播放滴水声。
+ */
+.acw-drip {
+  position: absolute;
+  top: calc(100% - 7px);
+  left: 27%;
+  width: 5px;
+  height: 7px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 18%, rgba(110, 172, 226, 0.9) 70%);
+  box-shadow: 0 0 0 0.5px rgba(70, 130, 190, 0.35);
+  transform: scale(0);
+  transform-origin: 50% 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.acw-unit[data-drip="on"] .acw-drip {
+  animation: acw-drip var(--acw-drip-cycle, 12000ms) linear infinite;
+}
+
+/* 前 96% 慢慢聚起，最后一小段加速落下 */
+@keyframes acw-drip {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  96% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(44px) scale(0.85, 1.25);
   }
 }
 
@@ -1198,6 +1343,17 @@ html.dark .acw-note[data-mode="hot"],
 
   .acw-louver,
   .acw-vent::before {
+    animation: none;
+  }
+
+  /* 雾气静止地挂在出风口下方；不滴水 */
+  .acw-mist i {
+    opacity: 0.7;
+    transform: translateY(10px) scale(1.3);
+    animation: none;
+  }
+
+  .acw-unit[data-drip="on"] .acw-drip {
     animation: none;
   }
 

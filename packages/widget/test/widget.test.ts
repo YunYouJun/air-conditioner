@@ -197,4 +197,28 @@ describe('@air-conditioner/widget', () => {
     expect(key('cold').getAttribute('aria-pressed')).toBe('false')
     expect(key('swing').getAttribute('aria-pressed')).toBe('true')
   })
+
+  // #70 / #21
+  it('sets the mist and drip hooks from the state', () => {
+    defineAirConditionerElement({
+      tagName: 'test-air-conditioner-condensation',
+      initialState: { status: true, mode: 'cold', temperature: 18 },
+      enableAudio: false,
+      storage: null,
+    })
+    const element = document.createElement('test-air-conditioner-condensation')
+    document.body.appendChild(element)
+    const root = element.shadowRoot!
+    const unit = root.querySelector<HTMLElement>('.acw-unit')!
+    expect(root.querySelectorAll('.acw-mist i')).toHaveLength(5)
+    expect(root.querySelector('.acw-drip')).not.toBeNull()
+    expect(unit.dataset.drip).toBe('on')
+    expect(Number(unit.style.getPropertyValue('--acw-mist'))).toBeGreaterThan(0)
+    expect(unit.style.getPropertyValue('--acw-drip-cycle')).toMatch(/ms$/)
+
+    root.querySelector<HTMLElement>('[data-action="hot"]')!.click()
+    expect(unit.dataset.drip).toBe('off')
+    expect(unit.style.getPropertyValue('--acw-mist')).toBe('0')
+    expect(unit.style.getPropertyValue('--acw-drip-cycle')).toBe('')
+  })
 })

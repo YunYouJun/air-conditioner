@@ -22,6 +22,7 @@ import {
   createAcNotificationPresenter,
   createAirConditionerStore,
   defaultAcState,
+  getAcCondensationStyle,
   getAcEnergyLabelText,
   getAcRemoteText,
   isAcFanSpeed,
@@ -185,6 +186,8 @@ function widgetTemplate(view: WidgetViewOptions) {
         <div class="acw-outlet"></div>
         <div class="acw-vent" aria-hidden="true"></div>
         <div class="acw-louver" aria-hidden="true"></div>
+        <div class="acw-mist" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="acw-drip" aria-hidden="true"></span>
         <span class="acw-led"></span>
       </div>
       <div class="acw-wind">
@@ -253,6 +256,16 @@ function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | unde
     temperature.textContent = String(state.temperature)
   else if (previous.temperature !== state.temperature)
     replaceAnimated(temperature, String(state.temperature), ['data-dir', state.temperature > previous.temperature ? 'up' : 'down'])
+
+  // 雾气浓度与冷凝水滴落间隔（#70 / #21）
+  const unit = root.querySelector<HTMLElement>('.acw-unit')!
+  const condensation = getAcCondensationStyle(state)
+  unit.dataset.drip = condensation.drip
+  unit.style.setProperty('--acw-mist', String(condensation.mist))
+  if (condensation.dripCycle)
+    unit.style.setProperty('--acw-drip-cycle', condensation.dripCycle)
+  else
+    unit.style.removeProperty('--acw-drip-cycle')
 
   root.querySelector('.acw-led')!.setAttribute('aria-label', status)
   root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
@@ -453,6 +466,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         }))
       })
       this.shadowRoot?.addEventListener('click', this.onClick)
+      this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
       this.renderedState = undefined
       this.render()
 
@@ -487,6 +501,13 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.stopObservers.forEach(stop => stop())
       this.stopObservers = []
       this.shadowRoot?.removeEventListener('click', this.onClick)
+      this.shadowRoot?.removeEventListener('animationiteration', this.onDrip)
+    }
+
+    /** 一滴冷凝水落下：「嗒」一声（只在标准声音下，且已经有过操作、创建了音频） */
+    private onDrip = (event: Event) => {
+      if ((event.target as Element | null)?.classList.contains('acw-drip'))
+        this.audio?.drip()
     }
 
     attributeChangedCallback() {

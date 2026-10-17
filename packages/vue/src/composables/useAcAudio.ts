@@ -34,11 +34,19 @@ export function useAcAudio(getElements: () => AcAudioElements) {
       ctrl.toggleStatusAudio(event.previousState.status)
   }
 
+  /**
+   * 冷凝水落下时「嗒」一声。控制器在第一次操作后才创建（浏览器要求先有用户手势）。
+   */
+  function drip() {
+    controller?.drip()
+  }
+
   onUnmounted(() => {
     controller?.dispose()
   })
 
   return {
     handleChange,
+    drip,
   }
 }

@@ -1,4 +1,5 @@
 import type { AcAudioController } from '@yunlefun-home/air-conditioner-core'
+import type { RefObject } from 'react'
 import type { AirConditionerProviderProps } from './context'
 import { createAcAudioController, createAcNotificationPresenter, resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
 import { useEffect, useRef, useState } from 'react'
@@ -53,13 +54,17 @@ function Notification() {
 /**
  * 音效：按键「嘀」声，开关机时播放启动 / 关闭音效，声音键切换音量（与 Vue 版 useAcAudio 一致）。
  */
-function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBaseUrl' | 'audioExt'>>) {
+function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBaseUrl' | 'audioExt'>> & {
+  /** 共享给机身，冷凝水落下时用来播放滴水声 */
+  controllerRef: RefObject<AcAudioController | undefined>
+}) {
   const { store } = useAirConditioner()
   const src = resolveAcAudioAssets(`${props.assetsBaseUrl}/audio`, props.audioExt)
   const beep = useRef<HTMLAudioElement>(null)
   const start = useRef<HTMLAudioElement>(null)
   const work = useRef<HTMLAudioElement>(null)
 
+  const { controllerRef } = props
   useEffect(() => {
     let controller: AcAudioController | undefined
     const unsubscribe = store.subscribe((event) => {
@@ -67,6 +72,7 @@ function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBas
         { beep: beep.current, start: start.current, work: work.current },
         { soundMode: event.state.sound, fanSpeed: event.state.fan ?? 'auto' },
       )
+      controllerRef.current = controller
       if (event.previousState.sound !== event.state.sound)
         controller.setSoundMode(event.state.sound)
       if (event.previousState.fan !== event.state.fan)
@@ -78,8 +84,9 @@ function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBas
     return () => {
       unsubscribe()
       controller?.dispose()
+      controllerRef.current = undefined
     }
-  }, [store])
+  }, [controllerRef, store])
 
   return (
     <>
@@ -99,11 +106,13 @@ function WidgetContent(props: Omit<AirConditionerWidgetProps, keyof AirCondition
     showEnergyLabel = true,
   } = props
 
+  const audio = useRef<AcAudioController | undefined>(undefined)
+
   // 结构与 Vue 版 AirConditionerWidget.vue 一致
   return (
     <div className="acw-root" data-mode={state.mode} data-status={state.status ? 'on' : 'off'}>
-      {enableAudio && <AudioEffects assetsBaseUrl={assetsBaseUrl} audioExt={audioExt} />}
-      <AirConditioner title={props.title} logoUrl={props.logoUrl} showEnergyLabel={showEnergyLabel} />
+      {enableAudio && <AudioEffects assetsBaseUrl={assetsBaseUrl} audioExt={audioExt} controllerRef={audio} />}
+      <AirConditioner title={props.title} logoUrl={props.logoUrl} showEnergyLabel={showEnergyLabel} onDrip={() => audio.current?.drip()} />
       <Notification />
       <RemoteControl />
     </div>

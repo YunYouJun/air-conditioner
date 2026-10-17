@@ -28,6 +28,7 @@ function fakeParam(value = 1) {
     value,
     setValueAtTime: vi.fn(),
     linearRampToValueAtTime: vi.fn(),
+    exponentialRampToValueAtTime: vi.fn(),
     setTargetAtTime: vi.fn(),
     setValueCurveAtTime: vi.fn(),
     cancelScheduledValues: vi.fn(),
@@ -284,5 +285,46 @@ describe('createAcAudioController with Web Audio', () => {
     expect(elements.start.play).toHaveBeenCalledTimes(1)
     controller.dispose()
     vi.useRealTimers()
+  })
+})
+
+// #21
+describe('drip', () => {
+  function withOscillators(fake: ReturnType<typeof fakeAudioContext>) {
+    const oscillators: { frequency: ReturnType<typeof fakeParam>, start: ReturnType<typeof vi.fn>, stop: ReturnType<typeof vi.fn> }[] = []
+    Object.assign(fake.context, {
+      createOscillator() {
+        const node = { type: 'sine', frequency: fakeParam(), connect: vi.fn(), start: vi.fn(), stop: vi.fn(), onended: null }
+        oscillators.push(node)
+        return node
+      },
+    })
+    return oscillators
+  }
+
+  it('plays a short synthesized drop in the normal sound mode only', () => {
+    const fake = fakeAudioContext()
+    const oscillators = withOscillators(fake)
+    const controller = createAcAudioController(fakeElements(), webOptions(fake))
+
+    controller.drip()
+    expect(oscillators).toHaveLength(1)
+    expect(oscillators[0].start).toHaveBeenCalledTimes(1)
+    expect(oscillators[0].stop).toHaveBeenCalledTimes(1)
+
+    controller.setSoundMode('sleep')
+    controller.drip()
+    controller.setSoundMode('mute')
+    controller.drip()
+    expect(oscillators).toHaveLength(1)
+    controller.dispose()
+  })
+
+  it('stays silent without Web Audio', () => {
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, { webAudio: false })
+    controller.drip()
+    expect(elements.beep.play).not.toHaveBeenCalled()
+    controller.dispose()
   })
 })

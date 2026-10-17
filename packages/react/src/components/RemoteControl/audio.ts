@@ -18,3 +18,10 @@ export function getAudioController(soundMode?: AcSoundMode, fanSpeed?: AcFanSpee
 
   return audioController
 }
+
+/**
+ * 已经创建的音频控制器；还没有任何操作时返回 undefined（浏览器要求先有用户手势才能出声）。
+ */
+export function peekAudioController() {
+  return audioController
+}

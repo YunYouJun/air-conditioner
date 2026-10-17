@@ -40,7 +40,7 @@ const beepEl = ref<HTMLAudioElement | null>(null)
 const startEl = ref<HTMLAudioElement | null>(null)
 const workEl = ref<HTMLAudioElement | null>(null)
 
-const { handleChange: handleAudio } = useAcAudio(() => ({
+const { handleChange: handleAudio, drip } = useAcAudio(() => ({
   beep: beepEl.value,
   start: startEl.value,
   work: workEl.value,
@@ -102,7 +102,7 @@ function onNotify(value: AcNotification, event: AcChangeEvent) {
         <audio v-if="enableAudio" ref="startEl" :src="audioSrc.start" preload="auto" />
         <audio v-if="enableAudio" ref="workEl" :src="audioSrc.work" preload="auto" />
 
-        <AirConditioner :logo-url="logoUrl" :show-energy-label="showEnergyLabel" />
+        <AirConditioner :logo-url="logoUrl" :show-energy-label="showEnergyLabel" @drip="enableAudio && drip()" />
 
         <!-- 常驻的 live region，紧贴出风口；内部提示切换时才会被读屏正确播报 -->
         <div class="acw-notification-region" role="status">

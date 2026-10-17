@@ -1,6 +1,6 @@
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
 import type { CSSProperties } from 'react'
-import { acModeIcons, acShellSize, defaultAcState } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, acShellSize, defaultAcState, getAcCondensationStyle } from '@yunlefun-home/air-conditioner-core'
 import { useRef, useState } from 'react'
 import { useOptionalAirConditionerState } from './context'
 import { EnergyLabel } from './EnergyLabel'
@@ -15,6 +15,8 @@ export interface AirConditionerProps extends Partial<AcState> {
   logoHref?: string
   /** 是否显示能效标签 */
   showEnergyLabel?: boolean
+  /** 一滴冷凝水落下（用来播放滴水声） */
+  onDrip?: () => void
 }
 
 /**
@@ -53,6 +55,8 @@ export function AirConditioner(props: AirConditionerProps = {}) {
   const temperature = props.temperature ?? state.temperature ?? defaultAcState.temperature
   const swing = props.swing ?? state.swing ?? defaultAcState.swing
   const fan = props.fan ?? state.fan ?? 'auto'
+  // 雾气浓度与冷凝水滴落间隔（#70 / #21）
+  const condensation = getAcCondensationStyle({ status, mode, temperature, fan })
 
   const direction = useChangeDirection(temperature)
   const modeChanged = useHasChanged(mode)
@@ -69,7 +73,14 @@ export function AirConditioner(props: AirConditionerProps = {}) {
       data-status={status ? 'on' : 'off'}
       data-swing={swing ? 'on' : 'off'}
       data-fan={fan}
-      style={{ '--acw-scale': scale, '--acw-tilt-x': `${tiltX}deg`, '--acw-tilt-y': `${tiltY}deg` } as CSSProperties}
+      data-drip={condensation.drip}
+      style={{
+        '--acw-scale': scale,
+        '--acw-tilt-x': `${tiltX}deg`,
+        '--acw-tilt-y': `${tiltY}deg`,
+        '--acw-mist': condensation.mist,
+        '--acw-drip-cycle': condensation.dripCycle,
+      } as CSSProperties}
     >
       <div className="acw-shell">
         {/* 能效标签 */}
@@ -104,6 +115,16 @@ export function AirConditioner(props: AirConditionerProps = {}) {
         {/* 出风口与导风板（开机时打开） */}
         <div className="acw-vent" aria-hidden="true" />
         <div className="acw-louver" aria-hidden="true" />
+
+        {/* 雾气与冷凝水（制冷时） */}
+        <div className="acw-mist" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+        <span className="acw-drip" aria-hidden="true" onAnimationIteration={props.onDrip} />
 
         {/* 状态指示灯 */}
         <span className="acw-led" aria-label={status ? 'on' : 'off'} />

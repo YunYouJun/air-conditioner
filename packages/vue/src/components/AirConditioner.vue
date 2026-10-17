@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
-import { acModeIcons, acShellSize, defaultAcState, observeAcScale, observeAcTilt } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, acShellSize, defaultAcState, getAcCondensationStyle, observeAcScale, observeAcTilt } from '@yunlefun-home/air-conditioner-core'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useOptionalAirConditioner } from '../composables/useAirConditioner'
 import EnergyLabel from './EnergyLabel.vue'
@@ -23,6 +23,11 @@ const props = withDefaults(defineProps<{
   showEnergyLabel: true,
 })
 
+const emit = defineEmits<{
+  /** 一滴冷凝水落下（用来播放滴水声） */
+  drip: []
+}>()
+
 const context = useOptionalAirConditioner()
 const state = computed<AcState>(() => ({
   ...defaultAcState,
@@ -31,6 +36,9 @@ const state = computed<AcState>(() => ({
 }))
 
 const modeIcon = computed(() => acModeIcons[state.value.mode])
+
+/** 雾气浓度与冷凝水滴落间隔（#70 / #21） */
+const condensation = computed(() => getAcCondensationStyle(state.value))
 
 /**
  * 数字切换方向：升温从下方滚入，降温从上方滚入；首次渲染不播放。
@@ -71,7 +79,8 @@ watch(() => state.value.mode, () => {
     :data-status="state.status ? 'on' : 'off'"
     :data-swing="state.swing ? 'on' : 'off'"
     :data-fan="state.fan ?? 'auto'"
-    :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg` }"
+    :data-drip="condensation.drip"
+    :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg`, '--acw-mist': condensation.mist, '--acw-drip-cycle': condensation.dripCycle }"
   >
     <div class="acw-shell">
       <!-- 能效标签 -->
@@ -108,6 +117,12 @@ watch(() => state.value.mode, () => {
       <!-- 出风口与导风板（开机时打开） -->
       <div class="acw-vent" aria-hidden="true" />
       <div class="acw-louver" aria-hidden="true" />
+
+      <!-- 雾气与冷凝水（制冷时） -->
+      <div class="acw-mist" aria-hidden="true">
+        <i /><i /><i /><i /><i />
+      </div>
+      <span class="acw-drip" aria-hidden="true" @animationiteration="emit('drip')" />
 
       <!-- 状态指示灯 -->
       <span class="acw-led" :aria-label="state.status ? 'on' : 'off'" />

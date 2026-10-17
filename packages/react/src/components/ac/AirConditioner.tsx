@@ -1,10 +1,11 @@
 import type { AcFanSpeed } from '@yunlefun-home/air-conditioner-core'
 import type { AcMode } from '~/types'
 
-import { acShellSize } from '@yunlefun-home/air-conditioner-core'
+import { acShellSize, getAcCondensationStyle } from '@yunlefun-home/air-conditioner-core'
 import React, { useRef } from 'react'
 import * as pkg from '~/../package.json'
 import { useAcScale, useAcTilt } from '~/lib/useAcScale'
+import { peekAudioController } from '../RemoteControl/audio'
 import { AcDisplay } from './AcDisplay'
 import { EnergyLabel } from './EnergyLabel'
 
@@ -84,6 +85,24 @@ const AirLouver: React.FC = () => {
 }
 
 /**
+ * 雾气与冷凝水（制冷时，#70 / #21）：一滴水落下时「嗒」一声
+ */
+const Condensation: React.FC = () => {
+  return (
+    <>
+      <div className="ac-mist" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+      <span className="ac-drip" aria-hidden="true" onAnimationIteration={() => peekAudioController()?.drip()} />
+    </>
+  )
+}
+
+/**
  * 空调状态
  * @param props
  */
@@ -124,6 +143,7 @@ const AirConditioner: React.FC<{
   const unitRef = useRef<HTMLDivElement>(null)
   const scale = useAcScale(unitRef, acShellSize.wide.width)
   const [tiltX, tiltY] = useAcTilt(unitRef)
+  const condensation = getAcCondensationStyle(props)
 
   return (
     <div
@@ -133,13 +153,20 @@ const AirConditioner: React.FC<{
       data-status={props.status ? 'on' : 'off'}
       data-swing={props.swing ? 'on' : 'off'}
       data-fan={props.fan ?? 'auto'}
-      style={{ '--ac-tilt-x': `${tiltX}deg`, '--ac-tilt-y': `${tiltY}deg` } as React.CSSProperties}
+      data-drip={condensation.drip}
+      style={{
+        '--ac-tilt-x': `${tiltX}deg`,
+        '--ac-tilt-y': `${tiltY}deg`,
+        '--ac-mist': condensation.mist,
+        '--ac-drip-cycle': condensation.dripCycle,
+      } as React.CSSProperties}
     >
       <AcBorder scale={scale}>
         <AcDisplay mode={props.mode} />
         <AcLogo />
         <AirOutlet />
         <AirLouver />
+        <Condensation />
         <AcStatus status={props.status} />
         <EnergyLabel titleLength={6} />
         {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}

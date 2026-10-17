@@ -53,6 +53,26 @@ function createDefaultAudioContext(): AudioContext | null {
 }
 
 /**
+ * 合成一声很轻的「嗒」：音高快速下滑的正弦波，短促起音、指数衰减，像水珠落在窗台上。
+ */
+function playDrip(context: AudioContext, output: AudioNode) {
+  const start = context.currentTime
+  const oscillator = context.createOscillator()
+  const gain = context.createGain()
+  oscillator.type = 'sine'
+  oscillator.frequency.setValueAtTime(1500, start)
+  oscillator.frequency.exponentialRampToValueAtTime(520, start + 0.07)
+  gain.gain.setValueAtTime(0.0001, start)
+  gain.gain.exponentialRampToValueAtTime(0.12, start + 0.004)
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16)
+  oscillator.connect(gain)
+  gain.connect(output)
+  oscillator.start(start)
+  oscillator.stop(start + 0.18)
+  oscillator.onended = () => gain.disconnect()
+}
+
+/**
  * 等功率淡入 / 淡出曲线，噪声类声音交叉淡化时中段不会变小。
  */
 function fadeCurve(direction: 'in' | 'out'): Float32Array {
@@ -436,6 +456,16 @@ export function createAcAudioController(
 
       applyElementVolume(elements.beep)
       playElement(elements.beep)
+    },
+    drip() {
+      // 只在标准声音下响；睡眠和静音时安安静静
+      if (soundMode !== 'normal')
+        return
+      const web = ensureEngine()
+      if (!web || typeof web.context.createOscillator !== 'function')
+        return
+      resume(web)
+      playDrip(web.context, web.master)
     },
     toggleStatusAudio(previousStatus: boolean) {
       if (previousStatus)
