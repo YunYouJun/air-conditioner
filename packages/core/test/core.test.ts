@@ -6,6 +6,7 @@ import {
   createAirConditionerStore,
   createMemoryStorage,
   defaultAcState,
+  getAcActionNotification,
   maxTemperature,
   minTemperature,
   nextAcSoundMode,
@@ -19,9 +20,65 @@ describe('@yunlefun-home/air-conditioner-core', () => {
       mode: 'cold',
       status: false,
       temperature: 26,
+      temperatures: { cold: 26, hot: 26 },
       sound: 'normal',
       swing: false,
+      fan: 'auto',
     })
+  })
+
+  // #39: like a real remote, each mode keeps its own temperature.
+  it('remembers the temperature of each mode', () => {
+    let state = acReducer(defaultAcState, { type: 'decrement' })
+    for (let i = 0; i < 5; i++)
+      state = acReducer(state, { type: 'decrement' })
+    expect(state.temperature).toBe(20)
+    state = acReducer(state, { type: 'mode', mode: 'hot' })
+    expect(state.temperature).toBe(26)
+    for (let i = 0; i < 2; i++)
+      state = acReducer(state, { type: 'increment' })
+    expect(state).toMatchObject({ mode: 'hot', temperature: 28, temperatures: { cold: 20, hot: 28 } })
+    state = acReducer(state, { type: 'mode', mode: 'cold' })
+    expect(state).toMatchObject({ mode: 'cold', temperature: 20, temperatures: { cold: 20, hot: 28 } })
+    // Re-selecting the current mode changes nothing.
+    expect(acReducer(state, { type: 'mode', mode: 'cold' })).toBe(state)
+  })
+
+  // #29
+  it('cycles and validates the fan speed', () => {
+    expect(defaultAcState.fan).toBe('auto')
+    let state = defaultAcState
+    const seen: string[] = []
+    for (let i = 0; i < 4; i++) {
+      state = acReducer(state, { type: 'cycleFan' })
+      seen.push(state.fan!)
+    }
+    expect(seen).toEqual(['low', 'medium', 'high', 'auto'])
+    expect(acReducer(state, { type: 'fan', fan: 'high' }).fan).toBe('high')
+    expect(acReducer(state, { type: 'fan', fan: 'turbo' as never }).fan).toBe('auto')
+    expect(normalizeAcState({ fan: 'loud' as never }).fan).toBe('auto')
+    expect(normalizeAcState({}).fan).toBe('auto')
+    const event = createAirConditionerStore({ storage: null }).dispatch({ type: 'fan', fan: 'low' })
+    expect(event.notification?.message).toBe('风速：低风')
+  })
+
+  it('migrates states saved before per-mode temperatures', () => {
+    expect(normalizeAcState({ mode: 'hot', temperature: 24 }).temperatures).toEqual({ cold: 24, hot: 24 })
+    // The current mode always mirrors `temperature`; stale or bad values are fixed.
+    expect(normalizeAcState({ mode: 'cold', temperature: 22, temperatures: { cold: 30, hot: 99 } }).temperatures)
+      .toEqual({ cold: 22, hot: 31 })
+    expect(normalizeAcState({ temperature: 22, temperatures: { cold: 22, hot: Number.NaN } }).temperatures?.hot).toBe(22)
+    // A hand-written state without the field still switches sensibly.
+    const legacy = { status: true, mode: 'cold' as const, temperature: 21, sound: 'normal' as const, swing: false }
+    expect(acReducer(legacy, { type: 'mode', mode: 'hot' })).toMatchObject({ temperature: 21, temperatures: { cold: 21, hot: 21 } })
+  })
+
+  it('recommends a temperature from the one the mode switch lands on', () => {
+    const cold = acReducer(acReducer(defaultAcState, { type: 'mode', mode: 'hot' }), { type: 'mode', mode: 'cold' })
+    const tooCold = normalizeAcState({ mode: 'hot', temperature: 26, temperatures: { cold: 18, hot: 26 } })
+    const next = acReducer(tooCold, { type: 'mode', mode: 'cold' })
+    expect(getAcActionNotification(tooCold, next, { type: 'mode', mode: 'cold' })?.severity).toBe('success')
+    expect(getAcActionNotification(cold, cold, { type: 'mode', mode: 'cold' })).toBeUndefined()
   })
 
   it('toggles and validates swing', () => {

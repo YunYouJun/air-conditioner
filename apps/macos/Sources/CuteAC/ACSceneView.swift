@@ -70,7 +70,8 @@ final class ACSceneContainerView: NSView {
     }
     // The overlay is rebuilt only when what it shows changes.
     let direction = ACModel.airflow(for: form).direction
-    let flow = (active && state.status) ? ACAirflowLayer.Flow(mode: state.mode, windLevel: room.windLevel, direction: direction) : nil
+    let flow = (active && state.status)
+      ? ACAirflowLayer.Flow(mode: state.mode, windLevel: state.windLevel(room: room), direction: direction) : nil
     if flow != airflowLayer.flow {
       configureAirflow(flow)
     }

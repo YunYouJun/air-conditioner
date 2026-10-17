@@ -70,6 +70,7 @@ watch(() => state.value.mode, () => {
     :data-mode="state.mode"
     :data-status="state.status ? 'on' : 'off'"
     :data-swing="state.swing ? 'on' : 'off'"
+    :data-fan="state.fan ?? 'auto'"
     :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg` }"
   >
     <div class="acw-shell">

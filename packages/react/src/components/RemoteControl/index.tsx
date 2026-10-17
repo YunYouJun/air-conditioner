@@ -26,16 +26,22 @@ const RemoteControl: React.FC<{
    */
   acSound?: boolean
 }> = ({ acSound = true }) => {
-  const { toggleStatus, toggleMode, cycleSound, toggleSwing } = useAc()
+  const { toggleStatus, toggleMode, cycleSound, toggleSwing, cycleFan } = useAc()
   const { state: ac } = useAcCtx()
   const sound = ac.sound
+  const fan = ac.fan ?? 'auto'
 
   const { increase, decrease } = useAcTemperature()
 
   // 同步声音模式：包括页面加载时恢复的状态，以及独立遥控器在其他标签页的修改
   useEffect(() => {
-    getAudioController(sound).setSoundMode(sound)
-  }, [sound])
+    getAudioController(sound, fan).setSoundMode(sound)
+  }, [sound, fan])
+
+  // 风声跟随风速（含独立遥控器在其他标签页的修改）
+  useEffect(() => {
+    getAudioController(sound, fan).setFanSpeed(fan)
+  }, [sound, fan])
 
   // 开关机声跟随状态变化，而不是跟随按键：独立遥控器在其他标签页开关空调时，
   // 主页面通过 storage 事件收到新状态，也能及时启动或停止声音
@@ -56,6 +62,7 @@ const RemoteControl: React.FC<{
     decrease,
     swing: toggleSwing,
     sound: cycleSound,
+    fan: cycleFan,
   }
 
   function onCommand(command: AcRemoteCommand) {

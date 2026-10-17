@@ -1,4 +1,4 @@
-import type { AcLimits, AcMode, AcSoundMode, AcState } from './types'
+import type { AcFanSpeed, AcLimits, AcMode, AcSoundMode, AcState } from './types'
 
 export const acStorageKey = 'ac:state'
 
@@ -39,8 +39,10 @@ export const defaultAcState: AcState = {
   mode: 'cold',
   status: false,
   temperature: 26,
+  temperatures: { cold: 26, hot: 26 },
   sound: 'normal',
   swing: false,
+  fan: 'auto',
 }
 
 /**
@@ -69,6 +71,49 @@ export const acSoundVolumes: Record<AcSoundMode, number> = {
   normal: 1,
   sleep: 0.3,
   mute: 0,
+}
+
+/**
+ * 遥控器「风速」键依次切换的顺序。
+ */
+export const acFanSpeeds: readonly AcFanSpeed[] = ['auto', 'low', 'medium', 'high']
+
+export const acFanSpeedLabels: Record<AcFanSpeed, string> = {
+  auto: '自动',
+  low: '低风',
+  medium: '中风',
+  high: '高风',
+}
+
+/**
+ * 小屏上点亮的风速格数（1–3）。自动风速由空调自己决定，显示为 0 并另加「自动」标记。
+ */
+export const acFanBars: Record<AcFanSpeed, number> = {
+  auto: 0,
+  low: 1,
+  medium: 2,
+  high: 3,
+}
+
+/**
+ * 固定风速下风声的相对音量（0–1）；自动风速沿用开机后的「达标 / 发力」循环。
+ */
+export const acFanSoundLevels: Record<Exclude<AcFanSpeed, 'auto'>, number> = {
+  low: 0.45,
+  medium: 0.7,
+  high: 1,
+}
+
+export function isAcFanSpeed(value: unknown): value is AcFanSpeed {
+  return acFanSpeeds.includes(value as AcFanSpeed)
+}
+
+/**
+ * 风速键的下一档：自动 → 低 → 中 → 高 → 自动。
+ */
+export function nextAcFanSpeed(fan: AcFanSpeed | undefined): AcFanSpeed {
+  const index = Math.max(acFanSpeeds.indexOf(fan as AcFanSpeed), 0)
+  return acFanSpeeds[(index + 1) % acFanSpeeds.length]
 }
 
 export function isAcSoundMode(value: unknown): value is AcSoundMode {

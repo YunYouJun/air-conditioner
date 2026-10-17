@@ -1,11 +1,14 @@
-import type { AcAction, AcLimits, AcNotification, AcState, AcTone } from './types'
+import type { AcAction, AcFanSpeed, AcLimits, AcMode, AcNotification, AcState, AcTone } from './types'
 import {
+  acFanSpeedLabels,
   acSoundModeLabels,
   defaultAcLimits,
   defaultAcState,
+  isAcFanSpeed,
   isAcSoundMode,
   maxTemperature,
   minTemperature,
+  nextAcFanSpeed,
   nextAcSoundMode,
   recommendedColdTemperature,
   recommendedHotTemperature,
@@ -18,13 +21,33 @@ import {
  * @param limits - Device limits; omit to keep the default 16–31 °C range
  */
 export function normalizeAcState(state: Partial<AcState> | undefined, limits?: AcLimits): AcState {
+  const mode: AcMode = state?.mode === 'hot' ? 'hot' : 'cold'
+  const temperature = clampTemperature(state?.temperature ?? defaultAcState.temperature, limits)
+  const remembered = (other: AcMode) => {
+    const value = state?.temperatures?.[other]
+    return typeof value === 'number' && Number.isFinite(value) ? clampTemperature(value, limits) : temperature
+  }
   return {
     ...defaultAcState,
     ...state,
-    temperature: clampTemperature(state?.temperature ?? defaultAcState.temperature, limits),
+    mode,
+    temperature,
+    // The current mode always remembers the current temperature.
+    temperatures: {
+      cold: mode === 'cold' ? temperature : remembered('cold'),
+      hot: mode === 'hot' ? temperature : remembered('hot'),
+    },
     sound: isAcSoundMode(state?.sound) ? state.sound : defaultAcState.sound,
     swing: typeof state?.swing === 'boolean' ? state.swing : defaultAcState.swing,
+    fan: isAcFanSpeed(state?.fan) ? state.fan : 'auto',
   }
+}
+
+/** Set the current mode's temperature, keeping `temperatures` in step. */
+function withTemperature(state: AcState, temperature: number): AcState {
+  const temperatures = { cold: temperature, hot: temperature, ...state.temperatures }
+  temperatures[state.mode] = temperature
+  return { ...state, temperature, temperatures }
 }
 
 /**
@@ -54,15 +77,9 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
   const step = limits?.step ?? defaultAcLimits.step
   switch (action.type) {
     case 'increment':
-      return {
-        ...state,
-        temperature: clampTemperature(state.temperature + step, limits),
-      }
+      return withTemperature(state, clampTemperature(state.temperature + step, limits))
     case 'decrement':
-      return {
-        ...state,
-        temperature: clampTemperature(state.temperature - step, limits),
-      }
+      return withTemperature(state, clampTemperature(state.temperature - step, limits))
     case 'toggleStatus':
       return {
         ...state,
@@ -73,11 +90,18 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
         ...state,
         status: action.status,
       }
-    case 'mode':
+    case 'mode': {
+      if (action.mode === state.mode)
+        return state
+      // Remember this mode's temperature and restore the other one's.
+      const temperatures = { cold: state.temperature, hot: state.temperature, ...state.temperatures, [state.mode]: state.temperature }
       return {
         ...state,
         mode: action.mode,
+        temperature: clampTemperature(temperatures[action.mode] ?? state.temperature, limits),
+        temperatures,
       }
+    }
     case 'sound':
       return {
         ...state,
@@ -97,6 +121,16 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
       return {
         ...state,
         swing: action.swing === true,
+      }
+    case 'fan':
+      return {
+        ...state,
+        fan: isAcFanSpeed(action.fan) ? action.fan : state.fan,
+      }
+    case 'cycleFan':
+      return {
+        ...state,
+        fan: nextAcFanSpeed(state.fan),
       }
     case 'update':
       return normalizeAcState({
@@ -119,6 +153,10 @@ export function getSoundModeMessage(sound: AcState['sound']): string {
     mute: '空调不再发出任何声音',
   }
   return `${acSoundModeLabels[sound]}模式：${hints[sound]}`
+}
+
+export function getFanSpeedMessage(fan: AcFanSpeed): string {
+  return fan === 'auto' ? '风速：自动，由空调根据室温调节' : `风速：${acFanSpeedLabels[fan]}`
 }
 
 export function getSwingMessage(swing: AcState['swing']): string {
@@ -163,6 +201,13 @@ export function getAcActionNotification(
     }
   }
 
+  if ((action.type === 'fan' || action.type === 'cycleFan') && nextState.fan && nextState.fan !== previousState.fan) {
+    return {
+      message: getFanSpeedMessage(nextState.fan),
+      severity: 'info',
+    }
+  }
+
   if ((action.type === 'swing' || action.type === 'toggleSwing') && nextState.swing !== previousState.swing) {
     return {
       message: getSwingMessage(nextState.swing),
@@ -170,14 +215,15 @@ export function getAcActionNotification(
     }
   }
 
-  if (action.type === 'mode' && nextState.mode === 'cold' && previousState.temperature < recommendedColdTemperature) {
+  // The temperature a mode switch lands on (each mode remembers its own).
+  if (action.type === 'mode' && nextState.mode === 'cold' && nextState.temperature < recommendedColdTemperature) {
     return {
       message: getRecommendedTemperatureMessage('cold', recommendedColdTemperature),
       severity: 'success',
     }
   }
 
-  if (action.type === 'mode' && nextState.mode === 'hot' && previousState.temperature > recommendedHotTemperature) {
+  if (action.type === 'mode' && nextState.mode === 'hot' && nextState.temperature > recommendedHotTemperature) {
     return {
       message: getRecommendedTemperatureMessage('hot', recommendedHotTemperature),
       severity: 'success',

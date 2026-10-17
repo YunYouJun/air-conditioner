@@ -118,7 +118,7 @@ import '@yunlefun-home/air-conditioner/style.css'
 
 ## 遥控器
 
-`RemoteControl` 是一只白色圆角遥控器，按键只用图标：顶部小屏显示模式图标、设定温度、风量格与扫风 / 睡眠图标；下面依次是电源键、温度 +/- 胶囊，以及一行图标键（制冷 / 制热分段键、扫风、声音）。每个按键都是带 `aria-label` 的原生 `<button>`，制冷 / 制热、电源与扫风用 `aria-pressed` 表示当前状态；小屏用 `role="img"` 读出完整状态（文案来自 core 的 `getAcRemoteText`）。按键会以 `command` 事件发出 `power` / `cold` / `hot` / `increase` / `decrease` / `swing` / `sound`。
+`RemoteControl` 是一只白色圆角遥控器，按键只用图标：顶部小屏显示模式图标、设定温度、风量格与扫风 / 睡眠图标；下面依次是电源键、温度 +/- 胶囊、制冷 / 制热分段键，以及一行图标键（风速、扫风、声音）。每个按键都是带 `aria-label` 的原生 `<button>`，制冷 / 制热、电源与扫风用 `aria-pressed` 表示当前状态；小屏用 `role="img"` 读出完整状态（文案来自 core 的 `getAcRemoteText`）。按键会以 `command` 事件发出 `power` / `cold` / `hot` / `increase` / `decrease` / `fan` / `swing` / `sound`。
 
 ## 动效
 

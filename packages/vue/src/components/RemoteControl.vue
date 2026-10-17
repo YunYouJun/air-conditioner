@@ -36,13 +36,14 @@ function setMode(mode: AcMode) {
       :data-status="state.status ? 'on' : 'off'"
       :data-mode="state.mode"
       :data-swing="state.swing ? 'on' : 'off'"
+      :data-fan="state.fan ?? 'auto'"
     >
       <div class="acw-lcd-main">
         <svg class="acw-lcd-mode" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" :d="acIconPaths[state.mode]" /></svg>
         <span class="acw-lcd-temp acw-digit">{{ state.temperature }}<small>°C</small></span>
       </div>
       <div class="acw-lcd-status" aria-hidden="true">
-        <span class="acw-lcd-wind"><i /><i /><i /></span>
+        <span class="acw-lcd-wind"><i /><i /><i /><b>自动</b></span>
         <svg class="acw-lcd-swing" viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" :d="acIconPaths.swing" /></svg>
         <svg class="acw-lcd-sound" :data-sound="state.sound" viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" :d="acIconPaths[acSoundIcons[state.sound]]" /></svg>
       </div>
@@ -97,6 +98,16 @@ function setMode(mode: AcMode) {
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" :d="acIconPaths[item.icon]" /></svg>
         </button>
       </div>
+      <button
+        type="button"
+        class="acw-button acw-button-fan"
+        aria-label="fan"
+        :title="text.fan"
+        :data-fan="state.fan ?? 'auto'"
+        @click="run('fan', airConditioner.cycleFan)"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" :d="acIconPaths.fan" /></svg>
+      </button>
       <button
         type="button"
         class="acw-button acw-button-swing"

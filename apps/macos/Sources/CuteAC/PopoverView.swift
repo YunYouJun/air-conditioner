@@ -76,6 +76,19 @@ struct PopoverView: View {
         stepButton("plus", delta: 1, disabled: state.temperature >= ACState.temperatureRange.upperBound)
       }
 
+      // 风速：自动跟随这台 Mac 的风扇，固定档位让出风保持不变 (#29).
+      IconSegmentedPicker(
+        selection: Binding(get: { state.fan }, set: { fan in withAnimation(.snappy) { store.setFan(fan) } }),
+        options: [
+          .init(value: .auto, title: "自动", symbol: "fan"),
+          .init(value: .low, title: "低", symbol: "wind"),
+          .init(value: .medium, title: "中", symbol: "wind"),
+          .init(value: .high, title: "高", symbol: "tornado"),
+        ],
+        compact: true
+      )
+      .help("风速：自动时跟随这台 Mac 的风扇")
+
       HStack {
         IconSegmentedPicker(
           selection: $settings.form,

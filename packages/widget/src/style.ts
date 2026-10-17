@@ -358,11 +358,16 @@ html.dark .acw-root,
   position: absolute;
   top: 10px;
   left: 10px;
+  /* 按 50 × 80 设计（接近实物 66 × 109 mm 的比例），再整体缩小：实物约占
+     挂机正面高度的 1/3，在 128px 高的机身上约 30 × 48 */
   width: 50px;
-  height: 70px;
+  height: 80px;
   padding: 4px;
+  box-sizing: border-box;
   border-radius: 2px;
   background: #4ea5f5;
+  transform: scale(var(--acw-energy-scale, 0.6));
+  transform-origin: 0 0;
 }
 
 /* 点阵不换行：放不下时点会被压扁，和主站一致 */
@@ -377,7 +382,37 @@ html.dark .acw-root,
   background: var(--acw-dot-color, #000);
 }
 
+/* 顶部：标识名称与能效信息码（二维码：三个定位角加模块） */
+.acw-energy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.acw-energy-qr {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border: 1px solid #fff;
+  box-sizing: border-box;
+  background-color: #fff;
+  background-image:
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    linear-gradient(#000, #000),
+    repeating-conic-gradient(#000 0 25%, #fff 0 50%);
+  background-position: 0 0, 100% 0, 0 100%, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-size: 3px 3px, 3px 3px, 3px 3px, 2px 2px;
+}
+
+/* 5 个等级条在等级区内均匀分布 */
 .acw-energy-grades {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  box-sizing: border-box;
   height: 28px;
   margin: 4px 0;
   padding: 2px 8px;
@@ -409,7 +444,6 @@ html.dark .acw-root,
 }
 
 .acw-energy-level {
-  margin-top: 2px;
   height: 3px;
 }
 
@@ -437,8 +471,24 @@ html.dark .acw-root,
 }
 
 .acw-unit[data-status="on"] .acw-wind {
-  opacity: 1;
+  opacity: var(--acw-wind-strength, 1);
   transition: opacity var(--acw-motion-duration-slow) var(--acw-motion-ease-enter) var(--acw-motion-duration-base);
+}
+
+/* 风速：自动沿用默认节奏；固定风速改变出风的快慢与浓淡 */
+.acw-unit[data-fan="low"] {
+  --acw-wind-pace: 1.6;
+  --acw-wind-strength: 0.55;
+}
+
+.acw-unit[data-fan="medium"] {
+  --acw-wind-pace: 1.15;
+  --acw-wind-strength: 0.8;
+}
+
+.acw-unit[data-fan="high"] {
+  --acw-wind-pace: 0.7;
+  --acw-wind-strength: 1;
 }
 
 .acw-wind-line {
@@ -473,7 +523,7 @@ html.dark .acw-root,
   background: linear-gradient(to bottom, transparent, var(--acw-wind-cold), transparent);
   transform: translateY(-110%);
   transition: opacity var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
-  animation: acw-wind-flow var(--acw-motion-duration-flow) cubic-bezier(0.45, 0, 0.55, 1) var(--acw-wind-delay, 0ms) infinite;
+  animation: acw-wind-flow calc(var(--acw-motion-duration-flow) * var(--acw-wind-pace, 1)) cubic-bezier(0.45, 0, 0.55, 1) var(--acw-wind-delay, 0ms) infinite;
   /* 关机时暂停，静止状态不跑循环 */
   animation-play-state: paused;
 }
@@ -641,6 +691,31 @@ html.dark .acw-root,
   height: 100%;
 }
 
+/* 风速格按档位点亮；自动风速三格全亮，并标出「自动」 */
+.acw-lcd-wind i {
+  opacity: 0.25;
+}
+
+.acw-lcd[data-fan="auto"] .acw-lcd-wind i,
+.acw-lcd[data-fan="low"] .acw-lcd-wind i:nth-child(1),
+.acw-lcd[data-fan="medium"] .acw-lcd-wind i:nth-child(-n + 2),
+.acw-lcd[data-fan="high"] .acw-lcd-wind i {
+  opacity: 1;
+}
+
+.acw-lcd-wind b {
+  display: none;
+  align-self: center;
+  margin-left: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.acw-lcd[data-fan="auto"] .acw-lcd-wind b {
+  display: inline;
+}
+
 /* 未亮起的段位保留一道淡影，像真实的液晶屏 */
 .acw-lcd-wind,
 .acw-lcd-swing,
@@ -775,13 +850,16 @@ html.dark .acw-root,
 /* 底部一行图标键 */
 .acw-remote-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 
-/* 模式键：制冷 / 制热分段，当前模式凸起并着色 */
+/* 模式键：制冷 / 制热分段，独占一行，当前模式凸起并着色 */
 .acw-remote-mode {
   display: flex;
+  flex-basis: 100%;
   gap: 2px;
   padding: 3px;
   border-radius: 22px;
@@ -790,8 +868,9 @@ html.dark .acw-root,
 
 .acw-button-cold,
 .acw-button-hot {
-  width: 34px;
+  flex: 1;
   height: 34px;
+  border-radius: 17px;
   background: transparent;
   color: #9aa0a6;
 }
@@ -810,7 +889,9 @@ html.dark .acw-root,
   color: var(--acw-remote-hot);
 }
 
-/* 扫风键 / 睡眠（声音）键：声音键在标准 → 睡眠 → 静音间切换，图标与颜色随模式变化 */
+/* 风速键 / 扫风键 / 睡眠（声音）键：风速固定在某一档、扫风开启时着色；
+   声音键在标准 → 睡眠 → 静音间切换，图标与颜色随模式变化 */
+.acw-button-fan:not([data-fan="auto"]),
 .acw-button-swing[aria-pressed="true"] {
   background: #e1f1fb;
   color: #0288d1;

@@ -1,4 +1,4 @@
-import type { AcAudioController, AcAudioElements, AcChangeEvent, AcSoundMode } from '@yunlefun-home/air-conditioner-core'
+import type { AcAudioController, AcAudioElements, AcChangeEvent, AcFanSpeed, AcSoundMode } from '@yunlefun-home/air-conditioner-core'
 import { createAcAudioController } from '@yunlefun-home/air-conditioner-core'
 import { onUnmounted } from 'vue'
 
@@ -13,8 +13,8 @@ import { onUnmounted } from 'vue'
 export function useAcAudio(getElements: () => AcAudioElements) {
   let controller: AcAudioController | undefined
 
-  function ensureController(soundMode: AcSoundMode) {
-    controller ||= createAcAudioController(getElements(), { soundMode })
+  function ensureController(soundMode: AcSoundMode, fanSpeed: AcFanSpeed) {
+    controller ||= createAcAudioController(getElements(), { soundMode, fanSpeed })
     return controller
   }
 
@@ -23,9 +23,11 @@ export function useAcAudio(getElements: () => AcAudioElements) {
    * 则播放启动 / 关闭音效。
    */
   function handleChange(event: AcChangeEvent) {
-    const ctrl = ensureController(event.state.sound)
+    const ctrl = ensureController(event.state.sound, event.state.fan ?? 'auto')
     if (event.previousState.sound !== event.state.sound)
       ctrl.setSoundMode(event.state.sound)
+    if (event.previousState.fan !== event.state.fan)
+      ctrl.setFanSpeed(event.state.fan ?? 'auto')
     ctrl.beep()
 
     if (event.previousState.status !== event.state.status)

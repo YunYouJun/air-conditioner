@@ -24,11 +24,11 @@ function step(delta: -1 | 1) {
 
 <template>
   <main class="demo">
-    <h1>便携小空调 Vue</h1>
+    <h1>便携小空调</h1>
     <AirConditionerWidget />
 
-    <section class="demo__controls" aria-label="Controls">
-      <h2>Controls</h2>
+    <section class="demo__controls" aria-label="控件">
+      <h2>控件</h2>
       <div class="demo__glyph">
         <AcGlyph :active="state.status" :tone="tone" :airflow="plan?.airflow ?? 0.6" title="空调" />
       </div>
@@ -56,6 +56,9 @@ function step(delta: -1 | 1) {
 
 <style scoped>
 .demo {
+  /* 系统色随亮 / 暗模式切换（配合 index.html 的 color-scheme） */
+  color: CanvasText;
+  background: Canvas;
   display: grid;
   min-height: 100vh;
   place-items: center;

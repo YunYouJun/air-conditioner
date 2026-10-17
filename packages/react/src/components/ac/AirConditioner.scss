@@ -257,7 +257,7 @@
 }
 
 .ac-unit[data-status='on'] .wind-effect {
-  opacity: 1;
+  opacity: var(--ac-wind-strength, 1);
   transition: opacity var(--acw-motion-duration-slow) var(--acw-motion-ease-enter) var(--acw-motion-duration-base);
 }
 
@@ -286,7 +286,7 @@
     background: linear-gradient(to bottom, transparent, var(--ac-c-wind-cold), transparent);
     transform: translateY(-110%);
     transition: opacity var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
-    animation: ac-wind-flow var(--acw-motion-duration-flow) cubic-bezier(0.45, 0, 0.55, 1) var(--ac-wind-delay, 0ms) infinite;
+    animation: ac-wind-flow calc(var(--acw-motion-duration-flow) * var(--ac-wind-pace, 1)) cubic-bezier(0.45, 0, 0.55, 1) var(--ac-wind-delay, 0ms) infinite;
     /* 关机时暂停，静止状态不跑循环 */
     animation-play-state: paused;
   }
@@ -305,6 +305,22 @@
     --ac-wind-delay: -1200ms;
     --ac-wind-angle: -14deg;
   }
+}
+
+/* 风速：自动沿用默认节奏；固定风速改变出风的快慢与浓淡（与组件库一致） */
+.ac-unit[data-fan='low'] {
+  --ac-wind-pace: 1.6;
+  --ac-wind-strength: 0.55;
+}
+
+.ac-unit[data-fan='medium'] {
+  --ac-wind-pace: 1.15;
+  --ac-wind-strength: 0.8;
+}
+
+.ac-unit[data-fan='high'] {
+  --ac-wind-pace: 0.7;
+  --ac-wind-strength: 1;
 }
 
 .ac-unit[data-status='on'][data-swing='on'] .wind-line {
@@ -365,7 +381,6 @@
 }
 
 .energy-label-level {
-  margin-top: 2px;
   height: 3px;
 }
 

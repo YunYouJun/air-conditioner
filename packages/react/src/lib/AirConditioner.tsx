@@ -52,6 +52,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
   const status = props.status ?? state.status
   const temperature = props.temperature ?? state.temperature ?? defaultAcState.temperature
   const swing = props.swing ?? state.swing ?? defaultAcState.swing
+  const fan = props.fan ?? state.fan ?? 'auto'
 
   const direction = useChangeDirection(temperature)
   const modeChanged = useHasChanged(mode)
@@ -67,6 +68,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
       data-mode={mode}
       data-status={status ? 'on' : 'off'}
       data-swing={swing ? 'on' : 'off'}
+      data-fan={fan}
       style={{ '--acw-scale': scale, '--acw-tilt-x': `${tiltX}deg`, '--acw-tilt-y': `${tiltY}deg` } as CSSProperties}
     >
       <div className="acw-shell">

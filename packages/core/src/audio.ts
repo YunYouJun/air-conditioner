@@ -2,10 +2,11 @@ import type {
   AcAudioController,
   AcAudioElement,
   AcAudioElements,
+  AcFanSpeed,
   AcSoundMode,
   CreateAcAudioControllerOptions,
 } from './types'
-import { acSoundVolumes, soundTimings } from './constants'
+import { acFanSoundLevels, acSoundVolumes, soundTimings } from './constants'
 
 type SoundName = 'beep' | 'start' | 'work'
 type Timer = ReturnType<typeof setTimeout>
@@ -104,6 +105,11 @@ export function createAcAudioController(
 ): AcAudioController {
   const random = options.random ?? Math.random
   let soundMode: AcSoundMode = options.soundMode ?? 'normal'
+  let fanSpeed: AcFanSpeed = options.fanSpeed ?? 'auto'
+  /** 开机后风声循环已经接上（启动声结束） */
+  let fanRunning = false
+  /** 每次重启「达标 / 发力」循环自增，丢弃旧循环的回调 */
+  let fanCycle = 0
   /** undefined：尚未尝试；null：不可用 */
   let engine: WebEngine | null | undefined
   let run: WebRun | undefined
@@ -276,14 +282,29 @@ export function createAcAudioController(
     }
   }
 
+  /** 风声循环刚接上时的音量：自动风速从满音量开始，固定风速保持各自的音量。 */
+  function initialFanLevel() {
+    return fanSpeed === 'auto' ? 1 : acFanSoundLevels[fanSpeed]
+  }
+
   /**
-   * 室温达标后风声变小；之后不定时随压缩机发力变大，再回落。
+   * 自动风速：室温达标后风声变小；之后不定时随压缩机发力变大，再回落。
+   * 固定风速不走这个循环。
    */
   function startFanCycle() {
+    fanRunning = true
+    const cycle = ++fanCycle
+    if (fanSpeed !== 'auto')
+      return
+    const current = () => cycle === fanCycle && fanSpeed === 'auto'
     const quiet = () => {
       later(() => {
+        if (!current())
+          return
         setFanLevel(soundTimings.surgeLevel, soundTimings.surgeRampMs)
         later(() => {
+          if (!current())
+            return
           setFanLevel(soundTimings.settleLevel, soundTimings.surgeRampMs)
           quiet()
         }, randomBetween(soundTimings.surgeDurationMs, random))
@@ -291,6 +312,8 @@ export function createAcAudioController(
     }
 
     later(() => {
+      if (!current())
+        return
       setFanLevel(soundTimings.settleLevel, soundTimings.settleRampMs)
       quiet()
     }, soundTimings.settleAfterMs)
@@ -300,6 +323,7 @@ export function createAcAudioController(
     const output = web.context.createGain()
     output.connect(web.master)
     const fan = web.context.createGain()
+    fan.gain.value = initialFanLevel()
     fan.connect(output)
     const target: WebRun = { output, fan, sources: new Set() }
     run = target
@@ -347,7 +371,7 @@ export function createAcAudioController(
       if (work.loop !== undefined)
         work.loop = true
       playElement(work)
-      tweenFallbackFan(1, soundTimings.loopCrossfadeMs)
+      tweenFallbackFan(initialFanLevel(), soundTimings.loopCrossfadeMs)
       startFanCycle()
     }, soundTimings.startDelayMs)
   }
@@ -362,6 +386,8 @@ export function createAcAudioController(
 
   function powerOn() {
     const id = ++session
+    fanRunning = false
+    fanCycle++
     clearTimers()
     // 上次关机的淡出若还没结束，别让它停掉这次的风声
     cancelFallbackTween()
@@ -387,6 +413,8 @@ export function createAcAudioController(
 
   function powerOff() {
     session++
+    fanRunning = false
+    fanCycle++
     clearTimers()
     stopWeb(soundTimings.stopFadeMs)
     stopFallback(soundTimings.stopFadeMs)
@@ -423,6 +451,26 @@ export function createAcAudioController(
       applyElementVolume(elements.beep)
       applyElementVolume(elements.start)
       applyElementVolume(elements.work, fallbackFanLevel)
+    },
+    setFanSpeed(fan: AcFanSpeed) {
+      if (fan === fanSpeed)
+        return
+      fanSpeed = fan
+      // Before the fan loop starts, it simply begins at the new level.
+      if (!fanRunning) {
+        if (run)
+          run.fan.gain.value = initialFanLevel()
+        return
+      }
+      if (fan === 'auto') {
+        // Back to automatic: blow strongly, then settle as usual.
+        setFanLevel(1, soundTimings.loopCrossfadeMs)
+        startFanCycle()
+      }
+      else {
+        fanCycle++
+        setFanLevel(acFanSoundLevels[fan], soundTimings.loopCrossfadeMs)
+      }
     },
     dispose() {
       session++

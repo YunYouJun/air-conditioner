@@ -8,9 +8,11 @@ const manifest = JSON.parse(readFileSync(new URL('../plugin/manifest.json', impo
 
 describe('air conditioner home plugin', () => {
   it('creates and normalizes untrusted state', () => {
-    expect(plugin.create()).toEqual({ status: false, mode: 'cold', temperature: 26, sound: 'normal', swing: false })
+    expect(plugin.create()).toEqual({ status: false, mode: 'cold', temperature: 26, temperatures: { cold: 26, hot: 26 }, sound: 'normal', swing: false, fan: 'auto' })
     expect(plugin.normalize({ status: 'yes', mode: 'dry', temperature: 99, sound: 'loud', swing: 'on', extra: 1 }))
-      .toEqual({ status: false, mode: 'cold', temperature: 31, sound: 'normal', swing: false })
+      .toEqual({ status: false, mode: 'cold', temperature: 31, temperatures: { cold: 31, hot: 31 }, sound: 'normal', swing: false, fan: 'auto' })
+    expect(plugin.normalize({ mode: 'hot', temperature: 28, temperatures: { cold: 20, hot: 'x' } }).temperatures)
+      .toEqual({ cold: 20, hot: 28 })
     expect(plugin.normalize({ swing: true }).swing).toBe(true)
   })
 
@@ -28,6 +30,17 @@ describe('air conditioner home plugin', () => {
     expect(plugin.present(state, { room }).summary).toBe('制冷 · 26°C · 室温 53°C')
     expect(plugin.present(state, { room: { thermalState: 'fair', windLevel: 2 } }).summary).toBe('制冷 · 26°C')
     expect(plugin.present(state, {}).summary).toBe('制冷 · 26°C')
+  })
+
+  // #29: the plugin keeps the fan speed through its own normalize.
+  it('sets and keeps the fan speed', () => {
+    let state = plugin.reduce(plugin.create(), { type: 'fan', fan: 'high' })
+    state = plugin.normalize(JSON.parse(JSON.stringify(state)))
+    expect(state.fan).toBe('high')
+    expect(plugin.reduce(state, { type: 'cycleFan' }).fan).toBe('auto')
+    expect(plugin.isAction({ type: 'fan', fan: 'low' })).toBe(true)
+    expect(plugin.isAction({ type: 'fan', fan: 'turbo' })).toBe(false)
+    expect(plugin.normalize({ fan: 'turbo' }).fan).toBe('auto')
   })
 
   it('validates actions', () => {

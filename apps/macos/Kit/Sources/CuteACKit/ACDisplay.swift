@@ -43,23 +43,29 @@ public enum ACDisplay {
         .withSymbolConfiguration(.init(pointSize: 26, weight: .bold)) {
         tinted(symbol, color: color).draw(in: NSRect(x: rect.maxX - 58, y: 16, width: 28, height: 28))
       }
+      // Wind bars show the fixed fan speed, or on auto the room's level.
+      if room != nil || state.fan != .auto {
+        drawWindBars(level: state.windLevel(room: room), accent: color, in: rect)
+      }
       if let room {
-        drawRoom(room, accent: color, in: rect)
+        drawRoom(room, in: rect)
       }
       return true
     }
   }
 
-  private static func drawRoom(_ room: RoomReading, accent: NSColor, in rect: NSRect) {
-    // Wind bars: three rising bars left of the mode icon, lit up to the level.
+  /// Three rising bars left of the mode icon, lit up to the level.
+  private static func drawWindBars(level: Int, accent: NSColor, in rect: NSRect) {
     let barWidth: CGFloat = 5
     for index in 0..<RoomReading.windLevels.upperBound {
       let height = 8 + CGFloat(index) * 6
       let bar = NSRect(x: rect.maxX - 90 + CGFloat(index) * (barWidth + 3), y: 18, width: barWidth, height: height)
-      (index < room.windLevel ? accent : NSColor(calibratedWhite: 1, alpha: 0.08)).setFill()
+      (index < level ? accent : NSColor(calibratedWhite: 1, alpha: 0.08)).setFill()
       NSBezierPath(roundedRect: bar, xRadius: 1, yRadius: 1).fill()
     }
+  }
 
+  private static func drawRoom(_ room: RoomReading, in rect: NSRect) {
     guard let celsius = room.celsius else { return }
     let color = ACPalette.warning(for: room.thermalState) ?? NSColor(calibratedWhite: 1, alpha: 0.55)
     let digits = NSAttributedString(string: "\(min(celsius, 99))", attributes: [

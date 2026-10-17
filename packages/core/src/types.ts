@@ -7,6 +7,13 @@ export type AcMode = 'cold' | 'hot'
 export type AcSoundMode = 'normal' | 'sleep' | 'mute'
 
 /**
+ * Fan speed (风速). `auto` lets the unit decide: strong at first, quieter
+ * once the room settles, with the occasional surge. The fixed speeds hold
+ * the airflow and fan sound steady.
+ */
+export type AcFanSpeed = 'auto' | 'low' | 'medium' | 'high'
+
+/**
  * Temperature range a device supports. Real devices (e.g. Home Assistant
  * climate entities) report their own range and step.
  */
@@ -31,9 +38,17 @@ export interface AcState {
    */
   mode: AcMode
   /**
-   * Target temperature in Celsius.
+   * Target temperature in Celsius, for the current mode.
    */
   temperature: number
+  /**
+   * Last target temperature of each mode, like a real remote: switching
+   * from 制冷 20 °C to 制热 and back restores 20 °C. `normalizeAcState`
+   * always fills it in, with the current mode holding `temperature`; states
+   * saved before this field existed start with both modes at their saved
+   * temperature. Optional so hand-written states keep type-checking.
+   */
+  temperatures?: Record<AcMode, number>
   /**
    * Sound mode. States saved before this field existed fall back to `normal`.
    */
@@ -43,14 +58,20 @@ export interface AcState {
    * field existed fall back to `false`.
    */
   swing: boolean
+  /**
+   * Fan speed. `normalizeAcState` fills in `auto` for states saved before
+   * this field existed; optional so hand-written states keep type-checking.
+   */
+  fan?: AcFanSpeed
 }
 
 export type AcAction
-  = | { type: 'increment' | 'decrement' | 'toggleStatus' | 'cycleSound' | 'toggleSwing' }
+  = | { type: 'increment' | 'decrement' | 'toggleStatus' | 'cycleSound' | 'toggleSwing' | 'cycleFan' }
     | { type: 'status', status: AcState['status'] }
     | { type: 'mode', mode: AcState['mode'] }
     | { type: 'sound', sound: AcState['sound'] }
     | { type: 'swing', swing: AcState['swing'] }
+    | { type: 'fan', fan: AcFanSpeed }
     | { type: 'update', payload: Partial<AcState> }
 
 export type AcNotificationSeverity = 'success' | 'error' | 'info'
@@ -122,6 +143,11 @@ export interface AcAudioController {
    * Change the volume of everything, including sounds already playing.
    */
   setSoundMode: (mode: AcSoundMode) => void
+  /**
+   * Follow the fan speed: `auto` keeps the settle / surge cycle, fixed
+   * speeds hold the fan sound at a steady level.
+   */
+  setFanSpeed: (fan: AcFanSpeed) => void
   dispose: () => void
 }
 
@@ -131,6 +157,11 @@ export interface CreateAcAudioControllerOptions {
    * @default 'normal'
    */
   soundMode?: AcSoundMode
+  /**
+   * Initial fan speed.
+   * @default 'auto'
+   */
+  fanSpeed?: AcFanSpeed
   /**
    * Play through the Web Audio API for a gapless loop and smooth fades.
    * Falls back to the `<audio>` elements when the API is missing or the

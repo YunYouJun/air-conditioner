@@ -37,7 +37,7 @@ describe('vue RemoteControl', () => {
     unmount = () => remote.app.unmount()
 
     const labels = [...remote.host.querySelectorAll('button')].map(button => button.getAttribute('aria-label'))
-    expect(labels).toEqual(['power', 'add', 'reduce', 'cold', 'hot', 'swing', 'sound'])
+    expect(labels).toEqual(['power', 'add', 'reduce', 'cold', 'hot', 'fan', 'swing', 'sound'])
     for (const button of remote.host.querySelectorAll('button'))
       expect(button.getAttribute('type')).toBe('button')
 
@@ -69,5 +69,22 @@ describe('vue RemoteControl', () => {
     expect(remote.key('swing').getAttribute('aria-pressed')).toBe('true')
     expect(remote.key('sound').dataset.sound).toBe('sleep')
     expect(remote.key('sound').title).toBe('声音：睡眠')
+  })
+
+  // #29
+  it('cycles the fan speed from the fan key', async () => {
+    const remote = mountRemote()
+    unmount = () => remote.app.unmount()
+
+    expect(remote.lcd().dataset.fan).toBe('auto')
+    expect(remote.key('fan').title).toBe('风速：自动')
+    await remote.press('fan')
+    await remote.press('fan')
+
+    expect(remote.commands).toEqual(['fan', 'fan'])
+    expect(remote.lcd().dataset.fan).toBe('medium')
+    expect(remote.key('fan').dataset.fan).toBe('medium')
+    expect(remote.key('fan').title).toBe('风速：中风')
+    expect(remote.lcd().getAttribute('aria-label')).toContain('风速：中风')
   })
 })

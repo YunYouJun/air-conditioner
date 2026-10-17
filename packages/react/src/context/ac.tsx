@@ -89,5 +89,11 @@ export function useAc() {
     toggleSwing() {
       dispatchWithToast({ type: 'toggleSwing' })
     },
+    /**
+     * 风速键：自动 → 低 → 中 → 高
+     */
+    cycleFan() {
+      dispatchWithToast({ type: 'cycleFan' })
+    },
   }
 }

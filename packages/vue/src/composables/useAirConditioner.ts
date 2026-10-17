@@ -23,6 +23,8 @@ export interface AirConditionerContextValue {
   cycleSound: () => AcChangeEvent
   /** 扫风键：出风左右摆动 / 停在当前位置 */
   toggleSwing: () => AcChangeEvent
+  /** 风速键：自动 → 低 → 中 → 高 */
+  cycleFan: () => AcChangeEvent
 }
 
 export interface AirConditionerProviderOptions extends CreateAirConditionerStoreOptions {}
@@ -63,6 +65,9 @@ export function createAirConditionerContext(store: AirConditionerStore): AirCond
     },
     toggleSwing() {
       return store.dispatch({ type: 'toggleSwing' })
+    },
+    cycleFan() {
+      return store.dispatch({ type: 'cycleFan' })
     },
   }
 }

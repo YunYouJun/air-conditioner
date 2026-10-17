@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { acEnergyLabel } from '@yunlefun-home/air-conditioner-core'
+import { acEnergyLabel, getAcEnergyLabelText } from '@yunlefun-home/air-conditioner-core'
 
 /**
  * 能效标签：点阵与等级条布局来自 core，与 React / Web Component 保持一致。
@@ -15,20 +15,23 @@ function dots(num: number) {
 </script>
 
 <template>
-  <div class="acw-energy-label">
-    <!-- 顶部白点 -->
-    <div
-      v-for="(row, ri) in dotRows"
-      :key="`top-${ri}`"
-      class="acw-dot-row"
-      :style="{ '--acw-dot-color': row.color }"
-    >
-      <span
-        v-for="n in dots(row.num)"
-        :key="n"
-        class="acw-dot"
-        :style="{ width: `${row.size}px`, height: `${row.size}px`, margin: `${row.my}px ${row.mx}px` }"
-      />
+  <div class="acw-energy-label" role="img" :aria-label="getAcEnergyLabelText()">
+    <!-- 顶部：标识名称（白点）与能效信息码 -->
+    <div class="acw-energy-header">
+      <div
+        v-for="(row, ri) in dotRows"
+        :key="`top-${ri}`"
+        class="acw-dot-row"
+        :style="{ '--acw-dot-color': row.color }"
+      >
+        <span
+          v-for="n in dots(row.num)"
+          :key="n"
+          class="acw-dot"
+          :style="{ width: `${row.size}px`, height: `${row.size}px`, margin: `${row.my}px ${row.mx}px` }"
+        />
+      </div>
+      <span class="acw-energy-qr" />
     </div>
 
     <!-- 能效等级区 -->

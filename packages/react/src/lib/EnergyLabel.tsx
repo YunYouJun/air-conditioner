@@ -1,6 +1,6 @@
 import type { AcDotRow } from '@yunlefun-home/air-conditioner-core'
 import type { CSSProperties } from 'react'
-import { acEnergyLabel } from '@yunlefun-home/air-conditioner-core'
+import { acEnergyLabel, getAcEnergyLabelText } from '@yunlefun-home/air-conditioner-core'
 import { Fragment } from 'react'
 
 function DotRow(props: { row: AcDotRow }) {
@@ -23,9 +23,12 @@ function DotRow(props: { row: AcDotRow }) {
  */
 export function EnergyLabel() {
   return (
-    <div className="acw-energy-label">
-      {/* 顶部白点 */}
-      {acEnergyLabel.top.map((row, ri) => <DotRow key={`top-${ri}`} row={row} />)}
+    <div className="acw-energy-label" role="img" aria-label={getAcEnergyLabelText()}>
+      {/* 顶部：标识名称（白点）与能效信息码 */}
+      <div className="acw-energy-header">
+        {acEnergyLabel.top.map((row, ri) => <DotRow key={`top-${ri}`} row={row} />)}
+        <span className="acw-energy-qr" />
+      </div>
 
       {/* 能效等级区 */}
       <div className="acw-energy-grades">

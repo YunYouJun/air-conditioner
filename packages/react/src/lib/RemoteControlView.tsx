@@ -34,6 +34,7 @@ export function RemoteControlView({ state, onCommand }: RemoteControlViewProps) 
         data-status={state.status ? 'on' : 'off'}
         data-mode={state.mode}
         data-swing={state.swing ? 'on' : 'off'}
+        data-fan={state.fan ?? 'auto'}
       >
         <div className="acw-lcd-main">
           <Icon className="acw-lcd-mode" name={state.mode} size={22} />
@@ -47,6 +48,7 @@ export function RemoteControlView({ state, onCommand }: RemoteControlViewProps) 
             <i />
             <i />
             <i />
+            <b>自动</b>
           </span>
           <Icon className="acw-lcd-swing" name="swing" size={14} />
           <Icon className="acw-lcd-sound" sound={state.sound} name={acSoundIcons[state.sound]} size={14} />
@@ -89,6 +91,16 @@ export function RemoteControlView({ state, onCommand }: RemoteControlViewProps) 
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="acw-button acw-button-fan"
+          aria-label="fan"
+          title={text.fan}
+          data-fan={state.fan ?? 'auto'}
+          onClick={() => onCommand('fan')}
+        >
+          <Icon name="fan" size={20} />
+        </button>
         <button
           type="button"
           className="acw-button acw-button-swing"

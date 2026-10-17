@@ -17,6 +17,7 @@ export function RemoteControl(props: RemoteControlProps = {}) {
     decrease: airConditioner.decrease,
     swing: airConditioner.toggleSwing,
     sound: airConditioner.cycleSound,
+    fan: airConditioner.cycleFan,
   }
 
   return (

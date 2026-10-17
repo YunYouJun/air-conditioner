@@ -24,6 +24,17 @@
     },
     {
       "type": "segmented",
+      "bind": "fan",
+      "label": "风速",
+      "options": [
+        { "value": "auto", "label": "自动", "symbol": "fan", "action": { "type": "fan", "fan": "auto" } },
+        { "value": "low", "label": "低", "symbol": "wind", "action": { "type": "fan", "fan": "low" } },
+        { "value": "medium", "label": "中", "symbol": "wind", "action": { "type": "fan", "fan": "medium" } },
+        { "value": "high", "label": "高", "symbol": "tornado", "action": { "type": "fan", "fan": "high" } }
+      ]
+    },
+    {
+      "type": "segmented",
       "bind": "sound",
       "label": "声音",
       "options": [

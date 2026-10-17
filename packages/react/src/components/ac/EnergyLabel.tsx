@@ -1,3 +1,4 @@
+import { getAcEnergyLabelText } from '@yunlefun-home/air-conditioner-core'
 import React from 'react'
 
 interface TextLabelProps {
@@ -42,50 +43,58 @@ const TextLabel: React.FC<TextLabelProps> = (props) => {
 }
 
 /**
- * 功耗标签
+ * 能效标签：中国能效标识的缩影，按现行 GB 21455-2019 分 5 级，带能效信息码
+ * （`.acw-energy-qr`，样式来自组件库）。按 50 × 80 设计，在 600 × 200 的机身上
+ * 缩小到约 45 × 72，和实物占挂机正面的比例相当。
  */
 export const EnergyLabel: React.FC<{ titleLength: number }> = () => {
   return (
     <div
       className="absolute p-1"
+      role="img"
+      aria-label={getAcEnergyLabelText()}
       style={{
         backgroundColor: '#4ea5f5',
         borderRadius: 2,
         top: 10,
         left: 10,
-        height: 70,
+        // 接近实物 66 × 109 mm 的比例，放得下顶部的能效信息码
+        height: 80,
         width: 50,
+        boxSizing: 'border-box',
+        transform: 'scale(0.9)',
+        transformOrigin: '0 0',
       }}
     >
-      <TextLabel num={6} size={4} mx={2} my={0} color="white" />
+      <div className="flex items-center justify-between">
+        <TextLabel num={4} size={4} mx={1.5} my={0} color="white" />
+        <span className="acw-energy-qr" />
+      </div>
       <div
-        className="my-1 h-7 w-full bg-white"
+        className="my-1 h-7 w-full bg-white flex flex-col justify-evenly"
         style={{
           padding: '2px 8px',
+          boxSizing: 'border-box',
         }}
       >
-        <div className="flex">
+        <div className="flex" style={{ height: 3 }}>
           <div style={{ backgroundColor: 'green', width: '40%' }}></div>
           <div
             style={{
               marginLeft: '40%',
               height: 3,
-              borderTop: 1.5,
-              borderRight: 2,
-              borderBottom: 1.5,
-              borderLeft: 0,
-              borderTopColor: 'transparent',
-              borderRightColor: 'green',
-              borderBottomColor: 'transparent',
-              borderLeftColor: 'transparent',
+              // 朝左的小三角；只用展开属性，避免与简写混用
+              borderWidth: '1.5px 2px 1.5px 0',
+              borderColor: 'transparent green transparent transparent',
               borderStyle: 'solid',
             }}
           >
           </div>
           <div style={{ backgroundColor: 'green', width: '10%' }}></div>
         </div>
+        {/* 2–5 级（共 5 级，1 级是上面的绿色条） */}
         <div className="energy-label-level" style={{ backgroundColor: 'lightgreen', width: '50%' }}></div>
-        <div className="energy-label-level" style={{ backgroundColor: '#ffc107', width: '60%' }}></div>
+        <div className="energy-label-level" style={{ backgroundColor: '#fdd835', width: '60%' }}></div>
         <div className="energy-label-level" style={{ backgroundColor: 'orange', width: '70%' }}></div>
         <div className="energy-label-level" style={{ backgroundColor: 'red', width: '80%' }}></div>
       </div>

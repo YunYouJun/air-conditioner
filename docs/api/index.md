@@ -39,6 +39,47 @@ store.dispatch({ type: 'swing', swing: true })
 
 视图层在空调根元素上输出 `data-swing="on" | "off"`，自定义样式可以据此调整。
 
+## 风速
+
+遥控器上的「风速」键依次切换四档，状态保存在 `AcState.fan` 中（旧版本保存的状态视为 `auto`）：
+
+| 风速 | 出风 | 风声 |
+| --- | --- | --- |
+| `auto` 自动 | 默认节奏 | 开机先大，室温达标后变小，偶尔随压缩机发力变大 |
+| `low` 低风 | 更慢、更淡 | 固定在 45% |
+| `medium` 中风 | 稍慢 | 固定在 70% |
+| `high` 高风 | 更快、更浓 | 固定在 100% |
+
+```ts
+store.dispatch({ type: 'cycleFan' }) // 自动 → 低 → 中 → 高 → 自动
+store.dispatch({ type: 'fan', fan: 'low' })
+audio.setFanSpeed('low') // createAcAudioController 也可以用 fanSpeed 选项指定初始风速
+```
+
+视图层在空调根元素和遥控器小屏上输出 `data-fan="auto" | "low" | "medium" | "high"`：小屏按档位点亮风速格，自动时三格全亮并标出「自动」；出风的快慢由 CSS 变量 `--acw-wind-pace`、浓淡由 `--acw-wind-strength` 控制。macOS 原生版 CuteAC 的「自动」跟随这台 Mac 的风扇转速。
+
+## 制冷 / 制热分别记温度
+
+和真的遥控器一样，制冷和制热各自记住上一次的设定温度：制冷调到 20°C 后切到制热，是制热上次的温度；再切回制冷，又回到 20°C。记录保存在 `AcState.temperatures`（`{ cold, hot }`）里，`normalizeAcState` 会补齐旧版本保存的状态（两个模式都取保存时的温度），并保证当前模式的那一项始终等于 `temperature`。手写的 `AcState` 可以不带这个字段。
+
+## 能效标签
+
+机身左上角的能效标签是缩小版的「中国能效标识」：蓝白背景，顶部是标识名称和能效信息码（二维码），中间是等级条（1 级绿色、最高，箭头指向云空调的 1 级），下面是参数区和依据的国家标准编号，小字用点阵示意。版式依据《房间空气调节器能源效率标识实施规则》（CEL 010—2019）。
+
+等级按现行 **GB 21455-2019**（2020 年 7 月 1 日起实施）分为 **5 级**。
+
+::: tip 修订草案
+GB 21455 的修订版征求意见稿（2026 年 5 月发布征求意见，拟代替 GB 21455-2019）将能效等级改为 **3 级**，并改用全年动态能源消耗效率（DAPF）分级。它还没有正式发布和实施，所以标签暂时保持 5 级；新标准实施后，只需要更新 core 里 `acEnergyLabel` 的 `grades`、`standard` 和 `levels`。
+:::
+
+标签按 50 × 80 设计（接近实物 66 × 109 mm 的比例），再用 CSS 变量 `--acw-energy-scale`（默认 `0.6`）整体缩小，和实物占挂机正面的比例相当。布局来自 core 的 `acEnergyLabel`，读屏文字来自 `getAcEnergyLabelText()`：
+
+```ts
+acEnergyLabel.grade // 1
+acEnergyLabel.grades // 5
+getAcEnergyLabelText() // '中国能效标识：能效等级 1 级（共 5 级），依据 GB 21455-2019'
+```
+
 ## 音效与声音模式
 
 遥控器最下方的「声音」键依次切换三种声音模式，状态保存在 `AcState.sound` 中（旧版本保存的状态视为 `normal`）：

@@ -1,3 +1,4 @@
+import type { AcFanSpeed } from '@yunlefun-home/air-conditioner-core'
 import type { AcMode } from '~/types'
 
 import { acShellSize } from '@yunlefun-home/air-conditioner-core'
@@ -118,6 +119,7 @@ const AirConditioner: React.FC<{
   status: boolean
   temperature: number
   swing?: boolean
+  fan?: AcFanSpeed
 }> = (props) => {
   const unitRef = useRef<HTMLDivElement>(null)
   const scale = useAcScale(unitRef, acShellSize.wide.width)
@@ -130,6 +132,7 @@ const AirConditioner: React.FC<{
       data-mode={props.mode}
       data-status={props.status ? 'on' : 'off'}
       data-swing={props.swing ? 'on' : 'off'}
+      data-fan={props.fan ?? 'auto'}
       style={{ '--ac-tilt-x': `${tiltX}deg`, '--ac-tilt-y': `${tiltY}deg` } as React.CSSProperties}
     >
       <AcBorder scale={scale}>

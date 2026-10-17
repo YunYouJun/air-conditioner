@@ -1,6 +1,6 @@
 import type { AcAudioElement } from '../src'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { acSoundVolumes, createAcAudioController, soundTimings } from '../src'
+import { acFanSoundLevels, acSoundVolumes, createAcAudioController, soundTimings } from '../src'
 
 function fakeElement(src: string) {
   return {
@@ -124,6 +124,38 @@ describe('createAcAudioController with <audio> elements', () => {
 
     vi.advanceTimersByTime(soundTimings.quietDurationMs[0] + soundTimings.surgeRampMs)
     expect(elements.work.volume).toBeCloseTo(soundTimings.surgeLevel)
+  })
+
+  // #29: fixed fan speeds hold a steady level; auto keeps the settle cycle.
+  it('holds the fan sound steady at a fixed speed', () => {
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, { webAudio: false, fanSpeed: 'low', random: () => 0 })
+
+    controller.toggleStatusAudio(false)
+    vi.advanceTimersByTime(soundTimings.startDelayMs + soundTimings.loopCrossfadeMs)
+    expect(elements.work.volume).toBeCloseTo(acFanSoundLevels.low)
+    // No settle / surge while the speed is fixed.
+    vi.advanceTimersByTime(soundTimings.settleAfterMs + soundTimings.settleRampMs + soundTimings.quietDurationMs[0] + soundTimings.surgeRampMs)
+    expect(elements.work.volume).toBeCloseTo(acFanSoundLevels.low)
+
+    controller.setFanSpeed('high')
+    vi.advanceTimersByTime(soundTimings.loopCrossfadeMs)
+    expect(elements.work.volume).toBeCloseTo(acFanSoundLevels.high)
+
+    // Back to auto: full, then the usual settle.
+    controller.setFanSpeed('auto')
+    vi.advanceTimersByTime(soundTimings.settleAfterMs + soundTimings.settleRampMs)
+    expect(elements.work.volume).toBeCloseTo(soundTimings.settleLevel)
+  })
+
+  it('starts the fan loop at a speed chosen during start-up', () => {
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, { webAudio: false })
+
+    controller.toggleStatusAudio(false)
+    controller.setFanSpeed('medium')
+    vi.advanceTimersByTime(soundTimings.startDelayMs + soundTimings.loopCrossfadeMs)
+    expect(elements.work.volume).toBeCloseTo(acFanSoundLevels.medium)
   })
 
   it('fades out and stops when powered off', () => {

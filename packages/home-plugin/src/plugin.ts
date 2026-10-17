@@ -5,6 +5,7 @@ import {
   acSoundModes,
   acTone,
   defaultAcState,
+  isAcFanSpeed,
   isAcSoundMode,
   normalizeAcState,
 } from '@yunlefun-home/air-conditioner-core'
@@ -19,8 +20,11 @@ function normalize(value: unknown): AcState {
     status: typeof record.status === 'boolean' ? record.status : defaultAcState.status,
     mode: record.mode === 'hot' ? 'hot' : 'cold',
     temperature: typeof record.temperature === 'number' && Number.isFinite(record.temperature) ? record.temperature : defaultAcState.temperature,
+    // Per-mode memory (#39); core validates and clamps each value.
+    temperatures: isRecord(record.temperatures) ? record.temperatures as AcState['temperatures'] : undefined,
     sound: isAcSoundMode(record.sound) ? record.sound : defaultAcState.sound,
     swing: typeof record.swing === 'boolean' ? record.swing : defaultAcState.swing,
+    fan: isAcFanSpeed(record.fan) ? record.fan : undefined,
   })
 }
 
@@ -39,6 +43,7 @@ function isAction(value: unknown): value is AcAction {
     case 'toggleStatus':
     case 'cycleSound':
     case 'toggleSwing':
+    case 'cycleFan':
       return true
     case 'status':
       return typeof value.status === 'boolean'
@@ -46,6 +51,8 @@ function isAction(value: unknown): value is AcAction {
       return value.mode === 'cold' || value.mode === 'hot'
     case 'sound':
       return acSoundModes.includes(value.sound as AcState['sound'])
+    case 'fan':
+      return isAcFanSpeed(value.fan)
     case 'swing':
       return typeof value.swing === 'boolean'
     default:

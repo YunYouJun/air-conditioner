@@ -23,12 +23,18 @@ final class ACStore: ObservableObject {
     state.status.toggle()
   }
 
+  /// Each mode remembers its own set point (#39).
   func setMode(_ mode: ACMode) {
-    state.mode = mode
+    state.setMode(mode)
   }
 
   func changeTemperature(by delta: Double) {
-    state.temperature = ACState.clamp(state.temperature + delta)
+    state.setTemperature(state.temperature + delta)
+  }
+
+  /// 自动 follows the Mac's fans; the fixed speeds hold the airflow (#29).
+  func setFan(_ fan: ACFanSpeed) {
+    state.fan = fan
   }
 
   private func persist() {

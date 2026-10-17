@@ -38,7 +38,7 @@ mountAirConditioner('#ac', {
 
 > 由于 Shadow DOM 内声明的 `@font-face` 不生效，组件会在 `document.head` 注入一次数码管字体。
 >
-> 未设置 `status` / `mode` / `temperature` / `sound` / `swing` 属性时，沿用本地持久化的状态。`sound` 可取 `normal`、`sleep`、`mute`，与遥控器最下方的「声音」键一致，详见 [音效与声音模式](/api/#音效与声音模式)；`swing="false"` 关闭扫风，其余取值开启，详见 [出风与扫风](/api/#出风与扫风)。
+> 未设置 `status` / `mode` / `temperature` / `sound` / `swing` / `fan` 属性时，沿用本地持久化的状态。`fan` 可取 `auto`、`low`、`medium`、`high`，详见 [风速](/api/#风速)。`sound` 可取 `normal`、`sleep`、`mute`，与遥控器最下方的「声音」键一致，详见 [音效与声音模式](/api/#音效与声音模式)；`swing="false"` 关闭扫风，其余取值开启，详见 [出风与扫风](/api/#出风与扫风)。
 
 ## Events
 
