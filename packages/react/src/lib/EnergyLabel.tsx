@@ -1,8 +1,9 @@
 import type { AcDotRow } from '@yunlefun-home/air-conditioner-core'
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 import { acEnergyLabel } from '@yunlefun-home/air-conditioner-core'
+import { Fragment } from 'react'
 
-function DotRow(props: { row: AcDotRow, children?: ReactNode }) {
+function DotRow(props: { row: AcDotRow }) {
   const { row } = props
   return (
     <div className="acw-dot-row" style={{ '--acw-dot-color': row.color } as CSSProperties}>
@@ -13,7 +14,6 @@ function DotRow(props: { row: AcDotRow, children?: ReactNode }) {
           style={{ width: `${row.size}px`, height: `${row.size}px`, margin: `${row.my}px ${row.mx}px` }}
         />
       ))}
-      {props.children}
     </div>
   )
 }
@@ -41,10 +41,12 @@ export function EnergyLabel() {
 
       {/* 文字明细区 */}
       <div className="acw-energy-detail">
+        {/* 分隔线放在点阵行外面，否则在 flex 行里宽度为 0 */}
         {acEnergyLabel.detail.map((row, ri) => (
-          <DotRow key={`detail-${ri}`} row={row}>
+          <Fragment key={`detail-${ri}`}>
+            <DotRow row={row} />
             {ri === 0 && <div className="acw-energy-detail-line" />}
-          </DotRow>
+          </Fragment>
         ))}
       </div>
 

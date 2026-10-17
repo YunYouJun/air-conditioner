@@ -365,9 +365,9 @@ html.dark .acw-root,
   background: #4ea5f5;
 }
 
+/* 点阵不换行：放不下时点会被压扁，和主站一致 */
 .acw-dot-row {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -378,35 +378,34 @@ html.dark .acw-root,
 }
 
 .acw-energy-grades {
+  height: 28px;
   margin: 4px 0;
   padding: 2px 8px;
   background: #fff;
 }
 
+/* 等级指示：左侧色条，右侧朝左的小箭头 + 短条 */
 .acw-energy-arrow {
   display: flex;
-  align-items: center;
   height: 3px;
 }
 
 .acw-arrow-bar {
   flex: 0 0 40%;
-  height: 3px;
   background: green;
 }
 
 .acw-arrow-bar-sm {
-  flex: 0 0 10%;
-  margin-left: auto;
+  flex-basis: 10%;
 }
 
 .acw-arrow-tip {
+  flex: none;
   width: 0;
-  height: 0;
-  margin: 0 auto;
-  border-top: 2px solid transparent;
-  border-bottom: 2px solid transparent;
-  border-left: 4px solid green;
+  margin-left: 40%;
+  border-style: solid;
+  border-width: 1.5px 2px 1.5px 0;
+  border-color: transparent green transparent transparent;
 }
 
 .acw-energy-level {
@@ -415,14 +414,15 @@ html.dark .acw-root,
 }
 
 .acw-energy-detail {
+  height: 20px;
   margin-bottom: 2px;
-  padding-top: 1px;
+  padding-top: 0.8px;
   background: #fff;
 }
 
 .acw-energy-detail-line {
   height: 0;
-  margin: 1px 0;
+  margin: 0.8px 0;
   border-top: 1px solid #000;
 }
 

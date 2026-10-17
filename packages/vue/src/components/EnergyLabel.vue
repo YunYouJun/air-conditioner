@@ -48,20 +48,18 @@ function dots(num: number) {
 
     <!-- 文字明细区 -->
     <div class="acw-energy-detail">
-      <div
-        v-for="(row, ri) in detailRows"
-        :key="`detail-${ri}`"
-        class="acw-dot-row"
-        :style="{ '--acw-dot-color': row.color }"
-      >
-        <span
-          v-for="n in dots(row.num)"
-          :key="n"
-          class="acw-dot"
-          :style="{ width: `${row.size}px`, height: `${row.size}px`, margin: `${row.my}px ${row.mx}px` }"
-        />
+      <!-- 分隔线放在点阵行外面，否则在 flex 行里宽度为 0 -->
+      <template v-for="(row, ri) in detailRows" :key="`detail-${ri}`">
+        <div class="acw-dot-row" :style="{ '--acw-dot-color': row.color }">
+          <span
+            v-for="n in dots(row.num)"
+            :key="n"
+            class="acw-dot"
+            :style="{ width: `${row.size}px`, height: `${row.size}px`, margin: `${row.my}px ${row.mx}px` }"
+          />
+        </div>
         <div v-if="ri === 0" class="acw-energy-detail-line" />
-      </div>
+      </template>
     </div>
 
     <!-- 底部白点 -->

@@ -109,9 +109,9 @@ function icon(name: AcIconName, size: number) {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" d="${acIconPaths[name]}" /></svg>`
 }
 
-function dotRow(row: AcDotRow, extra = '') {
+function dotRow(row: AcDotRow) {
   const dots = Array.from({ length: row.num }).fill(`<span class="acw-dot" style="width: ${row.size}px; height: ${row.size}px; margin: ${row.my}px ${row.mx}px"></span>`).join('')
-  return `<div class="acw-dot-row" style="--acw-dot-color: ${row.color}">${dots}${extra}</div>`
+  return `<div class="acw-dot-row" style="--acw-dot-color: ${row.color}">${dots}</div>`
 }
 
 function energyLabel() {
@@ -125,7 +125,7 @@ function energyLabel() {
       ${levels}
     </div>
     <div class="acw-energy-detail">
-      ${acEnergyLabel.detail.map((row, i) => dotRow(row, i === 0 ? '<div class="acw-energy-detail-line"></div>' : '')).join('')}
+      ${acEnergyLabel.detail.map((row, i) => dotRow(row) + (i === 0 ? '<div class="acw-energy-detail-line"></div>' : '')).join('')}
     </div>
     ${dotRow(acEnergyLabel.footer)}
   </div>`
