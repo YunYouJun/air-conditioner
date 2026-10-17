@@ -26,15 +26,6 @@ function consoleInfo(
   )
 }
 
-/**
- * Loading Animation
- */
-function Loading() {
-  return (
-    <div className="text-center"><div className="i-mdi-loading animate-spin m-auto text-8xl mt-20" /></div>
-  )
-}
-
 const Home = lazy(() => import('~/pages/index'))
 const StandaloneRemote = lazy(() => import('~/pages/Rc'))
 
@@ -46,7 +37,8 @@ function Page() {
   const path = window.location.pathname.slice(import.meta.env.BASE_URL.length).replace(/\/+$/, '')
   const Current = path.toLowerCase() === 'rc' ? StandaloneRemote : Home
   return (
-    <Suspense fallback={<Loading />}>
+    // 加载期间由 index.html 里的首屏骨架顶着（见 utils/boot.ts），这里不再另画一个转圈
+    <Suspense fallback={null}>
       <Current />
     </Suspense>
   )

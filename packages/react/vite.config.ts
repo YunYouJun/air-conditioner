@@ -31,7 +31,8 @@ export default defineConfig({
 
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt'],
+      // 首屏就要用到的小资源一起预缓存：Logo 和数码管字体（约 40 kB），离线或网络断开时也不会缺图、掉字体
+      includeAssets: ['favicon.svg', 'robots.txt', 'yun-logo.svg', 'assets/fonts/*.ttf'],
       workbox: {
         // 3D 模式（Three.js 与模型）只在打开时下载，不预缓存；用过一次后再缓存下来，离线也能用
         globIgnores: ['**/Ac3DView-*.js'],

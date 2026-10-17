@@ -158,3 +158,23 @@ test('twists the flat unit into 3D and double-clicks it back', async ({ page }) 
   }).toPass({ timeout: 8000 })
   await expect(page.locator('.ac-3d')).toHaveCount(0)
 })
+
+// The pre-paint skeleton in index.html lines up with the page and fades out once it renders.
+test('hands the boot skeleton over to the page', async ({ page }) => {
+  let release!: () => void
+  const held = new Promise<void>(resolve => release = resolve)
+  await page.route('**/src/main.tsx*', async (route) => {
+    await held
+    await route.continue()
+  })
+  const loading = page.goto('/')
+  await expect(page.locator('#ac-boot')).toBeVisible()
+  await expect(page.locator('#ac-boot')).toContainText('正在给空调通电')
+  const skeleton = await page.locator('.ac-boot__shell').boundingBox()
+
+  release()
+  await loading
+  await expect(page.locator('#ac-boot')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: '便携小空调' })).toBeVisible()
+  expect(await page.locator('.acw-shell').boundingBox()).toEqual(skeleton)
+})

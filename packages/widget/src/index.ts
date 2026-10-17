@@ -166,7 +166,7 @@ function widgetTemplate(view: WidgetViewOptions) {
       <audio data-audio="work" src="${escapeHtml(view.audio.work)}" preload="auto"></audio>`
     : ''
   const logo = view.logoUrl
-    ? `<div class="acw-logo"><a href="${escapeHtml(view.logoHref)}" target="_blank" rel="noreferrer noopener"${view.title ? ` title="${escapeHtml(view.title)}"` : ''}><img src="${escapeHtml(view.logoUrl)}" alt="${escapeHtml(view.title ?? 'logo')}"></a></div>`
+    ? `<div class="acw-logo"><a href="${escapeHtml(view.logoHref)}" target="_blank" rel="noreferrer noopener"${view.title ? ` title="${escapeHtml(view.title)}"` : ''} aria-label="${escapeHtml(view.title ?? 'Air Conditioner')}"><img src="${escapeHtml(view.logoUrl)}" alt=""></a></div>`
     : ''
   return `
   <style>${widgetStyleText}</style>

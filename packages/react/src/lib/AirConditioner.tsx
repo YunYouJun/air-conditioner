@@ -113,8 +113,9 @@ export function AirConditioner(props: AirConditionerProps = {}) {
         {/* 中央 Logo */}
         {logoUrl && (
           <div className="acw-logo">
-            <a href={logoHref} target="_blank" rel="noreferrer noopener" title={props.title}>
-              <img src={logoUrl} alt={props.title ?? 'logo'} />
+            {/* 图片只是装饰（alt 为空），链接本身带名字：图片加载失败时不会把替代文字挤成一竖排 */}
+            <a href={logoHref} target="_blank" rel="noreferrer noopener" title={props.title} aria-label={props.title ?? 'Air Conditioner'}>
+              <img src={logoUrl} alt="" />
             </a>
           </div>
         )}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
   <meta charset="utf-8" />
@@ -14,16 +14,365 @@
   <title>便携小空调 - 为你的夏日带去清凉！</title>
   <script>
     (function () {
+      // 与 usehooks-ts 的 useDarkMode 一致：用户切换过就用记下的值，否则跟随系统
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-      const setting = (localStorage.getItem('usehooks-ts-dark-mode') === 'true' ? 'dark' : 'light') || 'auto'
-      if (setting === 'dark' || (prefersDark && setting !== 'light'))
-        document.documentElement.classList.toggle('dark', true)
+      let stored = null
+      try {
+        stored = localStorage.getItem('usehooks-ts-dark-mode')
+      }
+      catch {}
+      if (stored === null ? prefersDark : stored === 'true')
+        document.documentElement.classList.add('dark')
+      // 独立遥控器（/rc）的骨架只画遥控器
+      if (/\/rc\/?$/i.test(location.pathname))
+        document.documentElement.dataset.page = 'rc'
     })()
   </script>
+  <style>
+    /*
+     * 首屏骨架：脚本还没下载完时，先画一台「插着电、还没开机」的空调——待机灯在呼吸，出风口在酝酿，
+     * 一道光扫过还没到的按钮和遥控器。位置与真实页面逐像素对齐（标题、3 : 1 机身、出风、按钮、遥控器），
+     * 页面渲染好后骨架盖在上面淡出（见 src/utils/boot.ts），看起来就是骨架「变成」了真内容。
+     */
+    body {
+      margin: 0;
+      background: #fff;
+      color: #141414;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 暗色在 CSS 下载前就生效，不再先白屏一下 */
+    html.dark body {
+      background: #121212;
+      color: #fafafa;
+    }
+
+    /* 页面渲染好之前先藏起来（仍参与布局，测量尺寸不受影响） */
+    html:not(.ac-booted) #root {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      visibility: hidden;
+    }
+
+    .ac-boot {
+      --boot-block: #eceff3;
+      --boot-shine: #f8f9fb;
+
+      box-sizing: border-box;
+      padding: 8px;
+    }
+
+    html.dark .ac-boot {
+      --boot-block: #1f2329;
+      --boot-shine: #2a2f37;
+    }
+
+    .ac-boot__page {
+      max-width: 600px;
+      margin: 0 auto;
+      padding-top: 24px;
+    }
+
+    .ac-boot--leaving {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      pointer-events: none;
+      animation: ac-boot-leave 280ms ease-out forwards;
+    }
+
+    .ac-boot h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 36px;
+      text-align: center;
+    }
+
+    /* 一道光同时扫过所有占位块：渐变固定在视口上，各块只是露出其中一段 */
+    .ac-boot__block {
+      display: block;
+      background: linear-gradient(100deg, var(--boot-block) 40%, var(--boot-shine) 50%, var(--boot-block) 60%) fixed;
+      background-size: 200vw 100%;
+      animation: ac-boot-shine 1.8s linear infinite;
+    }
+
+    .ac-boot__tip {
+      width: min(300px, 80%);
+      height: 14px;
+      margin: 29px auto;
+      border-radius: 7px;
+    }
+
+    /* 机身：和真空调一样的白色长款外壳，关机状态 */
+    .ac-boot__shell {
+      position: relative;
+      box-sizing: border-box;
+      aspect-ratio: 3 / 1;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px 10px 20px 20px;
+      background: linear-gradient(to bottom, #fff 0%, #fdfdfd 48%, #eef0f3 100%);
+      box-shadow:
+        inset 0 1px 0 #fff,
+        inset 0 -10px 14px -10px rgba(15, 23, 42, 0.16),
+        0 1px 2px rgba(15, 23, 42, 0.08),
+        0 12px 22px -10px rgba(15, 23, 42, 0.28);
+    }
+
+    .ac-boot__shell > i {
+      position: absolute;
+    }
+
+    /* 能效标签和宣传贴纸的位置先贴上淡淡的一块 */
+    .ac-boot__label {
+      top: 5.5%;
+      left: 1.8%;
+      width: 7.5%;
+      height: 36%;
+      border-radius: 2px;
+      background: rgba(78, 165, 245, 0.28);
+    }
+
+    .ac-boot__sticker {
+      top: 5.5%;
+      left: 10.7%;
+      width: 8.2%;
+      height: 17.5%;
+      border-radius: 2px;
+      background: rgba(76, 175, 80, 0.22);
+    }
+
+    .ac-boot__outlet {
+      top: 87%;
+      right: 0;
+      left: 0;
+      border-top: 1px solid #e0e0e0;
+      box-shadow: 0 1px 0 #fff;
+    }
+
+    /* 待机灯：插上电还没开机，一明一暗地呼吸 */
+    .ac-boot__led {
+      top: 89%;
+      right: 8px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #38f709;
+      box-shadow: 0 0 6px rgba(56, 247, 9, 0.7);
+      animation: ac-boot-standby 1.6s ease-in-out infinite;
+    }
+
+    /* 出风口在「酝酿」：三股风轮流淡淡地吹一下 */
+    .ac-boot__wind {
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      height: 40px;
+      margin: 20px 0;
+    }
+
+    .ac-boot__wind i {
+      width: 4px;
+      height: 40px;
+      border-radius: 2px;
+      background: linear-gradient(to bottom, rgba(140, 196, 242, 0.55), transparent);
+      transform-origin: 50% 0;
+      opacity: 0.25;
+      animation: ac-boot-breeze 1.8s ease-in-out infinite;
+    }
+
+    .ac-boot__wind i:nth-child(1) {
+      rotate: 14deg;
+    }
+
+    .ac-boot__wind i:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+
+    .ac-boot__wind i:nth-child(3) {
+      rotate: -14deg;
+      animation-delay: 0.6s;
+    }
+
+    .ac-boot__chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .ac-boot__chips .ac-boot__block {
+      height: 36px;
+      border-radius: 18px;
+    }
+
+    .ac-boot__status {
+      flex-basis: 100%;
+      margin: 0;
+      font-size: 12px;
+      line-height: 18px;
+      text-align: center;
+      opacity: 0.65;
+    }
+
+    .ac-boot__status a {
+      color: inherit;
+    }
+
+    /* 「正在给空调通电」后面的省略号一个个冒出来 */
+    .ac-boot__dots::after {
+      content: "...";
+      display: inline-block;
+      overflow: hidden;
+      width: 0;
+      vertical-align: bottom;
+      animation: ac-boot-dots 1.2s steps(4, jump-none) infinite;
+    }
+
+    /* 遥控器：白色圆角外壳，按键位置与真实遥控器一致 */
+    .ac-boot__remote {
+      position: relative;
+      box-sizing: border-box;
+      width: 200px;
+      height: 436px;
+      margin: 24px auto;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 40px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 16px 32px -16px rgba(0, 0, 0, 0.28);
+    }
+
+    .ac-boot__remote > i {
+      position: absolute;
+    }
+
+    .ac-boot__remote .ac-boot__block {
+      --boot-block: #eceff3;
+      --boot-shine: #f8f9fb;
+    }
+
+    html[data-page="rc"] .ac-boot__home {
+      display: none;
+    }
+
+    html[data-page="rc"] .ac-boot__page {
+      padding-top: 0;
+    }
+
+    @keyframes ac-boot-shine {
+      from {
+        background-position: 100vw 0;
+      }
+
+      to {
+        background-position: -100vw 0;
+      }
+    }
+
+    @keyframes ac-boot-standby {
+      0%,
+      100% {
+        opacity: 0.25;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes ac-boot-breeze {
+      0%,
+      100% {
+        opacity: 0.15;
+        transform: scaleY(0.6);
+      }
+
+      50% {
+        opacity: 0.6;
+        transform: scaleY(1);
+      }
+    }
+
+    @keyframes ac-boot-dots {
+      to {
+        width: 1.3em;
+      }
+    }
+
+    @keyframes ac-boot-leave {
+      to {
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ac-boot__block,
+      .ac-boot__wind i,
+      .ac-boot__dots::after {
+        animation: none;
+      }
+
+      .ac-boot__dots::after {
+        width: auto;
+      }
+
+      .ac-boot__led {
+        animation: none;
+        opacity: 0.6;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div id="ac-boot" class="ac-boot" role="status" aria-label="便携小空调正在加载">
+    <div class="ac-boot__page">
+      <div class="ac-boot__home">
+        <h1>便携小空调</h1>
+        <i class="ac-boot__block ac-boot__tip"></i>
+        <div class="ac-boot__shell" aria-hidden="true">
+          <i class="ac-boot__label"></i>
+          <i class="ac-boot__sticker"></i>
+          <i class="ac-boot__outlet"></i>
+          <i class="ac-boot__led"></i>
+        </div>
+        <div class="ac-boot__wind" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="ac-boot__chips">
+          <i class="ac-boot__block" style="width: 141px"></i>
+          <i class="ac-boot__block" style="width: 73px"></i>
+          <i class="ac-boot__block" style="width: 113px"></i>
+          <p id="ac-boot-status" class="ac-boot__status"><span class="ac-boot__dots">正在给空调通电</span></p>
+        </div>
+      </div>
+      <div class="ac-boot__remote" aria-hidden="true">
+        <i class="ac-boot__block" style="top: 18px; left: 18px; width: 162px; height: 76px; border-radius: 18px"></i>
+        <i class="ac-boot__block" style="top: 110px; left: 73px; width: 52px; height: 52px; border-radius: 50%"></i>
+        <i class="ac-boot__block" style="top: 178px; left: 63px; width: 72px; height: 128px; border-radius: 36px"></i>
+        <i class="ac-boot__block" style="top: 322px; left: 18px; width: 162px; height: 40px; border-radius: 20px"></i>
+        <i class="ac-boot__block" style="top: 372px; left: 29px; width: 40px; height: 40px; border-radius: 50%"></i>
+        <i class="ac-boot__block" style="top: 372px; left: 79px; width: 40px; height: 40px; border-radius: 50%"></i>
+        <i class="ac-boot__block" style="top: 372px; left: 129px; width: 40px; height: 40px; border-radius: 50%"></i>
+      </div>
+    </div>
+    <noscript><p class="ac-boot__status">需要开启 JavaScript 才能给空调通电。</p></noscript>
+  </div>
   <div id="root"></div>
+  <script>
+    // 网络慢的时候告诉用户还在加载；太久没来就给一个刷新按钮
+    (function () {
+      function say(html) {
+        const status = document.getElementById('ac-boot-status')
+        if (status)
+          status.innerHTML = html
+      }
+      setTimeout(function () { say('<span class="ac-boot__dots">网络有点慢，空调还在路上</span>') }, 6000)
+      setTimeout(function () { say('空调好像堵在路上了，<a href="">刷新试试</a>') }, 20000)
+    })()
+  </script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

@@ -1,6 +1,6 @@
 import type { AcForm } from '@yunlefun-home/air-conditioner-core'
 import { acFormLabels, acForms, isAcForm } from '@yunlefun-home/air-conditioner-core'
-import React, { useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 
 import { useLocalStorage } from 'usehooks-ts'
 import * as pkg from '~/../package.json'
@@ -18,6 +18,7 @@ import Toast from '~/components/Toast'
 import { useAcCtx } from '~/context'
 import { useDetectStorage } from '~/hooks'
 import { AirConditioner } from '~/lib/AirConditioner'
+import { finishBoot } from '~/utils/boot'
 
 /**
  * 主页
@@ -34,6 +35,8 @@ const Home: React.FC = () => {
   const show3D = view === '3d' && webgl && !failed
 
   useDetectStorage()
+  // 画好后让首屏骨架淡出（子组件的布局 effect 先执行，尺寸已经量好）
+  useLayoutEffect(finishBoot, [])
 
   /**
    * 根据模式返回对应的色温

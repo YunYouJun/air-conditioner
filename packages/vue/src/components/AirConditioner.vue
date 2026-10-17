@@ -110,8 +110,9 @@ watch(() => state.value.mode, () => {
 
       <!-- 中央 Logo -->
       <div v-if="logoUrl" class="acw-logo">
-        <a :href="logoHref" target="_blank" rel="noreferrer noopener">
-          <img :src="logoUrl" alt="logo">
+        <!-- 图片只是装饰（alt 为空），链接本身带名字：图片加载失败时不会把替代文字挤成一竖排 -->
+        <a :href="logoHref" target="_blank" rel="noreferrer noopener" aria-label="Air Conditioner">
+          <img :src="logoUrl" alt="">
         </a>
       </div>
 

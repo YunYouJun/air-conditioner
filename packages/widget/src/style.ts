@@ -202,6 +202,9 @@ html.dark .acw-note[data-mode="hot"],
 .acw-logo img {
   display: block;
   width: 12px;
+  /* 按 Logo 原图比例占好位置：图片加载失败时也不变形、不撑开 */
+  aspect-ratio: 845 / 570;
+  overflow: hidden;
   margin: 0 auto;
 }
 
