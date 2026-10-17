@@ -96,10 +96,11 @@ final class DesktopPetPanel: NSPanel {
 
 struct DesktopPetView: View {
   @ObservedObject var store: ACStore
+  @ObservedObject var thermal: ThermalMonitor
   let sceneController: ACSceneController
 
   var body: some View {
-    ACSceneView(controller: sceneController, state: store.state, isActive: true, interactive: false)
+    ACSceneView(controller: sceneController, state: store.state, room: thermal.reading, isActive: true, interactive: false)
       .frame(width: 300, height: 190)
   }
 }

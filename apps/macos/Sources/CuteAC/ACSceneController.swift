@@ -14,6 +14,7 @@ final class ACSceneController {
   private let displayMaterial: SCNMaterial?
   private let ledMaterial: SCNMaterial?
   private var lastState: ACState?
+  private var lastRoom: RoomReading?
 
   init() {
     let url = Bundle.module.url(forResource: "CuteAC", withExtension: "usdz")!
@@ -45,10 +46,16 @@ final class ACSceneController {
 
   // MARK: State
 
-  func apply(_ state: ACState, animated: Bool) {
+  /// `room` only feeds the LCD (room temperature, wind bars); the louver and
+  /// bounce react to `state` alone.
+  func apply(_ state: ACState, room: RoomReading?, animated: Bool) {
     let previous = lastState
-    guard previous != state else { return }
+    let stateChanged = previous != state
+    guard stateChanged || room != lastRoom else { return }
     lastState = state
+    lastRoom = room
+    displayMaterial?.diffuse.contents = Self.displayImage(for: state, room: room)
+    guard stateChanged else { return }
 
     SCNTransaction.begin()
     SCNTransaction.animationDuration = animated ? 0.5 : 0
@@ -58,7 +65,6 @@ final class ACSceneController {
 
     let ledColor = state.status ? Self.accent(for: state.mode) : NSColor(calibratedRed: 0.56, green: 0.6, blue: 0.67, alpha: 1)
     ledMaterial?.diffuse.contents = ledColor
-    displayMaterial?.diffuse.contents = Self.displayImage(for: state)
 
     if animated && state.status && previous?.status == false {
       bounce()
@@ -69,6 +75,17 @@ final class ACSceneController {
   /// off, the view then stops drawing entirely.
   func setActive(_ active: Bool) {
     scene.isPaused = !active
+  }
+
+  /// Nil while the Mac is comfortable; a warm warning colour once macOS
+  /// starts managing heat.
+  static func warning(for thermalState: ProcessInfo.ThermalState) -> NSColor? {
+    switch thermalState {
+    case .fair: NSColor(calibratedRed: 1, green: 0.78, blue: 0.3, alpha: 1)
+    case .serious: NSColor(calibratedRed: 1, green: 0.55, blue: 0.25, alpha: 1)
+    case .critical: NSColor(calibratedRed: 1, green: 0.32, blue: 0.3, alpha: 1)
+    default: nil
+    }
   }
 
   static func accent(for mode: ACMode) -> NSColor {
@@ -87,10 +104,11 @@ final class ACSceneController {
 
   // MARK: Display
 
-  /// LCD readout drawn once per state change with the Digital-7 seven-segment
-  /// face; unlit "88" segments sit behind the digits like a real panel. The
-  /// texture is tiny and costs nothing while idle.
-  private static func displayImage(for state: ACState) -> NSImage {
+  /// LCD readout drawn once per change with the Digital-7 seven-segment face;
+  /// unlit "88" segments sit behind the digits like a real panel. The room
+  /// (Mac) temperature sits top right and the wind bars next to the mode
+  /// icon. The texture is tiny and costs nothing while idle.
+  private static func displayImage(for state: ACState, room: RoomReading?) -> NSImage {
     let size = NSSize(width: 250, height: 100)
     return NSImage(size: size, flipped: false) { rect in
       NSColor(calibratedRed: 0.07, green: 0.09, blue: 0.12, alpha: 1).setFill()
@@ -128,8 +146,39 @@ final class ACSceneController {
         }
         tinted.draw(in: NSRect(x: rect.maxX - 58, y: 16, width: 28, height: 28))
       }
+      if let room {
+        drawRoom(room, accent: color, in: rect)
+      }
       return true
     }
+  }
+
+  private static func drawRoom(_ room: RoomReading, accent: NSColor, in rect: NSRect) {
+    // Wind bars: three rising bars left of the mode icon, lit up to the level.
+    let barWidth: CGFloat = 5
+    for index in 0..<RoomReading.windLevels.upperBound {
+      let height = 8 + CGFloat(index) * 6
+      let bar = NSRect(x: rect.maxX - 90 + CGFloat(index) * (barWidth + 3), y: 18, width: barWidth, height: height)
+      (index < room.windLevel ? accent : NSColor(calibratedWhite: 1, alpha: 0.08)).setFill()
+      NSBezierPath(roundedRect: bar, xRadius: 1, yRadius: 1).fill()
+    }
+
+    guard let celsius = room.celsius else { return }
+    let color = warning(for: room.thermalState) ?? NSColor(calibratedWhite: 1, alpha: 0.55)
+    let digits = NSAttributedString(string: "\(min(celsius, 99))", attributes: [
+      .font: ACFonts.digital(size: 30),
+      .foregroundColor: color,
+    ])
+    // A thermometer glyph turns to mush at LCD size; a small degree mark
+    // after the digits reads better.
+    let degree = NSAttributedString(string: "°", attributes: [
+      .font: NSFont.systemFont(ofSize: 16, weight: .bold),
+      .foregroundColor: color,
+    ])
+    let size = digits.size()
+    let origin = NSPoint(x: rect.maxX - 26 - size.width, y: rect.maxY - 16 - size.height)
+    digits.draw(at: origin)
+    degree.draw(at: NSPoint(x: origin.x + size.width + 1, y: origin.y + size.height - degree.size().height))
   }
 
   // MARK: Motion

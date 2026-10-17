@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   private let store = ACStore()
   private let settings = AppSettings()
   private let visibility = PopoverVisibility()
+  private let thermalMonitor = ThermalMonitor()
   private lazy var sceneController = ACSceneController()
   private var statusItem: NSStatusItem?
   private let popover = NSPopover()
@@ -33,13 +34,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     NSApp.setActivationPolicy(.accessory)
     ACFonts.registerIfNeeded()
 
-    sceneController.apply(store.state, animated: false)
+    sceneController.apply(store.state, room: thermalMonitor.reading, animated: false)
 
     popover.behavior = .transient
     popover.animates = true
     popover.delegate = self
     popover.contentViewController = NSHostingController(
-      rootView: PopoverView(store: store, settings: settings, visibility: visibility, sceneController: sceneController)
+      rootView: PopoverView(
+        store: store,
+        settings: settings,
+        visibility: visibility,
+        thermal: thermalMonitor,
+        sceneController: sceneController
+      )
     )
 
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -67,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     if visible {
       if petPanel == nil {
         let panel = DesktopPetPanel(
-          content: NSHostingView(rootView: DesktopPetView(store: store, sceneController: sceneController)),
+          content: NSHostingView(rootView: DesktopPetView(store: store, thermal: thermalMonitor, sceneController: sceneController)),
           alwaysOnTop: settings.petAlwaysOnTop
         )
         panel.onDoubleClick = { [weak self] in
@@ -86,9 +93,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     updateSceneActivity()
   }
 
-  /// The scene only runs actions while something shows it.
+  /// The scene only runs actions, and the thermal sensors are only sampled,
+  /// while something shows them.
   private func updateSceneActivity() {
-    sceneController.setActive(visibility.isVisible || petPanel != nil)
+    let visible = visibility.isVisible || petPanel != nil
+    sceneController.setActive(visible)
+    thermalMonitor.setActive(visible)
   }
 
   // MARK: Menu bar
@@ -134,6 +144,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     if let index = arguments.firstIndex(of: "--capture"), index + 1 < arguments.count {
       let directory = URL(fileURLWithPath: arguments[index + 1])
+      thermalMonitor.pin(.demo)
       popover.appearance = NSAppearance(named: .aqua)
       popover.behavior = .applicationDefined
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in

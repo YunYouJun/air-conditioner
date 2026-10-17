@@ -11,14 +11,15 @@ func renderSnapshots(to directory: URL) {
   renderer.pointOfView = controller.cameraNode
   renderer.autoenablesDefaultLighting = false
 
-  let states: [(String, ACState)] = [
-    ("cold", ACState(status: true, mode: .cold, temperature: 24)),
-    ("hot", ACState(status: true, mode: .hot, temperature: 28)),
-    ("off", ACState(status: false, mode: .cold, temperature: 26)),
+  let hotRoom = RoomReading(celsius: 83, thermalState: .fair, fanRPM: 3900, windLevel: 3)
+  let states: [(String, ACState, RoomReading)] = [
+    ("cold", ACState(status: true, mode: .cold, temperature: 24), .demo),
+    ("hot", ACState(status: true, mode: .hot, temperature: 28), hotRoom),
+    ("off", ACState(status: false, mode: .cold, temperature: 26), .demo),
   ]
   try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-  for (name, state) in states {
-    controller.apply(state, animated: false)
+  for (name, state, room) in states {
+    controller.apply(state, room: room, animated: false)
     let image = renderer.snapshot(atTime: 0, with: CGSize(width: 960, height: 600), antialiasingMode: .multisampling4X)
     guard let tiff = image.tiffRepresentation,
           let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])

@@ -8,8 +8,15 @@ final class ACSceneContainerView: NSView {
   let sceneView = SCNView(frame: .zero)
   let airflowLayer = CALayer()
   private weak var controller: ACSceneController?
-  private var airflowMode: ACMode?
+  private var airflow: Airflow?
   private var lastState: ACState?
+  private var lastRoom: RoomReading?
+
+  /// What the overlay is currently showing; rebuilt only when this changes.
+  private struct Airflow: Equatable {
+    var mode: ACMode
+    var windLevel: Int
+  }
   private var stopPlaying: DispatchWorkItem?
 
   /// `interactive` enables drag-to-orbit; the desktop pet turns it off so a
@@ -48,19 +55,22 @@ final class ACSceneContainerView: NSView {
     positionAirflow()
   }
 
-  func update(state: ACState, active: Bool) {
-    if state != lastState {
+  func update(state: ACState, room: RoomReading, active: Bool) {
+    if state != lastState || room != lastRoom {
+      // A room-only change just swaps the LCD texture: one redraw, no motion.
+      let moving = state != lastState
       lastState = state
-      controller?.apply(state, animated: true)
-      playBriefly()
+      lastRoom = room
+      controller?.apply(state, room: room, animated: true)
+      if moving { playBriefly() } else { sceneView.setNeedsDisplay(sceneView.bounds) }
     }
     if !active {
       sceneView.isPlaying = false
     }
-    let mode: ACMode? = (active && state.status) ? state.mode : nil
-    if mode != airflowMode {
-      airflowMode = mode
-      configureAirflow(for: mode)
+    let next = (active && state.status) ? Airflow(mode: state.mode, windLevel: room.windLevel) : nil
+    if next != airflow {
+      airflow = next
+      configureAirflow(next)
     }
   }
 
@@ -86,19 +96,24 @@ final class ACSceneContainerView: NSView {
   /// Cold: a few snowflakes drift down and spin. Hot: warm wavy strokes.
   /// Both are plain repeating CA animations, so the render server runs them
   /// and the app process does no per-frame work (unlike CAEmitterLayer,
-  /// which cost ~10% CPU here).
-  private func configureAirflow(for mode: ACMode?) {
+  /// which cost ~10% CPU here). A higher wind level (the Mac's fans spinning
+  /// up) means more, faster particles that travel further.
+  private func configureAirflow(_ airflow: Airflow?) {
     airflowLayer.sublayers?.forEach { $0.removeFromSuperlayer() }
-    guard let mode else { return }
+    guard let airflow else { return }
 
-    let color = ACSceneController.accent(for: mode)
+    let color = ACSceneController.accent(for: airflow.mode)
     let now = CACurrentMediaTime()
     let span = min(260, bounds.width * 0.78)
+    let boost = CGFloat(airflow.windLevel - 1) // 0, 1, 2
+    let speed = 1 + 0.3 * boost
+    let reach = 1 + 0.15 * boost
 
-    switch mode {
+    switch airflow.mode {
     case .cold:
       let flake = Self.snowflakeImage(color: color)
-      let count = 6
+      let count = 6 + airflow.windLevel - 1
+      let duration = 2.4 / speed
       for index in 0..<count {
         let layer = CALayer()
         let size: CGFloat = index.isMultiple(of: 2) ? 14 : 10
@@ -107,26 +122,33 @@ final class ACSceneContainerView: NSView {
         layer.position = CGPoint(x: span * (CGFloat(index) / CGFloat(count - 1) - 0.5), y: -6)
         layer.opacity = 0
         layer.add(Self.flowAnimation(
-          distance: index.isMultiple(of: 2) ? -42 : -34,
-          duration: 2.4,
+          distance: (index.isMultiple(of: 2) ? -42 : -34) * reach,
+          duration: duration,
           spin: index.isMultiple(of: 2) ? .pi : -.pi,
-          beginTime: now + Double((index * 5) % count) * 0.4
+          beginTime: now + Double((index * 5) % count) * duration / Double(count)
         ), forKey: "flow")
         airflowLayer.addSublayer(layer)
       }
     case .hot:
-      let spacing = span / 3
-      for index in 0..<3 {
+      let count = 3 + airflow.windLevel - 1
+      let spacing = span / CGFloat(count)
+      let duration = 1.8 / speed
+      for index in 0..<count {
         let line = CAShapeLayer()
         line.bounds = CGRect(x: 0, y: -6, width: 64, height: 12)
-        line.position = CGPoint(x: CGFloat(index - 1) * spacing, y: -8)
+        line.position = CGPoint(x: (CGFloat(index) - CGFloat(count - 1) / 2) * spacing, y: -8)
         line.path = Self.windPath(width: 64, amplitude: 6)
         line.strokeColor = color.cgColor
         line.fillColor = nil
         line.lineWidth = 2.4
         line.lineCap = .round
         line.opacity = 0
-        line.add(Self.flowAnimation(distance: -30, duration: 1.8, spin: 0, beginTime: now + Double(index) * 0.6), forKey: "flow")
+        line.add(Self.flowAnimation(
+          distance: -30 * reach,
+          duration: duration,
+          spin: 0,
+          beginTime: now + Double(index) * duration / Double(count)
+        ), forKey: "flow")
         airflowLayer.addSublayer(line)
       }
     }
@@ -188,6 +210,7 @@ final class ACSceneContainerView: NSView {
 struct ACSceneView: NSViewRepresentable {
   let controller: ACSceneController
   let state: ACState
+  let room: RoomReading
   let isActive: Bool
   var interactive = true
 
@@ -196,6 +219,6 @@ struct ACSceneView: NSViewRepresentable {
   }
 
   func updateNSView(_ view: ACSceneContainerView, context: Context) {
-    view.update(state: state, active: isActive)
+    view.update(state: state, room: room, active: isActive)
   }
 }
