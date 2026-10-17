@@ -117,4 +117,24 @@ describe('@air-conditioner/widget', () => {
     element.setAttribute('sound', 'mute')
     expect(button().dataset.sound).toBe('mute')
   })
+
+  it('toggles swing from the remote and the swing attribute', () => {
+    defineAirConditionerElement({ tagName: 'test-air-conditioner-swing', enableAudio: false, storage: null })
+    const element = document.createElement('test-air-conditioner-swing')
+    document.body.appendChild(element)
+    const root = element.shadowRoot!
+    const button = root.querySelector<HTMLElement>('.acw-button-swing')!
+    const unit = root.querySelector<HTMLElement>('.acw-unit')!
+
+    expect(unit.dataset.swing).toBe('off')
+    expect(button.getAttribute('aria-pressed')).toBe('false')
+
+    button.click()
+    expect(unit.dataset.swing).toBe('on')
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    expect(button.title).toBe('扫风：开')
+
+    element.setAttribute('swing', 'false')
+    expect(unit.dataset.swing).toBe('off')
+  })
 })

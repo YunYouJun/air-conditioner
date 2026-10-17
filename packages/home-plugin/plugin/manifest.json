@@ -1,0 +1,14 @@
+{
+  "id": "fun.yunle.air-conditioner",
+  "sdk": 1,
+  "runtime": "sandbox",
+  "name": "云空调",
+  "description": "便携小空调：冷暖切换、16–31°C 调温与三种声音模式。",
+  "author": { "name": "YunYouJun", "url": "https://ac.yunyoujun.cn/" },
+  "category": "climate",
+  "symbol": "air.conditioner.horizontal",
+  "tint": "#5F939E",
+  "permissions": [],
+  "renderer": "cute-ac-3d",
+  "entry": { "state": "state.js", "controls": "controls.json" }
+}

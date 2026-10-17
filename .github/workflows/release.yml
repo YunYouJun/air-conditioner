@@ -1,0 +1,108 @@
+name: Release
+
+# Publishes @yunlefun-home/air-conditioner-core and @yunlefun-home/air-conditioner
+# with npm trusted publishing (OIDC): no NPM_TOKEN secret, provenance is attached.
+# Each package must list this repository and `release.yml` as a trusted publisher
+# on npmjs.com.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # Publish the versions on the selected branch; already published versions are skipped.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      # Trusted publishing requires npm >= 11.5.1.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check
+        run: pnpm run check
+
+      - name: Verify tag matches package versions
+        if: github.ref_type == 'tag'
+        run: |
+          for pkg in packages/core packages/vue; do
+            version=$(node -p "require('./$pkg/package.json').version")
+            if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+              echo "::error::$pkg is $version but the tag is $GITHUB_REF_NAME"
+              exit 1
+            fi
+          done
+
+      # Core first: the Vue package depends on the same core version.
+      - name: Publish
+        run: |
+          out="$RUNNER_TEMP/packages"
+          mkdir -p "$out"
+          for pkg in packages/core packages/vue; do
+            name=$(node -p "require('./$pkg/package.json').name")
+            version=$(node -p "require('./$pkg/package.json').version")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already published, skipping"
+              continue
+            fi
+            # Prereleases go to their identifier (0.4.0-beta.1 -> beta), others to latest.
+            dist_tag=latest
+            case "$version" in
+              *-*) dist_tag=$(echo "${version#*-}" | cut -d. -f1) ;;
+            esac
+            # pnpm pack rewrites workspace: ranges; npm publish performs the OIDC exchange.
+            tarball=$(pnpm -C "$pkg" pack --pack-destination "$out" | tail -n 1)
+            npm publish "$tarball" --access public --tag "$dist_tag"
+          done
+
+  # Attach the Yun Home plugin package to the GitHub Release for this tag.
+  plugin:
+    if: github.ref_type == 'tag'
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build plugin
+        run: |
+          pnpm -C packages/core run build
+          pnpm -C packages/home-plugin run build
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          gh release upload "$GITHUB_REF_NAME" --clobber \
+            packages/home-plugin/dist/air-conditioner.yunplugin \
+            packages/home-plugin/dist/air-conditioner.yunplugin.sha256

@@ -25,6 +25,8 @@ export interface AirConditionerContextValue {
   decrease: () => void
   /** 声音键：标准 → 睡眠 → 静音 */
   cycleSound: () => void
+  /** 扫风键：出风左右摆动 / 停在当前位置 */
+  toggleSwing: () => void
   store: AirConditionerStore
 }
 
@@ -76,6 +78,9 @@ export function AirConditionerProvider(props: AirConditionerProviderProps) {
     },
     cycleSound() {
       store.dispatch({ type: 'cycleSound' })
+    },
+    toggleSwing() {
+      store.dispatch({ type: 'toggleSwing' })
     },
   }), [notification, state, store])
 

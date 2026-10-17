@@ -19,10 +19,10 @@ describe('public package manifests', () => {
   it.each([
     ['core', '../package.json'],
     ['vue', '../../vue/package.json'],
-  ])('marks @air-conditioner/%s 0.2.0 as public', (_packageName, relativePath) => {
+  ])('marks @air-conditioner/%s 0.3.0 as public', (_packageName, relativePath) => {
     const manifest = readManifest(relativePath)
 
-    expect(manifest.version).toBe('0.2.0')
+    expect(manifest.version).toBe('0.3.0')
     expect(manifest.private).not.toBe(true)
     expect(manifest.publishConfig?.access).toBe('public')
   })

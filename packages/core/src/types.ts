@@ -38,13 +38,19 @@ export interface AcState {
    * Sound mode. States saved before this field existed fall back to `normal`.
    */
   sound: AcSoundMode
+  /**
+   * Whether the airflow sweeps left and right. States saved before this
+   * field existed fall back to `false`.
+   */
+  swing: boolean
 }
 
 export type AcAction
-  = | { type: 'increment' | 'decrement' | 'toggleStatus' | 'cycleSound' }
+  = | { type: 'increment' | 'decrement' | 'toggleStatus' | 'cycleSound' | 'toggleSwing' }
     | { type: 'status', status: AcState['status'] }
     | { type: 'mode', mode: AcState['mode'] }
     | { type: 'sound', sound: AcState['sound'] }
+    | { type: 'swing', swing: AcState['swing'] }
     | { type: 'update', payload: Partial<AcState> }
 
 export type AcNotificationSeverity = 'success' | 'error' | 'info'

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "controls": [
+    { "type": "power", "bind": "status", "label": "电源", "action": { "type": "toggleStatus" } },
+    {
+      "type": "dial",
+      "bind": "temperature",
+      "label": "目标温度",
+      "unit": "°C",
+      "min": 16,
+      "max": 31,
+      "step": 1,
+      "increment": { "type": "increment" },
+      "decrement": { "type": "decrement" }
+    },
+    {
+      "type": "segmented",
+      "bind": "mode",
+      "label": "模式",
+      "options": [
+        { "value": "cold", "label": "制冷", "symbol": "snowflake", "action": { "type": "mode", "mode": "cold" } },
+        { "value": "hot", "label": "制热", "symbol": "sun.max", "action": { "type": "mode", "mode": "hot" } }
+      ]
+    },
+    {
+      "type": "segmented",
+      "bind": "sound",
+      "label": "声音",
+      "options": [
+        { "value": "normal", "label": "标准", "symbol": "speaker.wave.2", "action": { "type": "sound", "sound": "normal" } },
+        { "value": "sleep", "label": "睡眠", "symbol": "moon.zzz", "action": { "type": "sound", "sound": "sleep" } },
+        { "value": "mute", "label": "静音", "symbol": "speaker.slash", "action": { "type": "sound", "sound": "mute" } }
+      ]
+    },
+    {
+      "type": "segmented",
+      "bind": "swing",
+      "label": "扫风",
+      "options": [
+        { "value": false, "label": "关", "symbol": "arrow.down", "action": { "type": "swing", "swing": false } },
+        { "value": true, "label": "开", "symbol": "arrow.left.and.right", "action": { "type": "swing", "swing": true } }
+      ]
+    }
+  ]
+}

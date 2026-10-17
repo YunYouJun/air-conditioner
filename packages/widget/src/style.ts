@@ -25,6 +25,7 @@ export const widgetStyleText = `:host {
   --acw-motion-duration-base: 240ms;
   --acw-motion-duration-slow: 420ms;
   --acw-motion-duration-flow: 1800ms;
+  --acw-motion-duration-swing: 5200ms;
   --acw-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --acw-motion-ease-enter: cubic-bezier(0, 0, 0, 1);
   --acw-motion-ease-exit: cubic-bezier(0.3, 0, 1, 1);
@@ -38,6 +39,7 @@ export const widgetStyleText = `:host {
     --acw-motion-duration-base: 120ms;
     --acw-motion-duration-slow: 120ms;
     --acw-motion-duration-flow: 0ms;
+    --acw-motion-duration-swing: 0ms;
   }
 }
 /* @ac-motion-tokens:end */
@@ -363,9 +365,9 @@ html.dark .acw-root,
   background: #4ea5f5;
 }
 
+/* 点阵不换行：放不下时点会被压扁，和主站一致 */
 .acw-dot-row {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -376,35 +378,34 @@ html.dark .acw-root,
 }
 
 .acw-energy-grades {
+  height: 28px;
   margin: 4px 0;
   padding: 2px 8px;
   background: #fff;
 }
 
+/* 等级指示：左侧色条，右侧朝左的小箭头 + 短条 */
 .acw-energy-arrow {
   display: flex;
-  align-items: center;
   height: 3px;
 }
 
 .acw-arrow-bar {
   flex: 0 0 40%;
-  height: 3px;
   background: green;
 }
 
 .acw-arrow-bar-sm {
-  flex: 0 0 10%;
-  margin-left: auto;
+  flex-basis: 10%;
 }
 
 .acw-arrow-tip {
+  flex: none;
   width: 0;
-  height: 0;
-  margin: 0 auto;
-  border-top: 2px solid transparent;
-  border-bottom: 2px solid transparent;
-  border-left: 4px solid green;
+  margin-left: 40%;
+  border-style: solid;
+  border-width: 1.5px 2px 1.5px 0;
+  border-color: transparent green transparent transparent;
 }
 
 .acw-energy-level {
@@ -413,14 +414,15 @@ html.dark .acw-root,
 }
 
 .acw-energy-detail {
+  height: 20px;
   margin-bottom: 2px;
-  padding-top: 1px;
+  padding-top: 0.8px;
   background: #fff;
 }
 
 .acw-energy-detail-line {
   height: 0;
-  margin: 1px 0;
+  margin: 0.8px 0;
   border-top: 1px solid #000;
 }
 
@@ -446,6 +448,16 @@ html.dark .acw-root,
   height: 40px;
   border-radius: 9999px;
   background: var(--acw-wind-track);
+  /* 三股气流以各自的出风点为轴，向两侧扇形散开 */
+  transform-origin: 50% 0;
+  rotate: var(--acw-wind-angle, 0deg);
+  /* 扫风：在散开角度上再左右摆动；关闭扫风时停在当前位置，和真的导风板一样 */
+  animation: acw-wind-swing var(--acw-motion-duration-swing) linear infinite;
+  animation-play-state: paused;
+}
+
+.acw-unit[data-status="on"][data-swing="on"] .acw-wind-line {
+  animation-play-state: running;
 }
 
 /* 气流：冷 / 暖两层渐变条沿出风线向下流动，切换模式时交叉淡化 */
@@ -486,7 +498,7 @@ html.dark .acw-root,
 
 .acw-wind-line:nth-child(1) {
   --acw-wind-delay: -600ms;
-  transform: rotate(10deg);
+  --acw-wind-angle: 14deg;
 }
 
 .acw-wind-line:nth-child(2) {
@@ -495,7 +507,7 @@ html.dark .acw-root,
 
 .acw-wind-line:nth-child(3) {
   --acw-wind-delay: -1200ms;
-  transform: rotate(-10deg);
+  --acw-wind-angle: -14deg;
 }
 
 @keyframes acw-wind-flow {
@@ -505,6 +517,28 @@ html.dark .acw-root,
 
   to {
     transform: translateY(180%);
+  }
+}
+
+/* 从正中出发：经过中间时最快，摆到两端时减速折返（近似正弦） */
+@keyframes acw-wind-swing {
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+  }
+
+  25% {
+    transform: rotate(-22deg);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+
+  75% {
+    transform: rotate(22deg);
+    animation-timing-function: cubic-bezier(0.12, 0, 0.39, 0);
+  }
+
+  100% {
+    transform: rotate(0deg);
   }
 }
 
@@ -591,10 +625,15 @@ html.dark .acw-root,
   background: #d32f2f;
 }
 
-/* 声音键：标准 → 睡眠 → 静音，图标与颜色随模式变化 */
+/* 扫风键 / 声音键：小号按钮并排；声音键在标准 → 睡眠 → 静音间切换，图标与颜色随模式变化 */
+.acw-button-swing,
 .acw-button-sound {
   width: 40px;
   height: 40px;
+}
+
+.acw-button-swing[aria-pressed="true"] {
+  color: #0288d1;
 }
 
 .acw-button-sound[data-sound="sleep"] {
@@ -647,6 +686,10 @@ html.dark .acw-root,
 /* ------------------------------ 减少动效 ------------------------------- */
 /* 时长已由 token 缩短；这里关掉循环与位移类动画，只保留短促的淡入淡出 */
 @media (prefers-reduced-motion: reduce) {
+  .acw-wind-line {
+    animation: none;
+  }
+
   .acw-wind-line::before,
   .acw-wind-line::after {
     height: 100%;
