@@ -20,7 +20,28 @@ describe('@yunlefun-home/air-conditioner-core', () => {
       status: false,
       temperature: 26,
       sound: 'normal',
+      swing: false,
     })
+  })
+
+  it('toggles and validates swing', () => {
+    expect(acReducer(defaultAcState, { type: 'toggleSwing' }).swing).toBe(true)
+    expect(acReducer({ ...defaultAcState, swing: true }, { type: 'toggleSwing' }).swing).toBe(false)
+    expect(acReducer(defaultAcState, { type: 'swing', swing: true }).swing).toBe(true)
+    // States saved before the field existed do not swing
+    expect(normalizeAcState({ status: true }).swing).toBe(false)
+    expect(normalizeAcState({ swing: 'yes' as never }).swing).toBe(false)
+  })
+
+  it('announces swing changes', () => {
+    const store = createAirConditionerStore({ storage: null })
+
+    expect(store.dispatch({ type: 'toggleSwing' }).notification).toMatchObject({
+      message: expect.stringContaining('扫风已开启'),
+      severity: 'info',
+    })
+    expect(store.dispatch({ type: 'swing', swing: true }).notification).toBeUndefined()
+    expect(store.dispatch({ type: 'swing', swing: false }).notification?.message).toContain('扫风已关闭')
   })
 
   it('cycles and validates the sound mode', () => {

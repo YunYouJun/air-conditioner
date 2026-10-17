@@ -83,5 +83,11 @@ export function useAc() {
     cycleSound() {
       dispatchWithToast({ type: 'cycleSound' })
     },
+    /**
+     * 扫风键：出风左右摆动 / 停在当前位置
+     */
+    toggleSwing() {
+      dispatchWithToast({ type: 'toggleSwing' })
+    },
   }
 }

@@ -140,6 +140,7 @@ const ac = useAirConditioner()
 // ac.setMode('hot')      切换模式
 // ac.increase() / ac.decrease()  调温
 // ac.cycleSound()        声音：标准 → 睡眠 → 静音
+// ac.toggleSwing()       扫风：开 / 关
 </script>
 ```
 

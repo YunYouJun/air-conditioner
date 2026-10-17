@@ -117,6 +117,7 @@ const AirConditioner: React.FC<{
   mode: AcMode
   status: boolean
   temperature: number
+  swing?: boolean
 }> = (props) => {
   const unitRef = useRef<HTMLDivElement>(null)
   const scale = useAcScale(unitRef, acShellSize.wide.width)
@@ -128,6 +129,7 @@ const AirConditioner: React.FC<{
       className="ac-unit"
       data-mode={props.mode}
       data-status={props.status ? 'on' : 'off'}
+      data-swing={props.swing ? 'on' : 'off'}
       style={{ '--ac-tilt-x': `${tiltX}deg`, '--ac-tilt-y': `${tiltY}deg` } as React.CSSProperties}
     >
       <AcBorder scale={scale}>

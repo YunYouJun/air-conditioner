@@ -51,6 +51,6 @@ React 组件库与 Vue 组件使用同一份 `style.css`、同样的结构（能
 | `enableAudio` | `true` | 是否启用按键与开关机音效 |
 | `showEnergyLabel` | `true` | 是否显示能效标签 |
 
-遥控器最下方的「声音」键在标准 / 睡眠 / 静音之间切换，`useAirConditioner().cycleSound()` 也可以切换；详见 [音效与声音模式](/api/#音效与声音模式)。
+遥控器最下方的「声音」键在标准 / 睡眠 / 静音之间切换，`useAirConditioner().cycleSound()` 也可以切换；详见 [音效与声音模式](/api/#音效与声音模式)。旁边的「扫风」键让出风左右摆动，对应 `useAirConditioner().toggleSwing()`；详见 [出风与扫风](/api/#出风与扫风)。
 
 `style.css` 通过相对路径 `./assets/fonts/digital-7-mono.ttf` 引用数码管字体，构建产物 `dist/assets/fonts` 已包含该文件；音频请放到 `assetsBaseUrl` 对应目录下。

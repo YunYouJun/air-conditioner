@@ -26,6 +26,19 @@ renderAcMotionCssVars(':host')
 
 各包样式表里的 token 区块由 `renderAcMotionCssVars(':root')` 生成，`packages/core/test/motion.test.ts` 会校验它们与 core 保持一致。
 
+## 出风与扫风
+
+开机后导风板打开，三股气流以出风口为轴向两侧扇形散开，并沿出风线持续向下流动；制冷 / 制热切换时气流颜色交叉淡化。
+
+遥控器最下方的「扫风」键开启后，气流左右来回摆动（经过正中最快、两端减速折返，一个来回 `acMotion.duration.swing` 毫秒）；关闭扫风时停在当前角度，和真的导风板一样。状态保存在 `AcState.swing` 中（旧版本保存的状态视为 `false`），开启「减少动态效果」时不摆动。
+
+```ts
+store.dispatch({ type: 'toggleSwing' })
+store.dispatch({ type: 'swing', swing: true })
+```
+
+视图层在空调根元素上输出 `data-swing="on" | "off"`，自定义样式可以据此调整。
+
 ## 音效与声音模式
 
 遥控器最下方的「声音」键依次切换三种声音模式，状态保存在 `AcState.sound` 中（旧版本保存的状态视为 `normal`）：

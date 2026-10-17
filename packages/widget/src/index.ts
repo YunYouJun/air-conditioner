@@ -35,6 +35,8 @@ export interface WidgetAcState {
   mode: WidgetAcMode
   temperature: number
   sound: WidgetAcSoundMode
+  /** 扫风：出风左右摆动 */
+  swing: boolean
 }
 
 export interface WidgetAcNotification {
@@ -182,7 +184,10 @@ function widgetTemplate(view: WidgetViewOptions) {
       </div>
       <button type="button" class="acw-button acw-button-temp" aria-label="add" data-action="increment">${icon('increase', 28)}</button>
       <button type="button" class="acw-button acw-button-temp" aria-label="reduce" data-action="decrement">${icon('decrease', 28)}</button>
-      <button type="button" class="acw-button acw-button-sound" aria-label="sound" data-action="cycleSound"></button>
+      <div class="acw-remote-row">
+        <button type="button" class="acw-button acw-button-swing" aria-label="swing" data-action="toggleSwing">${icon('swing', 20)}</button>
+        <button type="button" class="acw-button acw-button-sound" aria-label="sound" data-action="cycleSound"></button>
+      </div>
     </div>
     <div class="acw-notification-region" role="status"></div>
   </div>
@@ -204,6 +209,7 @@ function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | unde
   for (const element of root.querySelectorAll<HTMLElement>('.acw-root, .acw-unit')) {
     element.dataset.mode = state.mode
     element.dataset.status = status
+    element.dataset.swing = state.swing ? 'on' : 'off'
   }
 
   const mode = root.querySelector('.acw-mode-icon')!
@@ -221,6 +227,12 @@ function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | unde
   root.querySelector('.acw-led')!.setAttribute('aria-label', status)
   root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
   root.querySelector('.acw-button-power')!.classList.toggle('acw-button-on', state.status)
+
+  if (previous?.swing !== state.swing) {
+    const swing = root.querySelector<HTMLElement>('.acw-button-swing')!
+    swing.setAttribute('aria-pressed', String(state.swing))
+    swing.title = `扫风：${state.swing ? '开' : '关'}`
+  }
 
   if (previous?.sound !== state.sound) {
     const sound = root.querySelector<HTMLElement>('.acw-button-sound')!
@@ -270,6 +282,7 @@ function getInitialState(element: HTMLElement, defaults?: Partial<AcState>): Par
     status: boolAttribute(element.getAttribute('status'), defaults?.status),
     temperature: numberAttribute(element.getAttribute('temperature')) ?? defaults?.temperature,
     sound: soundAttribute(element.getAttribute('sound')) ?? defaults?.sound,
+    swing: boolAttribute(element.getAttribute('swing'), defaults?.swing),
   }
   // 未指定的字段不能以 undefined 覆盖持久化 / 默认状态（否则 mode 会变成 undefined）
   for (const key of Object.keys(state) as (keyof AcState)[]) {
@@ -293,7 +306,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private audio?: AcAudioController
 
     static get observedAttributes() {
-      return ['mode', 'status', 'temperature', 'sound']
+      return ['mode', 'status', 'temperature', 'sound', 'swing']
     }
 
     connectedCallback() {
@@ -384,7 +397,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         this.store.dispatch({ type: 'mode', mode: action })
       else if (action === 'toggleStatus')
         this.store.dispatch({ type: 'toggleStatus' })
-      else if (action === 'increment' || action === 'decrement' || action === 'cycleSound')
+      else if (action === 'increment' || action === 'decrement' || action === 'cycleSound' || action === 'toggleSwing')
         this.store.dispatch({ type: action })
     }
 

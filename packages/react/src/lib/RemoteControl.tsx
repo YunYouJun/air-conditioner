@@ -18,6 +18,7 @@ export function RemoteControl(props: RemoteControlProps = {}) {
   const airConditioner = useAirConditioner()
   const isOn = airConditioner.state.status
   const sound = airConditioner.state.sound
+  const swing = airConditioner.state.swing
 
   function run(command: string, action: () => void) {
     props.onCommand?.(command)
@@ -52,16 +53,28 @@ export function RemoteControl(props: RemoteControlProps = {}) {
       <button type="button" className="acw-button acw-button-temp" aria-label="reduce" onClick={() => run('decrease', airConditioner.decrease)}>
         <Icon name="decrease" size={28} />
       </button>
-      <button
-        type="button"
-        className="acw-button acw-button-sound"
-        aria-label="sound"
-        title={`声音：${acSoundModeLabels[sound]}`}
-        data-sound={sound}
-        onClick={() => run('sound', airConditioner.cycleSound)}
-      >
-        <Icon name={acSoundIcons[sound]} size={20} />
-      </button>
+      <div className="acw-remote-row">
+        <button
+          type="button"
+          className="acw-button acw-button-swing"
+          aria-label="swing"
+          aria-pressed={swing}
+          title={`扫风：${swing ? '开' : '关'}`}
+          onClick={() => run('swing', airConditioner.toggleSwing)}
+        >
+          <Icon name="swing" size={20} />
+        </button>
+        <button
+          type="button"
+          className="acw-button acw-button-sound"
+          aria-label="sound"
+          title={`声音：${acSoundModeLabels[sound]}`}
+          data-sound={sound}
+          onClick={() => run('sound', airConditioner.cycleSound)}
+        >
+          <Icon name={acSoundIcons[sound]} size={20} />
+        </button>
+      </div>
     </div>
   )
 }

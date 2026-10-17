@@ -16,6 +16,8 @@ export const acMotion = {
     slow: 420,
     /** 出风气流单次循环 */
     flow: 1800,
+    /** 扫风：左右摆动一个来回 */
+    swing: 5200,
   },
   easing: {
     /** 常规状态切换 */
@@ -42,6 +44,7 @@ export const acReducedMotionDuration: Record<AcMotionDuration, number> = {
   base: 120,
   slow: 120,
   flow: 0,
+  swing: 0,
 }
 
 export const acReducedMotionQuery = '(prefers-reduced-motion: reduce)'

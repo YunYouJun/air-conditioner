@@ -41,6 +41,7 @@ const Home: React.FC = () => {
             status={ac.status}
             temperature={ac.temperature}
             mode={ac.mode}
+            swing={ac.swing}
           />
           <div className="text-center">
             <div className="mt-2">

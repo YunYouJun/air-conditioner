@@ -43,7 +43,7 @@ const SOUND_AIR_EXTRACTOR_FAN_PATH = getAssetsUrl(
  * 遥控
  */
 const RemoteControl: React.FC = () => {
-  const { toggleStatus, toggleMode, cycleSound } = useAc()
+  const { toggleStatus, toggleMode, cycleSound, toggleSwing } = useAc()
   const { state: ac } = useAcCtx()
   const sound = ac.sound
 
@@ -113,22 +113,34 @@ const RemoteControl: React.FC = () => {
       >
         <div className="i-mdi-triangle-small-down text-4xl" />
       </RCButton>
-      <RCButton
-        aria-label="sound"
-        title={`声音：${acSoundModeLabels[sound]}`}
-        size="small"
-        beep={false}
-        style={{ color: soundColors[sound] }}
-        onClick={() => {
-          // 先切换音量再「嘀」，按键音就是新模式下的音量
-          const controller = getAudioController(sound)
-          controller.setSoundMode(nextAcSoundMode(sound))
-          controller.beep()
-          cycleSound()
-        }}
-      >
-        <div className={`${soundIcons[sound]} text-xl`} />
-      </RCButton>
+      <div>
+        <RCButton
+          aria-label="swing"
+          aria-pressed={ac.swing}
+          title={`扫风：${ac.swing ? '开' : '关'}`}
+          size="small"
+          style={{ color: ac.swing ? blue[700] : grey[700] }}
+          onClick={toggleSwing}
+        >
+          <div className="i-mdi-arrow-oscillating text-xl" />
+        </RCButton>
+        <RCButton
+          aria-label="sound"
+          title={`声音：${acSoundModeLabels[sound]}`}
+          size="small"
+          beep={false}
+          style={{ color: soundColors[sound] }}
+          onClick={() => {
+            // 先切换音量再「嘀」，按键音就是新模式下的音量
+            const controller = getAudioController(sound)
+            controller.setSoundMode(nextAcSoundMode(sound))
+            controller.beep()
+            cycleSound()
+          }}
+        >
+          <div className={`${soundIcons[sound]} text-xl`} />
+        </RCButton>
+      </div>
     </div>
   )
 }
