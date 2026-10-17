@@ -2,8 +2,9 @@ import AppKit
 import CuteACKit
 import SceneKit
 
-/// `CuteAC --snapshot <dir>` renders each state offscreen and exits; used to
-/// check the model and lighting without opening the menu bar UI.
+/// `CuteAC --snapshot <dir>` renders each state of both forms offscreen and
+/// exits; used to check the models and lighting without opening the menu bar
+/// UI. Wall images keep their original names, tower ones add `tower-`.
 @MainActor
 func renderSnapshots(to directory: URL) {
   let controller = ACSceneController()
@@ -19,15 +20,19 @@ func renderSnapshots(to directory: URL) {
     ("off", ACState(status: false, mode: .cold, temperature: 26), .demo),
   ]
   try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-  for (name, state, room) in states {
-    controller.apply(state, room: room, animated: false)
-    let image = renderer.snapshot(atTime: 0, with: CGSize(width: 960, height: 600), antialiasingMode: .multisampling4X)
-    guard let tiff = image.tiffRepresentation,
-          let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
-    else { continue }
-    let url = directory.appendingPathComponent("scenekit-\(name).png")
-    try? png.write(to: url)
-    print("Wrote \(url.path)")
+  for form in ACForm.allCases {
+    controller.setForm(form)
+    let size = form == .wall ? CGSize(width: 960, height: 600) : CGSize(width: 600, height: 960)
+    for (name, state, room) in states {
+      controller.apply(state, room: room, animated: false)
+      let image = renderer.snapshot(atTime: 0, with: size, antialiasingMode: .multisampling4X)
+      guard let tiff = image.tiffRepresentation,
+            let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
+      else { continue }
+      let url = directory.appendingPathComponent(form == .wall ? "scenekit-\(name).png" : "scenekit-tower-\(name).png")
+      try? png.write(to: url)
+      print("Wrote \(url.path)")
+    }
   }
 }
 

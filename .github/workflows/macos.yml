@@ -44,7 +44,7 @@ jobs:
       - name: Snapshot
         run: |
           .build/release/CuteAC --snapshot "$RUNNER_TEMP/snap"
-          test "$(ls "$RUNNER_TEMP"/snap/*.png | wc -l)" -eq 3
+          test "$(ls "$RUNNER_TEMP"/snap/*.png | wc -l)" -eq 6
 
       - uses: actions/upload-artifact@v7
         with:

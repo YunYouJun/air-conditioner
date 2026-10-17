@@ -15,9 +15,17 @@ final class DesktopPetPanel: NSPanel {
 
   static let desktopLevel = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)) + 1)
 
-  init(content: NSView, alwaysOnTop: Bool) {
+  /// A wide strip for the wall unit, a tall one for the tower.
+  static func size(for form: ACForm) -> NSSize {
+    switch form {
+    case .wall: NSSize(width: 300, height: 190)
+    case .tower: NSSize(width: 180, height: 340)
+    }
+  }
+
+  init(content: NSView, alwaysOnTop: Bool, size: NSSize) {
     super.init(
-      contentRect: NSRect(x: 0, y: 0, width: 300, height: 190),
+      contentRect: NSRect(origin: .zero, size: size),
       styleMask: [.borderless, .nonactivatingPanel],
       backing: .buffered,
       defer: false
@@ -34,6 +42,9 @@ final class DesktopPetPanel: NSPanel {
       positionTopRight()
     }
     setFrameAutosaveName("CuteAC.DesktopPet")
+    // The saved frame may come from the other form. After the autosave name,
+    // which would otherwise restore the old size.
+    resize(to: size)
   }
 
   override var canBecomeKey: Bool { false }
@@ -89,6 +100,13 @@ final class DesktopPetPanel: NSPanel {
 
   @objc private func menuHide() { onHide?() }
 
+  /// Change shape around the top-right corner, where the pet starts out.
+  func resize(to size: NSSize) {
+    guard frame.size != size else { return }
+    setFrame(NSRect(x: frame.maxX - size.width, y: frame.maxY - size.height, width: size.width, height: size.height),
+             display: true)
+  }
+
   private func positionTopRight() {
     guard let screen = NSScreen.main?.visibleFrame else { return }
     setFrameOrigin(NSPoint(x: screen.maxX - frame.width - 40, y: screen.maxY - frame.height - 40))
@@ -98,10 +116,13 @@ final class DesktopPetPanel: NSPanel {
 struct DesktopPetView: View {
   @ObservedObject var store: ACStore
   @ObservedObject var thermal: ThermalMonitor
+  @ObservedObject var settings: AppSettings
   let sceneController: ACSceneController
 
   var body: some View {
-    ACSceneView(controller: sceneController, state: store.state, room: thermal.reading, isActive: true, interactive: false)
-      .frame(width: 300, height: 190)
+    let size = DesktopPetPanel.size(for: settings.form)
+    ACSceneView(controller: sceneController, state: store.state, room: thermal.reading, form: settings.form,
+                isActive: true, interactive: false)
+      .frame(width: size.width, height: size.height)
   }
 }

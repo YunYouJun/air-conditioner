@@ -4,26 +4,42 @@ import SceneKit
 
 /// Owns the SceneKit scene and maps `ACState` onto the named nodes exported by
 /// `Model/build_cute_ac.py`. Nothing animates in steady state, so SceneKit
-/// only draws while a transition is running.
+/// only draws while a transition is running. The wall and tower forms share
+/// part names, so switching only swaps the model and the camera.
 @MainActor
 final class ACSceneController {
-  let scene: SCNScene
+  let scene = SCNScene()
   let cameraNode = SCNNode()
+  private(set) var form: ACForm
 
-  private let model: SCNNode
-  private let louver: SCNNode?
-  private let displayMaterial: SCNMaterial?
-  private let ledMaterial: SCNMaterial?
+  private var model = SCNNode()
+  private var louver: SCNNode?
+  private var displayMaterial: SCNMaterial?
+  private var ledMaterial: SCNMaterial?
   private var lastState: ACState?
   private var lastRoom: RoomReading?
 
-  init() {
-    let loaded = ACModel.url.flatMap { try? SCNScene(url: $0) } ?? SCNScene()
+  init(form: ACForm = .wall) {
+    self.form = form
+    setUpLightsAndCamera()
+    loadModel()
+    scene.isPaused = true
+  }
+
+  /// Swap in the other model; the next `apply` redraws everything on it.
+  func setForm(_ form: ACForm) {
+    guard form != self.form else { return }
+    self.form = form
+    loadModel()
+  }
+
+  private func loadModel() {
+    model.removeFromParentNode()
+    let loaded = ACModel.url(for: form).flatMap { try? SCNScene(url: $0) } ?? SCNScene()
     let root = SCNNode()
     for child in loaded.rootNode.childNodes {
       root.addChildNode(child)
     }
-    scene = SCNScene()
     scene.rootNode.addChildNode(root)
     model = root
 
@@ -40,8 +56,9 @@ final class ACSceneController {
       material.lightingModel = .constant
       material.emission.contents = NSColor.black
     }
-    setUpLightsAndCamera()
-    scene.isPaused = true
+    placeCamera()
+    lastState = nil
+    lastRoom = nil
   }
 
   // MARK: State
@@ -60,7 +77,13 @@ final class ACSceneController {
     SCNTransaction.begin()
     SCNTransaction.animationDuration = animated ? 0.5 : 0
     SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-    louver?.eulerAngles.x = state.status ? CGFloat(ACModel.openLouverAngle) : 0
+    let motion = ACModel.louver(for: form)
+    let angle = CGFloat(state.status ? motion.openAngle : 0)
+    let euler = SCNVector3(CGFloat(motion.axis.x) * angle, CGFloat(motion.axis.y) * angle, CGFloat(motion.axis.z) * angle)
+    switch motion.pivot {
+    case .node: louver?.eulerAngles = euler
+    case .children: louver?.childNodes.forEach { $0.eulerAngles = euler }
+    }
     SCNTransaction.commit()
 
     ledMaterial?.diffuse.contents = ACPalette.led(for: state)
@@ -76,11 +99,24 @@ final class ACSceneController {
     scene.isPaused = !active
   }
 
-  /// World position just below the louver, used to place the airflow overlay.
+  /// Where the airflow overlay starts: below a wall unit's louver, beside a
+  /// tower's opened flap.
   var airflowOrigin: SCNVector3 {
     guard let louver else { return SCNVector3(0, -0.3, 0.3) }
     let world = louver.worldPosition
-    return SCNVector3(world.x, world.y - 0.1, world.z + 0.05)
+    let offset = ACModel.airflow(for: form).offset
+    return SCNVector3(world.x + CGFloat(offset.x), world.y + CGFloat(offset.y), world.z + CGFloat(offset.z))
+  }
+
+  /// The two ends of the outlet along the airflow's spread axis, for
+  /// measuring the spread on screen.
+  var airflowEnds: (SCNVector3, SCNVector3) {
+    let origin = airflowOrigin
+    let half = CGFloat(ACModel.airflow(for: form).extent / 2)
+    switch ACModel.airflow(for: form).direction {
+    case .down: return (SCNVector3(origin.x - half, origin.y, origin.z), SCNVector3(origin.x + half, origin.y, origin.z))
+    case .side: return (SCNVector3(origin.x, origin.y - half, origin.z), SCNVector3(origin.x, origin.y + half, origin.z))
+    }
   }
 
   // MARK: Motion
@@ -124,10 +160,20 @@ final class ACSceneController {
     camera.zNear = 0.1
     camera.zFar = 20
     cameraNode.camera = camera
-    // Slightly below and to the right, like looking up at a wall unit.
-    cameraNode.position = SCNVector3(0.55, -0.45, 3.0)
-    cameraNode.look(at: SCNVector3(0, -0.02, 0))
     scene.rootNode.addChildNode(cameraNode)
+  }
+
+  private func placeCamera() {
+    switch form {
+    case .wall:
+      // Slightly below and to the right, like looking up at a wall unit.
+      cameraNode.position = SCNVector3(0.55, -0.45, 3.0)
+      cameraNode.look(at: SCNVector3(0, -0.02, 0))
+    case .tower:
+      // Standing in front and a little to the right, eyes near the display.
+      cameraNode.position = SCNVector3(1.3, 0.35, 4.9)
+      cameraNode.look(at: SCNVector3(0, -0.02, 0))
+    }
   }
 
   /// USD export wraps each mesh in an Xform of the same name; the geometry

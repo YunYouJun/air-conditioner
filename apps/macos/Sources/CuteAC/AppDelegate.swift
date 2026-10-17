@@ -14,7 +14,13 @@ final class AppSettings: ObservableObject {
     didSet { UserDefaults.standard.set(petAlwaysOnTop, forKey: "cute-ac:desktop-pet-on-top") }
   }
 
+  /// 挂机 or 柜机; only the look changes, the state is shared.
+  @Published var form: ACForm {
+    didSet { UserDefaults.standard.set(form.rawValue, forKey: "cute-ac:form") }
+  }
+
   init() {
+    form = UserDefaults.standard.string(forKey: "cute-ac:form").flatMap(ACForm.init(rawValue:)) ?? .wall
     showDesktopPet = UserDefaults.standard.bool(forKey: "cute-ac:desktop-pet")
     petAlwaysOnTop = UserDefaults.standard.bool(forKey: "cute-ac:desktop-pet-on-top")
   }
@@ -31,7 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     checker: ReleaseChecker(repository: "YunYouJun/air-conditioner", tagPrefix: "v", assetPrefix: "CuteAC-"),
     keyPrefix: "cute-ac"
   )
-  private lazy var sceneController = ACSceneController()
+  private lazy var sceneController = ACSceneController(form: settings.form)
   private var statusItem: NSStatusItem?
   private let popover = NSPopover()
   private var petPanel: DesktopPetPanel?
@@ -73,6 +79,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
       .sink { [weak self] show in self?.setDesktopPetVisible(show) }
       .store(in: &cancellables)
 
+    // The views switch the shared scene; the pet window also changes shape.
+    settings.$form
+      .removeDuplicates()
+      .dropFirst()
+      .sink { [weak self] form in self?.petPanel?.resize(to: DesktopPetPanel.size(for: form)) }
+      .store(in: &cancellables)
+
     handleDebugArguments(button: item.button)
 
     // Docs captures stay offline; normal launches check once a day.
@@ -86,9 +99,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   private func setDesktopPetVisible(_ visible: Bool) {
     if visible {
       if petPanel == nil {
+        let content = NSHostingView(rootView: DesktopPetView(
+          store: store,
+          thermal: thermalMonitor,
+          settings: settings,
+          sceneController: sceneController
+        ))
+        // The panel sizes itself per form (anchored top-right); SwiftUI
+        // resizing the window would anchor it top-left instead.
+        content.sizingOptions = []
         let panel = DesktopPetPanel(
-          content: NSHostingView(rootView: DesktopPetView(store: store, thermal: thermalMonitor, sceneController: sceneController)),
-          alwaysOnTop: settings.petAlwaysOnTop
+          content: content,
+          alwaysOnTop: settings.petAlwaysOnTop,
+          size: DesktopPetPanel.size(for: settings.form)
         )
         panel.onDoubleClick = { [weak self] in
           withAnimation(.snappy) { self?.store.togglePower() }

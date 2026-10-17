@@ -30,3 +30,19 @@ public struct ACState: Codable, Equatable, Sendable {
     min(range.upperBound, max(range.lowerBound, temperature))
   }
 }
+
+/// How the unit looks and stands. Behaviour and state are identical; only the
+/// model, louver motion and airflow direction differ.
+public enum ACForm: String, Codable, CaseIterable, Sendable {
+  /// Wall-mounted split unit (挂机): the louver tilts down, air falls.
+  case wall
+  /// Floor-standing tower (柜机): a tall flap swings aside, air blows sideways.
+  case tower
+
+  public var label: String {
+    switch self {
+    case .wall: "挂机"
+    case .tower: "柜机"
+    }
+  }
+}

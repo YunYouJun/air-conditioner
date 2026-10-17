@@ -10,20 +10,29 @@ import CuteACCore
 /// Hosts position the layer just below the louver and call `configure`
 /// whenever the mode, wind level or available width changes.
 public final class ACAirflowLayer: CALayer {
+  /// Wall units blow down; towers blow sideways out of the opened flap.
+  public enum Direction: Sendable {
+    case down
+    case side
+  }
+
   public struct Flow: Equatable, Sendable {
     public var mode: ACMode
     public var windLevel: Int
+    public var direction: Direction
 
-    public init(mode: ACMode, windLevel: Int = 1) {
+    public init(mode: ACMode, windLevel: Int = 1, direction: Direction = .down) {
       self.mode = mode
       self.windLevel = windLevel
+      self.direction = direction
     }
   }
 
   public private(set) var flow: Flow?
 
-  /// `span` is the horizontal spread, usually ~78% of the view width.
-  /// Passing nil clears the overlay.
+  /// `span` is the spread across the outlet in points: horizontal for `.down`
+  /// (usually ~78% of the view width), vertical for `.side`. Passing nil
+  /// clears the overlay.
   public func configure(_ flow: Flow?, span: CGFloat) {
     self.flow = flow
     sublayers?.forEach { $0.removeFromSuperlayer() }
@@ -36,6 +45,13 @@ public final class ACAirflowLayer: CALayer {
     let boost = CGFloat(level - 1) // 0, 1, 2
     let speed = 1 + 0.3 * boost
     let reach = 1 + 0.15 * boost
+    let side = flow.direction == .side
+    // Particles line up across the outlet and drift away from it: down for a
+    // wall unit, to the right for a tower. Positions are relative to the
+    // layer's origin, which the host places at the outlet.
+    func place(_ across: CGFloat, _ out: CGFloat) -> CGPoint {
+      side ? CGPoint(x: -out, y: -across) : CGPoint(x: across, y: out)
+    }
 
     switch flow.mode {
     case .cold:
@@ -47,10 +63,11 @@ public final class ACAirflowLayer: CALayer {
         let size: CGFloat = index.isMultiple(of: 2) ? 14 : 10
         layer.bounds = CGRect(x: 0, y: 0, width: size, height: size)
         layer.contents = flake
-        layer.position = CGPoint(x: span * (CGFloat(index) / CGFloat(count - 1) - 0.5), y: -6)
+        layer.position = place(span * (CGFloat(index) / CGFloat(count - 1) - 0.5), -6)
         layer.opacity = 0
         layer.add(Self.flowAnimation(
-          distance: (index.isMultiple(of: 2) ? -42 : -34) * reach,
+          keyPath: side ? "transform.translation.x" : "transform.translation.y",
+          distance: (index.isMultiple(of: 2) ? 42 : 34) * reach * (side ? 1 : -1),
           duration: duration,
           spin: index.isMultiple(of: 2) ? .pi : -.pi,
           beginTime: now + Double((index * 5) % count) * duration / Double(count)
@@ -64,7 +81,10 @@ public final class ACAirflowLayer: CALayer {
       for index in 0..<count {
         let line = CAShapeLayer()
         line.bounds = CGRect(x: 0, y: -6, width: 64, height: 12)
-        line.position = CGPoint(x: (CGFloat(index) - CGFloat(count - 1) / 2) * spacing, y: -8)
+        // Horizontal waves either way: stacked along the outlet for a tower.
+        line.position = side
+          ? CGPoint(x: 36, y: -(CGFloat(index) - CGFloat(count - 1) / 2) * spacing)
+          : CGPoint(x: (CGFloat(index) - CGFloat(count - 1) / 2) * spacing, y: -8)
         line.path = Self.windPath(width: 64, amplitude: 6)
         line.strokeColor = color.cgColor
         line.fillColor = nil
@@ -72,7 +92,8 @@ public final class ACAirflowLayer: CALayer {
         line.lineCap = .round
         line.opacity = 0
         line.add(Self.flowAnimation(
-          distance: -30 * reach,
+          keyPath: side ? "transform.translation.x" : "transform.translation.y",
+          distance: 30 * reach * (side ? 1 : -1),
           duration: duration,
           spin: 0,
           beginTime: now + Double(index) * duration / Double(count)
@@ -82,8 +103,9 @@ public final class ACAirflowLayer: CALayer {
     }
   }
 
-  private static func flowAnimation(distance: CGFloat, duration: CFTimeInterval, spin: CGFloat, beginTime: CFTimeInterval) -> CAAnimation {
-    let drift = CABasicAnimation(keyPath: "transform.translation.y")
+  private static func flowAnimation(keyPath: String, distance: CGFloat, duration: CFTimeInterval, spin: CGFloat,
+                                    beginTime: CFTimeInterval) -> CAAnimation {
+    let drift = CABasicAnimation(keyPath: keyPath)
     drift.fromValue = 0
     drift.toValue = distance
     let fade = CAKeyframeAnimation(keyPath: "opacity")

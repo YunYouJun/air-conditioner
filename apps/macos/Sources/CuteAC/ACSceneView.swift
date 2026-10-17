@@ -49,7 +49,14 @@ final class ACSceneContainerView: NSView {
     positionAirflow()
   }
 
-  func update(state: ACState, room: RoomReading, active: Bool) {
+  func update(state: ACState, room: RoomReading, form: ACForm, active: Bool) {
+    if let controller, controller.form != form {
+      // The controller is shared by the popover and the pet; switching is
+      // idempotent and forces a full redraw on the new model.
+      controller.setForm(form)
+      lastState = nil
+      airflowLayer.configure(nil, span: 0)
+    }
     if state != lastState || room != lastRoom {
       // A room-only change just swaps the LCD texture: one redraw, no motion.
       let moving = state != lastState
@@ -62,7 +69,8 @@ final class ACSceneContainerView: NSView {
       sceneView.isPlaying = false
     }
     // The overlay is rebuilt only when what it shows changes.
-    let flow = (active && state.status) ? ACAirflowLayer.Flow(mode: state.mode, windLevel: room.windLevel) : nil
+    let direction = ACModel.airflow(for: form).direction
+    let flow = (active && state.status) ? ACAirflowLayer.Flow(mode: state.mode, windLevel: room.windLevel, direction: direction) : nil
     if flow != airflowLayer.flow {
       configureAirflow(flow)
     }
@@ -88,8 +96,16 @@ final class ACSceneContainerView: NSView {
   }
 
   private func configureAirflow(_ flow: ACAirflowLayer.Flow?) {
-    airflowLayer.configure(flow, span: bounds.width * 0.78)
+    airflowLayer.configure(flow, span: airflowSpan(for: flow?.direction ?? .down))
     positionAirflow()
+  }
+
+  /// Wall units spread across most of the view; a tower's spread is its
+  /// outlet's height on screen.
+  private func airflowSpan(for direction: ACAirflowLayer.Direction) -> CGFloat {
+    guard direction == .side, let controller else { return bounds.width * 0.78 }
+    let (low, high) = controller.airflowEnds
+    return abs(sceneView.projectPoint(high).y - sceneView.projectPoint(low).y)
   }
 }
 
@@ -97,6 +113,7 @@ struct ACSceneView: NSViewRepresentable {
   let controller: ACSceneController
   let state: ACState
   let room: RoomReading
+  var form = ACForm.wall
   let isActive: Bool
   var interactive = true
 
@@ -105,6 +122,6 @@ struct ACSceneView: NSViewRepresentable {
   }
 
   func updateNSView(_ view: ACSceneContainerView, context: Context) {
-    view.update(state: state, room: room, active: isActive)
+    view.update(state: state, room: room, form: form, active: isActive)
   }
 }

@@ -9,6 +9,7 @@
 - **菜单栏弹窗**：3D 空调可以拖动旋转，支持开关机、调温度（16–31°C）、切换制冷和制热。
 - **真实感细节**：导风板会开合；显示窗用数码管字体（Digital-7 Mono，和网页组件同一款字体）实时显示温度，背后有暗着的“88”底纹；指示灯随模式变色。
 - **出风效果**：制冷时飘雪花，制热时吹暖风线。
+- **挂机 / 柜机**：弹窗左下角一键切换外观，状态不变。柜机的出风口是一排横向百叶，开机时每片各自倾斜，雪花和暖风从侧面吹出；桌面挂件也随之变成竖长窗口（以右上角为锚点），设置会被记住。
 - **桌面挂件**：在弹窗里打开“在桌面显示”，会出现一个透明无边框的窗口，只露出空调本体，默认位于桌面图标上方、普通窗口下方。
   - 拖动：移动位置，位置会被记住
   - 双击：开关机
@@ -27,7 +28,7 @@
 | 产品 | 内容 | 依赖 |
 |---|---|---|
 | `CuteACCore` | `ACState` / `ACMode`（温度为 `Double`，兼容 Home Assistant 的小数步进）、`RoomReading`、`ThermalLevel`、`ThermalSensors`、`ThermalMonitor` | Foundation、IOKit |
-| `CuteACKit` | `ACDisplay`（显示窗贴图）、`ACAirflowLayer`（出风动画）、`ACPalette`、`ACFonts`、`ACModel`（`CuteAC.usdz` 和部件名） | AppKit，并重新导出 `CuteACCore` |
+| `CuteACKit` | `ACDisplay`（显示窗贴图）、`ACAirflowLayer`（出风动画，向下或向侧面）、`ACPalette`、`ACFonts`、`ACModel`（两种形态的模型、部件名、导风板动作、出风锚点） | AppKit，并重新导出 `CuteACCore` |
 | `ReleaseCheck` | `ReleaseChecker`（按标签前缀找最新的稳定版）、`UpdateMonitor`（每天一次的自动检查和手动检查） | Foundation |
 
 3D 渲染器不在包里：CuteAC 用 SceneKit，Yun Home 用 RealityKit，但两边加载同一个模型、画同一张显示窗贴图、用同一个出风层。`RoomReading` 的 JSON 形状和 core 的 TypeScript 类型 `RoomReading` 一致，Yun Home 会把它传给获得 `sensor:thermal` 权限的插件。
@@ -61,7 +62,7 @@ open build/CuteAC.app
 |---|---|
 | `--show-popover` | 启动后自动打开弹窗，用于测量弹窗打开时的开销 |
 | `--show-pet` | 启动后显示桌面挂件 |
-| `--snapshot <dir>` | 离屏渲染三种状态的 PNG 后退出，用于检查模型和光照。室温使用固定的示例值 |
+| `--snapshot <dir>` | 离屏渲染挂机和柜机各三种状态的 PNG（共 6 张，柜机文件名带 `tower-`）后退出，用于检查模型和光照。室温使用固定的示例值 |
 | `--capture <dir>` | 打开弹窗，按脚本演示一遍（开机 → 调温 → 制热 → 关机），从运行中的视图逐帧导出 PNG 后退出。不需要屏幕录制权限。室温固定为示例值，不读取真实传感器 |
 
 重新生成文档里的 GIF：
@@ -81,12 +82,14 @@ gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/
 `Model/build_cute_ac.py` 是 Blender 脚本，模型完全由代码生成，可以重复构建：
 
 ```bash
-/Applications/Blender.app/Contents/MacOS/Blender -b -P Model/build_cute_ac.py
+/Applications/Blender.app/Contents/MacOS/Blender -b -P Model/build_cute_ac.py            # 两种都生成
+/Applications/Blender.app/Contents/MacOS/Blender -b -P Model/build_cute_ac.py -- tower   # 只生成柜机
 ```
 
-- 输出 `Kit/Sources/CuteACKit/Resources/CuteAC.usdz`，CuteAC 和 Yun Home 共用，同时在 `Model/renders/` 生成预渲染图，以后可以给 WidgetKit 小组件用。
-- 外形参照真实壁挂空调：顶部进风格栅、分成三个斜面的前面板、底部出风口和导风板、右侧显示窗。全部用平面着色，保留低多边形的棱角感。
-- 应用会控制这几个命名节点：`Louver`（导风板，转轴在顶边）、`Display`（UV 为 0–1 的平面，用来贴温度画面）、`Led`（指示灯）。改模型时请保持这些名字不变。
+- 输出 `Kit/Sources/CuteACKit/Resources/` 下的 `CuteAC.usdz`（挂机）和 `CuteACTower.usdz`（柜机），CuteAC 和 Yun Home 共用；同时在 `Model/renders/` 生成 `<形态>-cold/hot/off.png` 预渲染图，以后可以给 WidgetKit 小组件用。
+- 挂机参照真实壁挂空调：顶部进风格栅、分成三个斜面的前面板、底部出风口和导风板、右侧显示窗。柜机：顶部显示窗和指示灯，中上部是带竖向导风条的出风口，外面盖一排横向百叶，下部是三个竖向斜面的面板和底座。全部用平面着色，保留低多边形的棱角感。
+- 应用会控制这几个命名节点，两种形态名字相同：`Louver`、`Display`（0.25 × 0.1、UV 为 0–1 的平面，用来贴温度画面）、`Led`（指示灯）。挂机的 `Louver` 是一块导风板，转轴在顶边，整体绕本地 X 轴转；柜机的 `Louver` 是一组百叶，每个子节点绕自己中线的本地 X 轴转（见 `ACModel.louver(for:)`）。改模型时请保持这些名字不变。
+- `chamfer_box` 会把位置烘焙进顶点，需要绕自身转动的部件要用 `set_origin` 设好原点。
 - 坐标约定：导出时已转换成 Y 轴朝上，但每个节点内部仍沿用 Blender 的局部坐标轴（Z 轴朝上）。
 
 ## 省电设计

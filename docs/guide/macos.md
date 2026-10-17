@@ -10,6 +10,7 @@
 - 导风板会开合；显示窗用 **Digital-7 Mono** 数码管字体显示温度，和 Vue、React 组件是同一款字体
 - 制冷时飘雪花，制热时吹暖风线
 - **室温**：把这台 Mac 当作“房间”。界面显示 CPU/SoC 温度、风扇转速和 macOS 的散热状态；风扇转得越快，出风动画越密、越快。这些数据只读不写，不需要 root，只在弹窗或桌面挂件可见时采样
+- **挂机 / 柜机**：弹窗里一键切换外观。柜机的出风口是一排横向百叶，开机时倾斜，风从侧面吹出；桌面挂件也会变成竖长窗口
 - **桌面挂件**：在弹窗里打开“在桌面显示”，桌面上会出现一个透明无边框的窗口，只显示空调本体。拖动可以移动，双击开关机，右键可以设置置顶或隐藏
 - 状态结构和 `@yunlefun-home/air-conditioner` 的 core 一致：`{ status, mode, temperature }`
 
@@ -45,7 +46,7 @@ open build/CuteAC.app
 
 ## 模型
 
-模型由 `apps/macos/Model/build_cute_ac.py` 在 Blender 里用脚本生成，导出 USDZ 给 SceneKit 使用：
+挂机和柜机两个模型都由 `apps/macos/Model/build_cute_ac.py` 在 Blender 里用脚本生成，导出 USDZ 给 SceneKit 和 RealityKit 使用：
 
 ```bash
 /Applications/Blender.app/Contents/MacOS/Blender -b -P apps/macos/Model/build_cute_ac.py
@@ -53,4 +54,4 @@ open build/CuteAC.app
 
 ![低多边形空调模型](/macos/model-cold.webp)
 
-更多细节（调试参数、重新生成演示 GIF、节点命名约定）见 [`apps/macos/README.md`](https://github.com/YunYouJun/air-conditioner/tree/dev/apps/macos)。
+更多细节（调试参数、重新生成演示 GIF、节点命名约定）见 [`apps/macos/README.md`](https://github.com/YunYouJun/air-conditioner/tree/main/apps/macos)。

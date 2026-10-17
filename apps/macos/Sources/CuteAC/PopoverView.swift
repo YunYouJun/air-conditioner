@@ -21,8 +21,8 @@ struct PopoverView: View {
 
   var body: some View {
     VStack(spacing: 14) {
-      ACSceneView(controller: sceneController, state: state, room: room, isActive: visibility.isVisible)
-        .frame(height: 190)
+      ACSceneView(controller: sceneController, state: state, room: room, form: settings.form, isActive: visibility.isVisible)
+        .frame(height: settings.form == .wall ? 190 : 320)
         .background(
           RoundedRectangle(cornerRadius: 18, style: .continuous)
             .fill(LinearGradient(
@@ -65,21 +65,36 @@ struct PopoverView: View {
 
       HStack(spacing: 10) {
         stepButton("minus", delta: -1, disabled: state.temperature <= ACState.temperatureRange.lowerBound)
-        Picker("模式", selection: Binding(get: { state.mode }, set: { store.setMode($0) })) {
-          Label("制冷", systemImage: "snowflake").tag(ACMode.cold)
-          Label("制热", systemImage: "sun.max.fill").tag(ACMode.hot)
-        }
-        .pickerStyle(.segmented)
-        .labelsHidden()
+        IconSegmentedPicker(
+          selection: Binding(get: { state.mode }, set: { mode in withAnimation(.snappy) { store.setMode(mode) } }),
+          options: [
+            .init(value: .cold, title: "制冷", symbol: "snowflake", tint: Color(nsColor: ACPalette.accent(for: .cold))),
+            .init(value: .hot, title: "制热", symbol: "sun.max.fill", tint: Color(nsColor: ACPalette.accent(for: .hot))),
+          ]
+        )
+        .help("模式")
         stepButton("plus", delta: 1, disabled: state.temperature >= ACState.temperatureRange.upperBound)
       }
 
-      Toggle(isOn: $settings.showDesktopPet) {
-        Label("在桌面显示", systemImage: "macwindow.on.rectangle")
-          .font(.callout)
+      HStack {
+        IconSegmentedPicker(
+          selection: $settings.form,
+          options: [
+            .init(value: .wall, title: ACForm.wall.label, symbol: "air.conditioner.horizontal"),
+            .init(value: .tower, title: ACForm.tower.label, symbol: "air.conditioner.vertical"),
+          ],
+          compact: true
+        )
+        .frame(width: 140)
+        .help("挂机或柜机，只改变外观")
+        Spacer()
+        Toggle(isOn: $settings.showDesktopPet) {
+          Label("在桌面显示", systemImage: "macwindow.on.rectangle")
+            .font(.callout)
+        }
+        .toggleStyle(.switch)
+        .controlSize(.small)
       }
-      .toggleStyle(.switch)
-      .controlSize(.small)
 
       HStack {
         Text("拖动 3D 空调可旋转")
@@ -158,5 +173,50 @@ struct PopoverView: View {
         .frame(width: 34, height: 26)
     }
     .disabled(disabled)
+  }
+}
+
+/// A segmented control that shows an icon with each title. AppKit's
+/// segmented `Picker` drops the icon of a `Label`, and the mode should read
+/// at a glance: snowflake for cooling, sun for heating.
+struct IconSegmentedPicker<Value: Hashable>: View {
+  struct Option {
+    var value: Value
+    var title: String
+    var symbol: String
+    /// Colour of the selected segment's icon; the accent colour by default.
+    var tint: Color?
+  }
+
+  @Binding var selection: Value
+  let options: [Option]
+  var compact = false
+
+  var body: some View {
+    HStack(spacing: 2) {
+      ForEach(options, id: \.value) { option in
+        let selected = option.value == selection
+        Button { selection = option.value } label: {
+          Label(option.title, systemImage: option.symbol)
+            .labelStyle(.titleAndIcon)
+            .font(compact ? .callout : .body.weight(selected ? .semibold : .regular))
+            .foregroundStyle(selected ? AnyShapeStyle(option.tint ?? .accentColor) : AnyShapeStyle(.secondary))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, compact ? 3 : 5)
+            .background {
+              if selected {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                  .fill(Color(nsColor: .controlBackgroundColor))
+                  .shadow(color: .black.opacity(0.12), radius: 1, y: 0.5)
+              }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+      }
+    }
+    .padding(2)
+    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.primary.opacity(0.07)))
   }
 }
