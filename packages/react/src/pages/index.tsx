@@ -3,17 +3,20 @@ import { acFormLabels, acForms, isAcForm } from '@yunlefun-home/air-conditioner-
 import React, { useState } from 'react'
 
 import { useLocalStorage } from 'usehooks-ts'
+import * as pkg from '~/../package.json'
 import Ac3D, { supportsWebGL } from '~/components/ac3d'
-import AirConditioner from '~/components/ac/AirConditioner'
 import ComputerCooling from '~/components/ComputerCooling'
+import { EnergySavingLabel } from '~/components/EnergySavingLabel'
 import ProTip from '~/components/ProTip'
 
 import RemoteControl from '~/components/RemoteControl'
+import { peekAudioController } from '~/components/RemoteControl/audio'
 import { useFloatingRemote } from '~/components/RemoteControl/floating'
 import Toast from '~/components/Toast'
 
 import { useAcCtx } from '~/context'
 import { useDetectStorage } from '~/hooks'
+import { AirConditioner } from '~/lib/AirConditioner'
 
 /**
  * 主页
@@ -52,13 +55,21 @@ const Home: React.FC = () => {
           {show3D
             ? <Ac3D state={ac} form={form} onError={() => setFailed(true)} />
             : (
+                // 与组件库同一个空调，用 3 : 1 的长款机身
                 <AirConditioner
+                  size="wide"
                   status={ac.status}
                   temperature={ac.temperature}
                   mode={ac.mode}
                   swing={ac.swing}
                   fan={ac.fan}
-                />
+                  title={pkg.description}
+                  logoUrl={`${import.meta.env.BASE_URL}yun-logo.svg`}
+                  logoHref={pkg.repository.url}
+                  onDrip={() => peekAudioController()?.drip()}
+                >
+                  {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
+                </AirConditioner>
               )}
           {/* 紧贴出风口：节能建议从这里被风吹出来 */}
           <Toast />

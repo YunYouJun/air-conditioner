@@ -127,21 +127,45 @@ html.dark .acw-note[data-mode="hot"],
 .acw-unit {
   width: min(100%, 360px);
   /* 指针跟随的轻微 3D 倾斜（--acw-tilt-* 由组件写入，仅精细指针且未开启减少动效时） */
-  transform: perspective(800px) rotateX(var(--acw-tilt-x, 0deg)) rotateY(var(--acw-tilt-y, 0deg));
+  transform: perspective(var(--acw-perspective, 800px)) rotateX(var(--acw-tilt-x, 0deg)) rotateY(var(--acw-tilt-y, 0deg));
   transition: transform var(--acw-motion-duration-slow) var(--acw-motion-ease-standard);
+}
+
+/*
+ * 长款机身（data-size="wide"，600 × 200，3 : 1）：网站主页用。只改尺寸相关的位置，
+ * 其余与 360 × 128 的标准款共用；窄容器下同样等比缩小（组件按 acShellSize.wide 计算缩放）。
+ */
+.acw-unit[data-size="wide"] {
+  --acw-shell-height: 200px;
+  --acw-perspective: 1200px;
+  --acw-energy-scale: 0.9;
+
+  width: min(100%, 600px);
+}
+
+.acw-unit[data-size="wide"] .acw-logo {
+  top: 156px;
+}
+
+.acw-unit[data-size="wide"] .acw-outlet {
+  top: 174px;
+}
+
+.acw-unit[data-size="wide"] .acw-led {
+  top: 178px;
 }
 
 /* --------------------------------- 机身 ---------------------------------- */
 .acw-shell {
   position: relative;
-  height: 128px;
+  height: var(--acw-shell-height, 128px);
   /* 窄容器下整体等比缩小，保持长款比例（--acw-scale 由组件按容器宽度写入）。
      用百分比换算回 360px 设计宽度，避免固定宽度撑大父容器的最小尺寸 */
   width: calc(100% / var(--acw-scale, 1));
   transform: scale(var(--acw-scale, 1));
   transform-origin: 0 0;
   /* 缩放不改变布局尺寸，用负外边距收回多出来的高度 */
-  margin-bottom: calc(128px * (var(--acw-scale, 1) - 1));
+  margin-bottom: calc(var(--acw-shell-height, 128px) * (var(--acw-scale, 1) - 1));
   /* 伪 3D：顶部受光、底部弧面渐暗，配合内侧高光与投在墙上的阴影 */
   background: linear-gradient(to bottom, #fff 0%, #fdfdfd 48%, #eef0f3 100%);
   border: 1px solid var(--acw-border-color);

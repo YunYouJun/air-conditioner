@@ -17,10 +17,13 @@ const props = withDefaults(defineProps<{
   logoHref?: string
   /** 是否显示能效标签 */
   showEnergyLabel?: boolean
+  /** 机身尺寸：`compact` 为 360 × 128 的标准款，`wide` 为 600 × 200 的长款（3 : 1） */
+  size?: keyof typeof acShellSize
 }>(), {
   logoUrl: '/yun-logo.svg',
   logoHref: 'https://github.com/YunYouJun/air-conditioner',
   showEnergyLabel: true,
+  size: 'compact',
 })
 
 const emit = defineEmits<{
@@ -58,7 +61,7 @@ onMounted(() => {
   if (!unitRef.value)
     return
   cleanups.push(
-    observeAcScale(unitRef.value, acShellSize.compact.width, value => scale.value = value),
+    observeAcScale(unitRef.value, acShellSize[props.size].width, value => scale.value = value),
     observeAcTilt(unitRef.value, (x, y) => tilt.value = [x, y]),
   )
 })
@@ -80,6 +83,7 @@ watch(() => state.value.mode, () => {
     :data-swing="state.swing ? 'on' : 'off'"
     :data-fan="state.fan ?? 'auto'"
     :data-drip="condensation.drip"
+    :data-size="size === 'compact' ? undefined : size"
     :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg`, '--acw-mist': condensation.mist, '--acw-drip-cycle': condensation.dripCycle }"
   >
     <div class="acw-shell">
@@ -126,6 +130,9 @@ watch(() => state.value.mode, () => {
 
       <!-- 状态指示灯 -->
       <span class="acw-led" :aria-label="state.status ? 'on' : 'off'" />
+
+      <!-- 额外贴在机身上的内容（例如宣传贴纸） -->
+      <slot />
     </div>
 
     <!-- 风特效 -->

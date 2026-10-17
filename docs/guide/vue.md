@@ -112,7 +112,7 @@ import '@yunlefun-home/air-conditioner/style.css'
 
 ## 尺寸
 
-机身按 360 × 128（约 3:1，接近真实壁挂机）的设计尺寸绘制：容器不足 360px 时整体等比缩小（依据 core 的 `observeAcScale`），保持长款比例，不会被压扁；`.acw-root` 默认占满容器宽度（最大 420px）。
+机身默认按 360 × 128（约 3:1，接近真实壁挂机）的设计尺寸绘制，`AirConditioner` 也可以传 `size="wide"` 换成 600 × 200 的长款（网站主页用的就是它）：容器不足 360px 时整体等比缩小（依据 core 的 `observeAcScale`），保持长款比例，不会被压扁；`.acw-root` 默认占满容器宽度（最大 420px）。
 
 机身用渐变与阴影模拟顶部受光、底部弧面和墙面投影；使用鼠标 / 触控板时，机身会随指针轻微 3D 倾斜（core 的 `observeAcTilt`，触屏与减少动效时不启用）。
 

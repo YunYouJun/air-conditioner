@@ -1,5 +1,5 @@
 import type { AcState } from '@yunlefun-home/air-conditioner-core'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { acModeIcons, acShellSize, defaultAcState, getAcCondensationStyle } from '@yunlefun-home/air-conditioner-core'
 import { useRef, useState } from 'react'
 import { useOptionalAirConditionerState } from './context'
@@ -17,6 +17,14 @@ export interface AirConditionerProps extends Partial<AcState> {
   showEnergyLabel?: boolean
   /** 一滴冷凝水落下（用来播放滴水声） */
   onDrip?: () => void
+  /**
+   * 机身尺寸：`compact` 为 360 × 128 的标准款，`wide` 为 600 × 200 的长款（3 : 1）。
+   * 两种都会在窄容器里等比缩小。
+   * @default 'compact'
+   */
+  size?: keyof typeof acShellSize
+  /** 额外贴在机身上的内容（例如宣传贴纸），按机身坐标绝对定位 */
+  children?: ReactNode
 }
 
 /**
@@ -48,6 +56,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
     logoUrl = '/yun-logo.svg',
     logoHref = 'https://github.com/YunYouJun/air-conditioner',
     showEnergyLabel = true,
+    size = 'compact',
   } = props
   const state = useOptionalAirConditionerState(props)
   const mode = props.mode ?? state.mode
@@ -61,7 +70,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
   const direction = useChangeDirection(temperature)
   const modeChanged = useHasChanged(mode)
   const unitRef = useRef<HTMLDivElement>(null)
-  const scale = useAcScale(unitRef, acShellSize.compact.width)
+  const scale = useAcScale(unitRef, acShellSize[size].width)
   const [tiltX, tiltY] = useAcTilt(unitRef)
 
   // 结构与 Vue 版 AirConditioner.vue 一致，共用同一份样式
@@ -74,6 +83,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
       data-swing={swing ? 'on' : 'off'}
       data-fan={fan}
       data-drip={condensation.drip}
+      data-size={size === 'compact' ? undefined : size}
       style={{
         '--acw-scale': scale,
         '--acw-tilt-x': `${tiltX}deg`,
@@ -128,6 +138,8 @@ export function AirConditioner(props: AirConditionerProps = {}) {
 
         {/* 状态指示灯 */}
         <span className="acw-led" aria-label={status ? 'on' : 'off'} />
+
+        {props.children}
       </div>
 
       {/* 风特效 */}

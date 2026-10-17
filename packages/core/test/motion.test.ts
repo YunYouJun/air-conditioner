@@ -50,7 +50,6 @@ describe('motion tokens', () => {
   it.each([
     ['vue', '../../vue/src/style.css'],
     ['react component library', '../../react/src/lib/style.css'],
-    ['react app', '../../react/src/styles/motion.css'],
   ])('keeps the %s stylesheet in sync with the core tokens', (_name, relativePath) => {
     expect(readTokenBlock(relativePath)).toBe(renderAcMotionCssVars(':root'))
   })

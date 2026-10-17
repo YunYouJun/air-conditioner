@@ -1,7 +1,8 @@
 import { adsense } from '~/config'
+import './EnergySavingLabel.scss'
 
 /**
- * 节能产品惠民工程
+ * 节能产品惠民工程：网站独有的宣传贴纸，作为子元素贴在组件库的空调机身上
  */
 export function EnergySavingLabel() {
   // const adsenseLink = 'https://sponsors.yunyoujun.cn'

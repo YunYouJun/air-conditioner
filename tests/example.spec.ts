@@ -25,7 +25,7 @@ test('renders the current home experience', async ({ page }) => {
 
   await expect(page).toHaveTitle(/便携小空调/)
   await expect(page.getByRole('heading', { name: '便携小空调' })).toBeVisible()
-  await expect(page.locator('.ac-temperature')).toHaveText('26')
+  await expect(page.locator('.acw-temperature')).toHaveText('26')
   await expect(page.getByRole('button', { name: /遥控器悬浮窗|独立遥控器/ })).toBeVisible()
 })
 
@@ -46,19 +46,19 @@ test('changes temperature and keeps the upper and lower bounds', async ({ page }
   await gotoFresh(page)
 
   await page.getByRole('button', { name: 'add' }).click()
-  await expect(page.locator('.ac-temperature')).toHaveText('27')
+  await expect(page.locator('.acw-temperature')).toHaveText('27')
 
   await page.getByRole('button', { name: 'reduce' }).click()
-  await expect(page.locator('.ac-temperature')).toHaveText('26')
+  await expect(page.locator('.acw-temperature')).toHaveText('26')
 
   await gotoFresh(page, '/', { mode: 'cold', status: false, temperature: 31 })
   await page.getByRole('button', { name: 'add' }).click()
-  await expect(page.locator('.ac-temperature')).toHaveText('31')
+  await expect(page.locator('.acw-temperature')).toHaveText('31')
   await expect(page.getByText('已经是最大温度啦！')).toBeVisible()
 
   await gotoFresh(page, '/', { mode: 'cold', status: false, temperature: 16 })
   await page.getByRole('button', { name: 'reduce' }).click()
-  await expect(page.locator('.ac-temperature')).toHaveText('16')
+  await expect(page.locator('.acw-temperature')).toHaveText('16')
   await expect(page.getByText('已经是最小温度啦！')).toBeVisible()
 })
 
@@ -69,7 +69,7 @@ test('persists state across reloads', async ({ page }) => {
   await page.getByRole('button', { name: 'power' }).click()
   await page.reload()
 
-  await expect(page.locator('.ac-temperature')).toHaveText('27')
+  await expect(page.locator('.acw-temperature')).toHaveText('27')
   await expect.poll(() => readAcState(page)).toMatchObject({ status: true, temperature: 27 })
 })
 
@@ -110,7 +110,7 @@ test('switches to the 3D model and back', async ({ page }) => {
 
   await toggle.click()
   await expect(page.locator('.ac-3d__canvas')).toBeVisible()
-  await expect(page.locator('.ac-unit')).toHaveCount(0)
+  await expect(page.locator('.acw-unit')).toHaveCount(0)
   await page.getByRole('group', { name: '机型' }).getByRole('button', { name: '柜机' }).click()
   await expect(page.locator('.ac-3d')).toHaveAttribute('data-form', 'tower')
 
@@ -120,6 +120,6 @@ test('switches to the 3D model and back', async ({ page }) => {
 
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
   await toggle.click()
-  await expect(page.locator('.ac-unit')).toBeVisible()
+  await expect(page.locator('.acw-unit')).toBeVisible()
   await expect(page.locator('.ac-3d')).toHaveCount(0)
 })
