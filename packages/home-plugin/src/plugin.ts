@@ -20,6 +20,7 @@ function normalize(value: unknown): AcState {
     mode: record.mode === 'hot' ? 'hot' : 'cold',
     temperature: typeof record.temperature === 'number' && Number.isFinite(record.temperature) ? record.temperature : defaultAcState.temperature,
     sound: isAcSoundMode(record.sound) ? record.sound : defaultAcState.sound,
+    swing: typeof record.swing === 'boolean' ? record.swing : defaultAcState.swing,
   })
 }
 
@@ -31,6 +32,7 @@ function isAction(value: unknown): value is AcAction {
     case 'decrement':
     case 'toggleStatus':
     case 'cycleSound':
+    case 'toggleSwing':
       return true
     case 'status':
       return typeof value.status === 'boolean'
@@ -38,6 +40,8 @@ function isAction(value: unknown): value is AcAction {
       return value.mode === 'cold' || value.mode === 'hot'
     case 'sound':
       return acSoundModes.includes(value.sound as AcState['sound'])
+    case 'swing':
+      return typeof value.swing === 'boolean'
     default:
       return false
   }

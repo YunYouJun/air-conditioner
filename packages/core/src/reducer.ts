@@ -23,6 +23,7 @@ export function normalizeAcState(state: Partial<AcState> | undefined, limits?: A
     ...state,
     temperature: clampTemperature(state?.temperature ?? defaultAcState.temperature, limits),
     sound: isAcSoundMode(state?.sound) ? state.sound : defaultAcState.sound,
+    swing: typeof state?.swing === 'boolean' ? state.swing : defaultAcState.swing,
   }
 }
 
@@ -87,6 +88,16 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
         ...state,
         sound: nextAcSoundMode(state.sound),
       }
+    case 'toggleSwing':
+      return {
+        ...state,
+        swing: !state.swing,
+      }
+    case 'swing':
+      return {
+        ...state,
+        swing: action.swing === true,
+      }
     case 'update':
       return normalizeAcState({
         ...state,
@@ -108,6 +119,10 @@ export function getSoundModeMessage(sound: AcState['sound']): string {
     mute: '空调不再发出任何声音',
   }
   return `${acSoundModeLabels[sound]}模式：${hints[sound]}`
+}
+
+export function getSwingMessage(swing: AcState['swing']): string {
+  return swing ? '扫风已开启：出风左右摆动' : '扫风已关闭：导风板停在当前位置'
 }
 
 /**
@@ -144,6 +159,13 @@ export function getAcActionNotification(
   if ((action.type === 'sound' || action.type === 'cycleSound') && nextState.sound !== previousState.sound) {
     return {
       message: getSoundModeMessage(nextState.sound),
+      severity: 'info',
+    }
+  }
+
+  if ((action.type === 'swing' || action.type === 'toggleSwing') && nextState.swing !== previousState.swing) {
+    return {
+      message: getSwingMessage(nextState.swing),
       severity: 'info',
     }
   }

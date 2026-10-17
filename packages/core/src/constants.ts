@@ -40,6 +40,7 @@ export const defaultAcState: AcState = {
   status: false,
   temperature: 26,
   sound: 'normal',
+  swing: false,
 }
 
 /**

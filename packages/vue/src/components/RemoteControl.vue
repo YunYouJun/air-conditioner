@@ -11,6 +11,7 @@ const emit = defineEmits<{
 const airConditioner = useAirConditioner()
 const isOn = computed(() => airConditioner.state.value.status)
 const sound = computed(() => airConditioner.state.value.sound)
+const swing = computed(() => airConditioner.state.value.swing)
 
 function run(command: string, action: () => void) {
   emit('command', command)
@@ -67,15 +68,27 @@ function setMode(mode: AcMode) {
     >
       <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" :d="acIconPaths.decrease" /></svg>
     </button>
-    <button
-      type="button"
-      class="acw-button acw-button-sound"
-      aria-label="sound"
-      :title="`声音：${acSoundModeLabels[sound]}`"
-      :data-sound="sound"
-      @click="run('sound', airConditioner.cycleSound)"
-    >
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" :d="acIconPaths[acSoundIcons[sound]]" /></svg>
-    </button>
+    <div class="acw-remote-row">
+      <button
+        type="button"
+        class="acw-button acw-button-swing"
+        aria-label="swing"
+        :aria-pressed="swing"
+        :title="`扫风：${swing ? '开' : '关'}`"
+        @click="run('swing', airConditioner.toggleSwing)"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" :d="acIconPaths.swing" /></svg>
+      </button>
+      <button
+        type="button"
+        class="acw-button acw-button-sound"
+        aria-label="sound"
+        :title="`声音：${acSoundModeLabels[sound]}`"
+        :data-sound="sound"
+        @click="run('sound', airConditioner.cycleSound)"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" :d="acIconPaths[acSoundIcons[sound]]" /></svg>
+      </button>
+    </div>
   </div>
 </template>

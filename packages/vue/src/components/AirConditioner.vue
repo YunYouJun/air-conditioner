@@ -69,6 +69,7 @@ watch(() => state.value.mode, () => {
     class="acw-unit"
     :data-mode="state.mode"
     :data-status="state.status ? 'on' : 'off'"
+    :data-swing="state.swing ? 'on' : 'off'"
     :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg` }"
   >
     <div class="acw-shell">

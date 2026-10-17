@@ -8,9 +8,10 @@ const manifest = JSON.parse(readFileSync(new URL('../plugin/manifest.json', impo
 
 describe('air conditioner home plugin', () => {
   it('creates and normalizes untrusted state', () => {
-    expect(plugin.create()).toEqual({ status: false, mode: 'cold', temperature: 26, sound: 'normal' })
-    expect(plugin.normalize({ status: 'yes', mode: 'dry', temperature: 99, sound: 'loud', extra: 1 }))
-      .toEqual({ status: false, mode: 'cold', temperature: 31, sound: 'normal' })
+    expect(plugin.create()).toEqual({ status: false, mode: 'cold', temperature: 26, sound: 'normal', swing: false })
+    expect(plugin.normalize({ status: 'yes', mode: 'dry', temperature: 99, sound: 'loud', swing: 'on', extra: 1 }))
+      .toEqual({ status: false, mode: 'cold', temperature: 31, sound: 'normal', swing: false })
+    expect(plugin.normalize({ swing: true }).swing).toBe(true)
   })
 
   it('reduces actions with optional device limits', () => {
@@ -24,6 +25,9 @@ describe('air conditioner home plugin', () => {
   it('validates actions', () => {
     expect(plugin.isAction({ type: 'sound', sound: 'sleep' })).toBe(true)
     expect(plugin.isAction({ type: 'sound', sound: 'loud' })).toBe(false)
+    expect(plugin.isAction({ type: 'toggleSwing' })).toBe(true)
+    expect(plugin.isAction({ type: 'swing', swing: true })).toBe(true)
+    expect(plugin.isAction({ type: 'swing', swing: 'on' })).toBe(false)
     expect(plugin.isAction({ type: 'update', payload: { temperature: 20 } })).toBe(false)
     expect(plugin.isAction(null)).toBe(false)
   })

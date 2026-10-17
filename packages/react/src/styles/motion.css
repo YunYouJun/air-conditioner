@@ -6,6 +6,7 @@
   --acw-motion-duration-base: 240ms;
   --acw-motion-duration-slow: 420ms;
   --acw-motion-duration-flow: 1800ms;
+  --acw-motion-duration-swing: 5200ms;
   --acw-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --acw-motion-ease-enter: cubic-bezier(0, 0, 0, 1);
   --acw-motion-ease-exit: cubic-bezier(0.3, 0, 1, 1);
@@ -19,6 +20,7 @@
     --acw-motion-duration-base: 120ms;
     --acw-motion-duration-slow: 120ms;
     --acw-motion-duration-flow: 0ms;
+    --acw-motion-duration-swing: 0ms;
   }
 }
 /* @ac-motion-tokens:end */
