@@ -1,0 +1,212 @@
+// 使用说明书：默认折起只露出封面，展开后是细线分隔、编号章节的说明书内页
+.ac-manual {
+  --manual-line: color-mix(in srgb, currentColor 14%, transparent);
+  --manual-paper: color-mix(in srgb, currentColor 3%, transparent);
+
+  max-width: 320px;
+  margin: 3rem auto 1.5rem;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--manual-line);
+    text-underline-offset: 2px;
+
+    &:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+
+  &__book {
+    border: 1px solid var(--manual-line);
+    border-radius: 4px 8px 8px 4px;
+    // 左侧装订线
+    box-shadow: inset 3px 0 0 var(--manual-line);
+    background: var(--manual-paper);
+    text-align: left;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+
+    &:hover,
+    &[open],
+    &:focus-within {
+      opacity: 0.95;
+    }
+
+    &[open] .ac-manual__chevron {
+      transform: rotate(180deg);
+    }
+
+    &[open] .ac-manual__pages {
+      animation: ac-manual-unfold 0.3s ease-out;
+    }
+  }
+
+  &__cover {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.9rem 0.55rem 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &__en {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 400;
+    font-size: 10px;
+    opacity: 0.5;
+  }
+
+  &__chevron {
+    margin-left: auto;
+    transition: transform 0.2s;
+  }
+
+  &__pages {
+    padding: 0 1rem 0.9rem;
+    border-top: 1px dashed var(--manual-line);
+
+    section {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--manual-line);
+    }
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin: 0 0 0.4rem;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+  }
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0.7rem 0 0.6rem;
+    border-bottom: 2px solid var(--manual-line);
+    font-weight: 600;
+  }
+
+  &__sub {
+    font-weight: 400;
+    font-size: 11px;
+    opacity: 0.6;
+  }
+
+  &__model {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 400;
+    font-size: 10px;
+    text-align: right;
+    opacity: 0.6;
+  }
+
+  &__num {
+    display: inline-grid;
+    place-items: center;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 400;
+  }
+
+  &__faq {
+    margin: 0;
+
+    dt {
+      font-weight: 500;
+
+      &::before {
+        content: 'Q ';
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        opacity: 0.5;
+      }
+    }
+
+    dd {
+      margin: 0 0 0.35rem;
+      opacity: 0.7;
+
+      &::before {
+        content: 'A ';
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        opacity: 0.6;
+      }
+    }
+  }
+
+  &__cloud {
+    display: inline-block;
+    margin-left: 0.15rem;
+    color: #0078e7;
+    vertical-align: -2px;
+  }
+
+  &__social {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 15px;
+
+    a {
+      display: inline-flex;
+      text-decoration: none;
+      opacity: 0.7;
+      transition:
+        color 0.15s,
+        opacity 0.15s,
+        transform 0.15s;
+
+      &:hover,
+      &:focus-visible {
+        color: var(--brand);
+        opacity: 1;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  &__keep {
+    margin: 0.6rem 0 0;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-align: center;
+    opacity: 0.45;
+  }
+
+  &__copyright {
+    margin: 0.75rem 0 0;
+    font-size: 11px;
+    opacity: 0.45;
+  }
+}
+
+@keyframes ac-manual-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-manual__book[open] .ac-manual__pages {
+    animation: none;
+  }
+}
