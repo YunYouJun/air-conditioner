@@ -3,14 +3,15 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-swift build -c release
+configuration="${CONFIGURATION:-release}"
+swift build -c "$configuration"
 
 APP=build/CuteAC.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp .build/release/CuteAC "$APP/Contents/MacOS/CuteAC"
+cp ".build/$configuration/CuteAC" "$APP/Contents/MacOS/CuteAC"
 # SwiftPM resource bundles (the kit's model and font) live next to the binary.
-cp -R .build/release/*.bundle "$APP/Contents/Resources/"
+cp -R .build/"$configuration"/*.bundle "$APP/Contents/Resources/"
 
 # The app shares the repository version (bumpp keeps package.json files in
 # sync), so a v0.4.0 tag ships CuteAC 0.4.0 and the update check can compare.
@@ -31,6 +32,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
+  <key>NSPrincipalClass</key><string>NSApplication</string>
+  <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
+  <key>NSLocalNetworkUsageDescription</key><string>连接 Home 中已绑定的 Home Assistant 空调。</string>
 </dict>
 </plist>
 PLIST

@@ -121,8 +121,16 @@ struct DesktopPetView: View {
 
   var body: some View {
     let size = DesktopPetPanel.size(for: settings.form)
-    ACSceneView(controller: sceneController, state: store.state, room: thermal.reading, form: settings.form,
+    ACSceneView(controller: sceneController, state: store.state, room: store.sceneRoom(thermal.reading), form: settings.form,
                 isActive: true, interactive: false)
       .frame(width: size.width, height: size.height)
+      .overlay(alignment: .bottom) {
+        if store.isReal {
+          Text(store.selectedDevice?.roomName ?? "真实空调")
+            .font(.caption.weight(.medium)).padding(.horizontal, 8).padding(.vertical, 3)
+            .background(.regularMaterial, in: Capsule()).padding(.bottom, 8)
+        }
+      }
+      .accessibilityLabel(store.deviceLabel)
   }
 }

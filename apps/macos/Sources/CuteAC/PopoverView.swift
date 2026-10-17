@@ -21,7 +21,8 @@ struct PopoverView: View {
 
   var body: some View {
     VStack(spacing: 14) {
-      ACSceneView(controller: sceneController, state: state, room: room, form: settings.form, isActive: visibility.isVisible)
+      devicePicker
+      ACSceneView(controller: sceneController, state: state, room: store.sceneRoom(room), form: settings.form, isActive: visibility.isVisible)
         .frame(height: settings.form == .wall ? 190 : 320)
         .background(
           RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -34,7 +35,7 @@ struct PopoverView: View {
 
       HStack(alignment: .firstTextBaseline) {
         VStack(alignment: .leading, spacing: 2) {
-          Text(state.status ? (state.mode == .cold ? "制冷中" : "制热中") : "待机")
+          Text(store.status)
             .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
           HStack(alignment: .firstTextBaseline, spacing: 2) {
@@ -59,24 +60,38 @@ struct PopoverView: View {
         }
         .buttonStyle(.plain)
         .help(state.status ? "关闭" : "开启")
+        .accessibilityLabel(state.status ? "关闭当前空调" : "开启当前空调")
+        .disabled(!store.canControl)
       }
 
-      roomRow
+      if store.isReal {
+        HStack {
+          if store.connectionStatus == "已连接", store.snapshot?.available == true,
+             let temperature = store.snapshot?.currentTemperature {
+            Label("室温 \(temperature.formatted())°C", systemImage: "thermometer.medium")
+              .help("空调传感器回报")
+          }
+          Spacer()
+          Text(store.pending ? "等待设备确认…" : store.connectionStatus)
+        }.font(.caption).foregroundStyle(.secondary)
+        if let error = store.connectionError { Text(error).font(.caption).foregroundStyle(.orange) }
+      } else { roomRow }
 
       HStack(spacing: 10) {
-        stepButton("minus", delta: -1, disabled: state.temperature <= ACState.temperatureRange.lowerBound)
+        stepButton("minus", delta: -store.step, disabled: state.temperature <= store.minimum || !store.supportsTemperature)
         IconSegmentedPicker(
           selection: Binding(get: { state.mode }, set: { mode in withAnimation(.snappy) { store.setMode(mode) } }),
           options: [
-            .init(value: .cold, title: "制冷", symbol: "snowflake", tint: Color(nsColor: ACPalette.accent(for: .cold))),
-            .init(value: .hot, title: "制热", symbol: "sun.max.fill", tint: Color(nsColor: ACPalette.accent(for: .hot))),
+            .init(value: .cold, title: "制冷", symbol: "snowflake", tint: Color(nsColor: ACPalette.accent(for: .cold)), disabled: !store.supports(.cold)),
+            .init(value: .hot, title: "制热", symbol: "sun.max.fill", tint: Color(nsColor: ACPalette.accent(for: .hot)), disabled: !store.supports(.hot)),
           ]
         )
         .help("模式")
-        stepButton("plus", delta: 1, disabled: state.temperature >= ACState.temperatureRange.upperBound)
-      }
+        stepButton("plus", delta: store.step, disabled: state.temperature >= store.maximum || !store.supportsTemperature)
+      }.disabled(!store.canControl)
 
       // 风速：自动跟随这台 Mac 的风扇，固定档位让出风保持不变 (#29).
+      if !store.isReal {
       IconSegmentedPicker(
         selection: Binding(get: { state.fan }, set: { fan in withAnimation(.snappy) { store.setFan(fan) } }),
         options: [
@@ -88,6 +103,7 @@ struct PopoverView: View {
         compact: true
       )
       .help("风速：自动时跟随这台 Mac 的风扇")
+      }
 
       HStack {
         IconSegmentedPicker(
@@ -121,7 +137,29 @@ struct PopoverView: View {
       }
     }
     .padding(16)
-    .frame(width: 320)
+    .frame(width: 360)
+  }
+
+  private var devicePicker: some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Picker("当前空调", selection: Binding(get: { store.selectedID ?? "" }, set: { store.selectDevice($0.isEmpty ? nil : $0) })) {
+        Text("本机虚拟空调").tag("")
+        ForEach(store.devices) { Text($0.label).tag($0.id) }
+      }.accessibilityLabel("当前控制的空调")
+      if store.isReal { Text(store.deviceLabel).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+      HStack {
+        Button("刷新绑定") { store.reloadBindings() }
+        if store.isReal { Button("重新连接") { store.reconnect() } }
+        Spacer()
+        Button("在 Home 管理") {
+          if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "fun.yunle.home") {
+            NSWorkspace.shared.open(url)
+          }
+        }
+      }.buttonStyle(.link).font(.caption)
+      if let error = store.catalogError { Text(error).font(.caption).foregroundStyle(.orange) }
+      else if store.devices.isEmpty { Text("在 Home 中绑定空调后，这里会自动显示。").font(.caption).foregroundStyle(.secondary) }
+    }
   }
 
   /// A newer release links to its download; otherwise a manual check whose
@@ -186,6 +224,7 @@ struct PopoverView: View {
         .frame(width: 34, height: 26)
     }
     .disabled(disabled)
+    .accessibilityLabel(symbol == "minus" ? "降低温度" : "升高温度")
   }
 }
 
@@ -199,6 +238,7 @@ struct IconSegmentedPicker<Value: Hashable>: View {
     var symbol: String
     /// Colour of the selected segment's icon; the accent colour by default.
     var tint: Color?
+    var disabled = false
   }
 
   @Binding var selection: Value
@@ -226,6 +266,7 @@ struct IconSegmentedPicker<Value: Hashable>: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(option.disabled)
         .accessibilityAddTraits(selected ? .isSelected : [])
       }
     }

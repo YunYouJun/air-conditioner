@@ -116,10 +116,19 @@ jobs:
     if: github.ref_type == 'tag'
     runs-on: macos-latest
     timeout-minutes: 30
+    env:
+      HOME_DEVICE_KIT_PATH: ${{ github.workspace }}/.deps/home
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
+
+      - name: Check out HomeDeviceKit
+        uses: actions/checkout@v6
+        with:
+          repository: YunLeFun/home
+          ref: 9e71679dd0ef0f0e5329413e910e46c17d945a4c # Shared HA bindings and device collection
+          path: .deps/home
 
       - name: Verify tag matches the app version
         run: |

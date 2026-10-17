@@ -28,7 +28,7 @@ final class AppSettings: ObservableObject {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
-  private let store = ACStore()
+  private let store = ACStore(allowsRealDevices: !CommandLine.arguments.contains("--capture"))
   private let settings = AppSettings()
   private let visibility = PopoverVisibility()
   private let thermalMonitor = ThermalMonitor()
@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     NSApp.setActivationPolicy(.accessory)
     ACFonts.registerIfNeeded()
 
-    sceneController.apply(store.state, room: thermalMonitor.reading, animated: false)
+    sceneController.apply(store.state, room: store.sceneRoom(thermalMonitor.reading), animated: false)
 
     popover.behavior = .transient
     popover.animates = true
@@ -158,9 +158,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   }
 
   func popoverWillShow(_ notification: Notification) {
+    store.reloadBindings()
     visibility.isVisible = true
     updateSceneActivity()
   }
+
+  func applicationWillTerminate(_ notification: Notification) { store.shutdown() }
 
   func popoverDidClose(_ notification: Notification) {
     visibility.isVisible = false
@@ -195,6 +198,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
       }
     }
     else if arguments.contains("--show-popover") {
+      // Keep the controls visible while a second app is inspected during an
+      // explicit cross-app integration test. Normal menu-bar use is transient.
+      if arguments.contains("--keep-popover-open") { popover.behavior = .applicationDefined }
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
         self?.togglePopover(button)
       }

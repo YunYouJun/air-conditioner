@@ -6,6 +6,7 @@
 
 ## 功能
 
+- **Home Assistant 真机**：复用 Home App 已保存的空调和房间，在顶部“当前空调”切换多台设备；开关、冷暖模式、调温使用 HomeDeviceKit，温度范围和小数步长按设备回报。真实室温来自空调传感器，不使用 Mac CPU 温度；断线、无令牌、实体不可用或温标不支持时禁用控制。
 - **菜单栏弹窗**：3D 空调可以拖动旋转，支持开关机、调温度（16–31°C）、切换制冷和制热。
 - **真实感细节**：导风板会开合；显示窗用数码管字体（Digital-7 Mono，和网页组件同一款字体）实时显示温度，背后有暗着的“88”底纹；指示灯随模式变色。
 - **出风效果**：制冷时飘雪花，制热时吹暖风线。
@@ -42,6 +43,18 @@
 
 在仓库根目录运行 `swift test` 测试共享包。
 
+## 复用 Home 绑定
+
+1. 先运行新版 Home，完成 HA 绑定。已有绑定会在启动时自动发布，无需重新登录米家。
+2. 打开 CuteAC，在顶部选择客厅、主卧、次卧等空调。首次访问已有钥匙串令牌时，可能需要在 macOS 系统窗口手动允许 CuteAC 访问。
+3. Home 调整房间、设备名称或删除绑定后，CuteAC 每 3 秒和打开弹窗时读取变化，也可点“刷新绑定”。当前目标被删除后回到本机虚拟空调。
+
+Home 是绑定目录的维护方：`~/Library/Application Support/YunHome/ha-bindings.json` 只保存设备元数据。令牌仍在 service 为 `fun.yunle.home.home-assistant` 的钥匙串中；CuteAC 不复制、导出或删除它。可用“在 Home 管理”返回 Home，更新令牌后在 CuteAC 点“重新连接”。两边各自保存选中设备，互不切换对方的控制目标，设备状态则通过 HA 同步。
+
+“本机虚拟空调”保留原有状态，真实设备数据不会覆盖它。真实设备的风速维持设备设置；Mac 风速控件仅供虚拟模式使用。`--capture` 固定使用虚拟模式，忽略记住的真实绑定，避免演示脚本操作实体设备。
+
+连接逻辑来自 [home/HomeDeviceKit](https://github.com/YunLeFun/home/tree/main/packages/home-device-kit)，只有 `apps/macos` App 包依赖它；根目录 CuteACKit 仍独立，不形成 Home → CuteACKit → Home 的循环。
+
 ## 发布
 
 CuteAC 和 npm 包共用仓库版本号（bumpp 同步各个 `package.json`），`scripts/bundle.sh` 把它写进 `CFBundleShortVersionString`。推送 `v*` 标签后，[Release 工作流](../../.github/workflows/release.yml)会在 macOS 上测试共享包、打包 `CuteAC.app`，压缩成 `CuteAC-<版本>.zip` 上传到同名 GitHub Release，应用的检查更新读的就是这里。
@@ -50,6 +63,12 @@ CuteAC 和 npm 包共用仓库版本号（bumpp 同步各个 `package.json`）�
 
 ## 运行
 
+构建前需要包含上述共享目录 API 的 `home` 源码。支持 `air-conditioner` 与 `home` 平级，或 `YunYouJun/air-conditioner` 与 `YunLeFun/home` 目录布局；其他路径设置 `HOME_DEVICE_KIT_PATH=/absolute/path/to/home`。
+
+在仓库根目录运行 `./script/build_and_run.sh --verify`，会构建 debug bundle 并打开弹窗；Codex Run 按钮使用同一入口。支持 `--debug`、`--logs`、`--telemetry`。测试命令为 `swift test --package-path apps/macos`。
+
+以下命令在 `apps/macos` 中运行，默认构建 release：
+
 ```bash
 scripts/bundle.sh          # 构建 build/CuteAC.app（不在 Dock 显示，只在菜单栏）
 open build/CuteAC.app
@@ -57,11 +76,14 @@ open build/CuteAC.app
 
 改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上先运行共享包测试，再执行 release 构建、运行 `scripts/bundle.sh` 打包并做 ad-hoc 签名，再用 `--snapshot` 离屏渲染三张状态图，作为 `macos-snapshots` 产物上传。CI 不运行 Blender，直接使用仓库里的 `CuteAC.usdz`。
 
+CI 和发布工作流将 `YunLeFun/home` 固定提交 `9e71679dd0ef0f0e5329413e910e46c17d945a4c` 检出到 `.deps/home`，并设置 `HOME_DEVICE_KIT_PATH`。该提交提供共享绑定目录与设备集合 API。跨仓库发布时先推送 Home 的这笔提交，再推送或发布 CuteAC，确保 CI 可以获取依赖；本机开发仍可使用相邻仓库的源码。
+
 调试参数：
 
 | 参数 | 作用 |
 |---|---|
 | `--show-popover` | 启动后自动打开弹窗，用于测量弹窗打开时的开销 |
+| `--show-popover --keep-popover-open` | 跨 App 联调时保持弹窗打开，点击其他 App 不自动收起；仍可点击菜单栏图标关闭 |
 | `--show-pet` | 启动后显示桌面挂件 |
 | `--snapshot <dir>` | 离屏渲染挂机和柜机各三种状态的 PNG（共 6 张，柜机文件名带 `tower-`）后退出，用于检查模型和光照。室温使用固定的示例值 |
 | `--capture <dir>` | 打开弹窗，按脚本演示一遍（开机 → 调温 → 制热 → 关机），从运行中的视图逐帧导出 PNG 后退出。不需要屏幕录制权限。室温固定为示例值，不读取真实传感器 |
@@ -120,7 +142,7 @@ gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/
 
 ## 后续
 
-- 接入 YunLeFun/home 的真实设备绑定，从 Home Assistant 读取并控制真实空调。令牌存在钥匙串里。
+- 为沙箱版本配置 App Group 与 Keychain Access Group；当前共享绑定用于同一 macOS 用户下的非沙箱 App。
 - WidgetKit 小组件：每种状态用一张 `Model/renders` 里的预渲染图片。
 - 签名、公证并发布 Release。
 - 渲染器暂时继续用 SceneKit。为什么不现在迁到 RealityKit、什么时候迁，见 [RealityKit 迁移评估与渲染器选型](docs/realitykit-spike.md)。

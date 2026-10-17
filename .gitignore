@@ -46,3 +46,4 @@ dist-ssr
 # Swift (root CuteACKit package)
 .build/
 .swiftpm/
+.deps/
