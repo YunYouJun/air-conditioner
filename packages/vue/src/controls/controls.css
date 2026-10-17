@@ -11,33 +11,33 @@
 
 .acw-dial,
 .acw-glyph {
-  --_cool: var(--acw-tone-cool, #5f939e);
-  --_heat: var(--acw-tone-heat, #cc8456);
-  --_mid: var(--acw-tone-mid, #687b67);
-  --_ink: var(--acw-ink, #28312f);
-  --_muted: var(--acw-muted, #69716d);
-  --_faint: var(--acw-faint, #9aa19b);
-  --_surface: var(--acw-surface, rgba(252, 252, 249, 0.94));
-  --_sunken: var(--acw-sunken, rgba(225, 230, 222, 0.55));
-  --_line: var(--acw-line, rgba(104, 123, 103, 0.2));
-  --_line-strong: var(--acw-line-strong, rgba(104, 123, 103, 0.38));
-  --_highlight: var(--acw-highlight, rgba(255, 255, 255, 0.86));
+  --_cool: var(--acw-tone-cool, #06b6d4);
+  --_heat: var(--acw-tone-heat, #ff6b4a);
+  --_mid: var(--acw-tone-mid, #2563eb);
+  --_ink: var(--acw-ink, #0f172a);
+  --_muted: var(--acw-muted, #475569);
+  --_faint: var(--acw-faint, #5c6b80);
+  --_surface: var(--acw-surface, rgba(255, 255, 255, 0.96));
+  --_sunken: var(--acw-sunken, #edf2f8);
+  --_line: var(--acw-line, rgba(30, 64, 115, 0.12));
+  --_line-strong: var(--acw-line-strong, rgba(30, 64, 115, 0.22));
+  --_highlight: var(--acw-highlight, rgba(255, 255, 255, 0.9));
   --_spring: var(--acw-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
   --_ease-out: var(--acw-ease-out, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 html.dark :is(.acw-dial, .acw-glyph) {
-  --_cool: var(--acw-tone-cool, #82b9c4);
-  --_heat: var(--acw-tone-heat, #e19a6b);
-  --_mid: var(--acw-tone-mid, #93ab92);
-  --_ink: var(--acw-ink, #f1f3ed);
-  --_muted: var(--acw-muted, #aab3ab);
-  --_faint: var(--acw-faint, #7c867f);
-  --_surface: var(--acw-surface, rgba(32, 41, 37, 0.94));
-  --_sunken: var(--acw-sunken, rgba(14, 19, 17, 0.5));
-  --_line: var(--acw-line, rgba(131, 153, 130, 0.2));
-  --_line-strong: var(--acw-line-strong, rgba(131, 153, 130, 0.38));
-  --_highlight: var(--acw-highlight, rgba(255, 255, 255, 0.06));
+  --_cool: var(--acw-tone-cool, #06b6d4);
+  --_heat: var(--acw-tone-heat, #ff6b4a);
+  --_mid: var(--acw-tone-mid, #60a5fa);
+  --_ink: var(--acw-ink, #e7eef8);
+  --_muted: var(--acw-muted, #b9c6d9);
+  --_faint: var(--acw-faint, #8d9db4);
+  --_surface: var(--acw-surface, rgba(20, 29, 43, 0.96));
+  --_sunken: var(--acw-sunken, #080d16);
+  --_line: var(--acw-line, rgba(2, 6, 15, 0.55));
+  --_line-strong: var(--acw-line-strong, rgba(185, 198, 217, 0.24));
+  --_highlight: var(--acw-highlight, rgba(186, 214, 255, 0.1));
 }
 
 /* Temperature dial */
