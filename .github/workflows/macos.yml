@@ -53,13 +53,13 @@ jobs:
       - name: Bundle
         run: scripts/bundle.sh
 
-      - name: Snapshot
-        run: |
-          .build/release/CuteAC --snapshot "$RUNNER_TEMP/snap"
-          test "$(ls "$RUNNER_TEMP"/snap/*.png | wc -l)" -eq 6
+      - name: Verify relocated app launch and snapshots
+        env:
+          BUNDLE_VERIFY_OUTPUT_DIR: ${{ runner.temp }}/bundle-check
+        run: python3 scripts/verify-bundle.py
 
       - uses: actions/upload-artifact@v7
         with:
           name: macos-snapshots
-          path: ${{ runner.temp }}/snap/
+          path: ${{ runner.temp }}/bundle-check/snapshots/
           retention-days: 14

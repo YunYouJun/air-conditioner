@@ -4,14 +4,17 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 configuration="${CONFIGURATION:-release}"
-swift build -c "$configuration"
+# Xcode's resource accessor searches Contents/Resources inside the installed
+# app. The native SwiftPM backend otherwise falls back to the build directory.
+swift build --build-system xcode -c "$configuration"
+BIN_DIR="$(swift build --build-system xcode -c "$configuration" --show-bin-path)"
 
 APP=build/CuteAC.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp ".build/$configuration/CuteAC" "$APP/Contents/MacOS/CuteAC"
-# SwiftPM resource bundles (the kit's model and font) live next to the binary.
-cp -R .build/"$configuration"/*.bundle "$APP/Contents/Resources/"
+cp "$BIN_DIR/CuteAC" "$APP/Contents/MacOS/CuteAC"
+# Keep SwiftPM resource bundles inside the signed app's resources directory.
+cp -R "$BIN_DIR"/*.bundle "$APP/Contents/Resources/"
 
 # The app shares the repository version (bumpp keeps package.json files in
 # sync), so a v0.4.0 tag ships CuteAC 0.4.0 and the update check can compare.
@@ -40,4 +43,5 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 codesign --force --deep --sign - "$APP"
+codesign --verify --deep --strict "$APP"
 echo "Built $PWD/$APP"

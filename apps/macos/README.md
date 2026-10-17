@@ -74,7 +74,9 @@ scripts/bundle.sh          # 构建 build/CuteAC.app（不在 Dock 显示，只�
 open build/CuteAC.app
 ```
 
-改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上先运行共享包测试，再执行 release 构建、运行 `scripts/bundle.sh` 打包并做 ad-hoc 签名，再用 `--snapshot` 离屏渲染三张状态图，作为 `macos-snapshots` 产物上传。CI 不运行 Blender，直接使用仓库里的 `CuteAC.usdz`。
+改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上运行共享包与原生连接测试、release 构建，再运行 `scripts/bundle.sh` 打包并校验 ad-hoc 签名。`python3 scripts/verify-bundle.py` 将 App 复制到独立目录、临时隐藏 `.build`，启动安装包并离屏渲染挂机与柜机各三种状态，共六张图，作为 `macos-snapshots` 产物上传。此模式不读取 HA 绑定或控制真实设备。发布流程包含同样检查；本机运行时请先结束其他构建和测试，脚本结束后会恢复构建缓存。
+
+打包显式使用 Xcode 构建后端，并用相同后端的 `--show-bin-path` 定位文件，使资源从 App 的 `Contents/Resources` 加载，不依赖构建机器的目录。CI 不运行 Blender，直接使用仓库里的 USDZ 模型。
 
 CI 和发布工作流将 `YunLeFun/home` 的 Home 0.2.0 提交 `cfc81f3aa1c981e4dc44d64aedc83f7662519299` 检出到 `.deps/home`，并设置 `HOME_DEVICE_KIT_PATH`。该提交提供共享绑定目录与设备集合 API。跨仓库发布时先推送 Home 的这笔提交，再推送或发布 CuteAC，确保 CI 可以获取依赖；本机开发仍可使用相邻仓库的源码。
 

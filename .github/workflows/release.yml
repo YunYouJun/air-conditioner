@@ -164,6 +164,9 @@ jobs:
         working-directory: apps/macos
         run: scripts/bundle.sh
 
+      - name: Verify relocated app launch
+        run: python3 apps/macos/scripts/verify-bundle.py
+
       - name: Zip
         run: ditto -c -k --keepParent apps/macos/build/CuteAC.app "CuteAC-${GITHUB_REF_NAME#v}.zip"
 
