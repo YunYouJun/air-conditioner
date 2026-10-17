@@ -543,35 +543,150 @@ html.dark .acw-root,
 }
 
 /* --------------------------------- 遥控器 ------------------------------- */
+/* 极简白色遥控器：顶部小屏 → 电源键 → 温度 +/- → 一行图标键（模式 / 扫风 / 睡眠） */
 .acw-remote {
+  --acw-remote-key: #f2f3f5;
+  --acw-remote-icon: #5f6368;
+  --acw-remote-power: #e5484d;
+  --acw-remote-cold: #1e88e5;
+  --acw-remote-hot: #fb8c00;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 24px 0;
+  gap: 16px;
+  box-sizing: border-box;
+  width: 200px;
+  margin: 24px auto;
+  padding: 18px 18px 22px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 40px;
+  background: #fff;
+  color: var(--acw-remote-icon);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 16px 32px -16px rgba(0, 0, 0, 0.28);
 }
 
-.acw-remote-row {
+.acw-remote svg {
+  display: block;
+}
+
+/* 小屏：模式图标、设定温度、风量格、扫风 / 睡眠图标 */
+.acw-lcd {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 14px 8px;
+  border-radius: 18px;
+  background: #e9eef0;
+  color: #2b3034;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: color var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
+}
+
+.acw-lcd-main {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+.acw-lcd-mode {
+  color: var(--acw-remote-cold);
+  transition: color var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
+}
+
+.acw-lcd[data-mode="hot"] .acw-lcd-mode {
+  color: var(--acw-remote-hot);
+}
+
+.acw-lcd-temp {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.acw-lcd-temp small {
+  margin-left: 2px;
+  font-size: 16px;
+  vertical-align: top;
+}
+
+.acw-lcd-status {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 14px;
+  margin-top: 4px;
+}
+
+.acw-lcd-wind {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100%;
+  margin-right: auto;
+}
+
+.acw-lcd-wind i {
+  width: 4px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.acw-lcd-wind i:nth-child(1) {
+  height: 40%;
+}
+
+.acw-lcd-wind i:nth-child(2) {
+  height: 70%;
+}
+
+.acw-lcd-wind i:nth-child(3) {
+  height: 100%;
+}
+
+/* 未亮起的段位保留一道淡影，像真实的液晶屏 */
+.acw-lcd-wind,
+.acw-lcd-swing,
+.acw-lcd-sound {
+  opacity: 0.14;
+  transition: opacity var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
+}
+
+.acw-lcd[data-status="on"] .acw-lcd-wind,
+.acw-lcd[data-swing="on"] .acw-lcd-swing,
+.acw-lcd-sound:not([data-sound="normal"]) {
+  opacity: 1;
+}
+
+/* 待机：屏幕变暗，只保留设定值 */
+.acw-lcd[data-status="off"] {
+  color: #9aa3a8;
+}
+
+.acw-lcd[data-status="off"] .acw-lcd-mode {
+  color: inherit;
+}
+
+/* 按键 */
 .acw-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  margin: 8px;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  margin: 0;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #fff;
-  color: #555;
-  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 6px 10px 0 rgba(0, 0, 0, 0.14);
+  background: var(--acw-remote-key);
+  color: var(--acw-remote-icon);
   cursor: pointer;
   position: relative;
   -webkit-tap-highlight-color: transparent;
   /* 松开：带一点回弹 */
-  transition: transform var(--acw-motion-duration-fast) var(--acw-motion-ease-spring);
+  transition:
+    transform var(--acw-motion-duration-fast) var(--acw-motion-ease-spring),
+    background-color var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+    color var(--acw-motion-duration-base) var(--acw-motion-ease-standard),
+    box-shadow var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
 }
 
 /* 悬停 / 按下的明暗变化放在遮罩层上，只过渡 opacity */
@@ -606,37 +721,103 @@ html.dark .acw-root,
   outline-offset: 3px;
 }
 
-.acw-button-cold {
-  background: #1976d2;
-  color: #fff;
-}
-
-.acw-button-hot {
-  background: orange;
-  color: #fff;
-}
-
+/* 电源键：唯一的彩色按键，开机后填满 */
 .acw-button-power {
-  background: #2e7d32;
-  color: #fff;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(229, 72, 77, 0.24);
+  background: #fff;
+  color: var(--acw-remote-power);
 }
 
 .acw-button-power.acw-button-on {
-  background: #d32f2f;
+  border-color: transparent;
+  background: var(--acw-remote-power);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(229, 72, 77, 0.7);
 }
 
-/* 扫风键 / 声音键：小号按钮并排；声音键在标准 → 睡眠 → 静音间切换，图标与颜色随模式变化 */
-.acw-button-swing,
-.acw-button-sound {
-  width: 40px;
-  height: 40px;
+/* 温度 +/-：竖向胶囊，主操作 */
+.acw-remote-temp {
+  display: flex;
+  flex-direction: column;
+  width: 72px;
+  border-radius: 36px;
+  background: var(--acw-remote-key);
+  position: relative;
 }
 
+.acw-remote-temp::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.acw-button-temp {
+  width: 72px;
+  height: 64px;
+  background: transparent;
+  color: #3c4043;
+}
+
+.acw-button-temp:first-child {
+  border-radius: 36px 36px 12px 12px;
+}
+
+.acw-button-temp:last-child {
+  border-radius: 12px 12px 36px 36px;
+}
+
+/* 底部一行图标键 */
+.acw-remote-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 模式键：制冷 / 制热分段，当前模式凸起并着色 */
+.acw-remote-mode {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 22px;
+  background: var(--acw-remote-key);
+}
+
+.acw-button-cold,
+.acw-button-hot {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  color: #9aa0a6;
+}
+
+.acw-button-cold[aria-pressed="true"],
+.acw-button-hot[aria-pressed="true"] {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+.acw-button-cold[aria-pressed="true"] {
+  color: var(--acw-remote-cold);
+}
+
+.acw-button-hot[aria-pressed="true"] {
+  color: var(--acw-remote-hot);
+}
+
+/* 扫风键 / 睡眠（声音）键：声音键在标准 → 睡眠 → 静音间切换，图标与颜色随模式变化 */
 .acw-button-swing[aria-pressed="true"] {
+  background: #e1f1fb;
   color: #0288d1;
 }
 
 .acw-button-sound[data-sound="sleep"] {
+  background: #ede7f6;
   color: #5e35b1;
 }
 

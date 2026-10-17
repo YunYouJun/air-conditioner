@@ -1,30 +1,13 @@
-import type { AcSoundMode } from '@yunlefun-home/air-conditioner-core'
-import { blue, green, grey, red } from '@mui/material/colors'
-import { acSoundModeLabels, nextAcSoundMode } from '@yunlefun-home/air-conditioner-core'
+import type { AcRemoteCommand } from '@yunlefun-home/air-conditioner-core'
+import { nextAcSoundMode } from '@yunlefun-home/air-conditioner-core'
 
 import React, { useEffect, useRef } from 'react'
 import { useAc, useAcCtx } from '~/context'
+import { RemoteControlView } from '~/lib/RemoteControlView'
 import { getAssetsUrl } from '~/utils'
 import { getAudioController } from './audio'
-import RCButton from './RCButton'
 
 import { useAcTemperature } from './temperature'
-import './index.scss'
-
-/**
- * 声音键图标（完整类名写出来，UnoCSS 才能扫描到）
- */
-const soundIcons: Record<AcSoundMode, string> = {
-  normal: 'i-ic-round-volume-up',
-  sleep: 'i-ic-round-bedtime',
-  mute: 'i-ic-round-volume-off',
-}
-
-const soundColors: Record<AcSoundMode, string> = {
-  normal: grey[700],
-  sleep: '#5e35b1',
-  mute: grey[500],
-}
 
 const SOUND_DI_PATH = getAssetsUrl('/assets/audio/di.m4a')
 const SOUND_AC_WORK_PATH = getAssetsUrl('/assets/audio/ac-work.m4a')
@@ -65,8 +48,27 @@ const RemoteControl: React.FC<{
     previousStatus.current = ac.status
   }, [ac.status, acSound, sound])
 
+  const actions: Record<AcRemoteCommand, () => void> = {
+    power: toggleStatus,
+    cold: () => toggleMode('cold'),
+    hot: () => toggleMode('hot'),
+    increase,
+    decrease,
+    swing: toggleSwing,
+    sound: cycleSound,
+  }
+
+  function onCommand(command: AcRemoteCommand) {
+    const controller = getAudioController(sound)
+    // 声音键先切换音量再「嘀」，按键音就是新模式下的音量
+    if (command === 'sound')
+      controller.setSoundMode(nextAcSoundMode(sound))
+    controller.beep()
+    actions[command]()
+  }
+
   return (
-    <div className="flex my-6 flex-col items-center">
+    <div className="flex flex-col items-center">
       <audio id="di" src={SOUND_DI_PATH} preload="auto"></audio>
       <audio id="ac-work" src={SOUND_AC_WORK_PATH} preload="auto"></audio>
       <audio
@@ -75,80 +77,7 @@ const RemoteControl: React.FC<{
         preload="auto"
       >
       </audio>
-      <div>
-        {' '}
-        <RCButton
-          aria-label="cold"
-          style={{
-            color: 'white',
-            backgroundColor: blue[700],
-          }}
-          onClick={() => {
-            toggleMode('cold')
-          }}
-        >
-          <div className="i-ic-round-ac-unit text-2xl" />
-        </RCButton>
-        <RCButton
-          aria-label="power"
-          onClick={toggleStatus}
-          style={{
-            backgroundColor: ac.status ? red[600] : green[600],
-            color: 'white',
-          }}
-        >
-          <div className="i-ic:round-power-settings-new text-2xl" />
-        </RCButton>
-        <RCButton
-          aria-label="hot"
-          style={{ backgroundColor: 'orange', color: 'white' }}
-          onClick={() => {
-            toggleMode('hot')
-          }}
-        >
-          <div className="i-ic-round-wb-sunny text-2xl" />
-        </RCButton>
-      </div>
-      <RCButton
-        aria-label="add"
-        onClick={increase}
-      >
-        <div className="i-mdi-triangle-small-up text-4xl" />
-      </RCButton>
-      <RCButton
-        aria-label="reduce"
-        onClick={decrease}
-      >
-        <div className="i-mdi-triangle-small-down text-4xl" />
-      </RCButton>
-      <div>
-        <RCButton
-          aria-label="swing"
-          aria-pressed={ac.swing}
-          title={`扫风：${ac.swing ? '开' : '关'}`}
-          size="small"
-          style={{ color: ac.swing ? blue[700] : grey[700] }}
-          onClick={toggleSwing}
-        >
-          <div className="i-mdi-arrow-oscillating text-xl" />
-        </RCButton>
-        <RCButton
-          aria-label="sound"
-          title={`声音：${acSoundModeLabels[sound]}`}
-          size="small"
-          beep={false}
-          style={{ color: soundColors[sound] }}
-          onClick={() => {
-            // 先切换音量再「嘀」，按键音就是新模式下的音量
-            const controller = getAudioController(sound)
-            controller.setSoundMode(nextAcSoundMode(sound))
-            controller.beep()
-            cycleSound()
-          }}
-        >
-          <div className={`${soundIcons[sound]} text-xl`} />
-        </RCButton>
-      </div>
+      <RemoteControlView state={ac} onCommand={onCommand} />
     </div>
   )
 }

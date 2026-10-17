@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { acModeIcons, defaultAcState } from '@yunlefun-home/air-conditioner-core'
+import { acModeIcons, defaultAcState, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
 import { describe, expect, it } from 'vitest'
 import { defineAirConditionerElement, mountAirConditioner } from '../src'
 
@@ -136,5 +136,34 @@ describe('@air-conditioner/widget', () => {
 
     element.setAttribute('swing', 'false')
     expect(unit.dataset.swing).toBe('off')
+  })
+
+  it('mirrors the state on the remote display and keys', () => {
+    defineAirConditionerElement({ tagName: 'test-air-conditioner-remote', enableAudio: false, storage: null })
+    const element = document.createElement('test-air-conditioner-remote')
+    document.body.appendChild(element)
+    const root = element.shadowRoot!
+    const lcd = root.querySelector<HTMLElement>('.acw-lcd')!
+    const key = (label: string) => root.querySelector<HTMLButtonElement>(`.acw-remote button[aria-label="${label}"]`)!
+
+    expect(lcd.querySelector('.acw-lcd-temp')?.textContent).toBe(`${defaultAcState.temperature}°C`)
+    expect(lcd.getAttribute('aria-label')).toBe(getAcRemoteText(defaultAcState).display)
+    expect(key('cold').getAttribute('aria-pressed')).toBe('true')
+    expect(key('hot').getAttribute('aria-pressed')).toBe('false')
+    expect(key('power').getAttribute('aria-pressed')).toBe('false')
+
+    key('power').click()
+    key('hot').click()
+    key('add').click()
+    key('swing').click()
+    key('sound').click()
+
+    expect(lcd.dataset).toMatchObject({ status: 'on', mode: 'hot', swing: 'on' })
+    expect(lcd.querySelector('.acw-lcd-temp')?.textContent).toBe(`${defaultAcState.temperature + 1}°C`)
+    expect(lcd.querySelector('.acw-lcd-sound')?.getAttribute('data-sound')).toBe('sleep')
+    expect(key('power').getAttribute('aria-pressed')).toBe('true')
+    expect(key('hot').getAttribute('aria-pressed')).toBe('true')
+    expect(key('cold').getAttribute('aria-pressed')).toBe('false')
+    expect(key('swing').getAttribute('aria-pressed')).toBe('true')
   })
 })

@@ -50,6 +50,7 @@
     "@iconify-json/mdi": "catalog:",
     "@playwright/test": "catalog:",
     "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
     "bumpp": "catalog:",
     "eslint": "catalog:",
     "tsdown": "catalog:",

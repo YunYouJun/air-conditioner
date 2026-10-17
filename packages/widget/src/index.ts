@@ -12,12 +12,13 @@ import {
   acEnergyLabel,
   acIconPaths,
   acModeIcons,
+  acModeLabels,
   acShellSize,
   acSoundIcons,
-  acSoundModeLabels,
   createAcAudioController,
   createAirConditionerStore,
   defaultAcState,
+  getAcRemoteText,
   isAcSoundMode,
   observeAcScale,
   observeAcTilt,
@@ -105,8 +106,9 @@ function ensureDigitFont(assetsBaseUrl: string) {
   document.head.appendChild(style)
 }
 
-function icon(name: AcIconName, size: number) {
-  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" d="${acIconPaths[name]}" /></svg>`
+function icon(name: AcIconName, size: number, className?: string) {
+  const attrs = className ? ` class="${className}"` : ''
+  return `<svg${attrs} viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path fill="currentColor" d="${acIconPaths[name]}" /></svg>`
 }
 
 function dotRow(row: AcDotRow) {
@@ -177,14 +179,27 @@ function widgetTemplate(view: WidgetViewOptions) {
       </div>
     </div>
     <div class="acw-remote" role="group" aria-label="Air conditioner remote control">
-      <div class="acw-remote-row">
-        <button type="button" class="acw-button acw-button-cold" aria-label="cold" data-action="cold">${icon('cold', 22)}</button>
-        <button type="button" class="acw-button acw-button-power" aria-label="power" data-action="toggleStatus">${icon('power', 22)}</button>
-        <button type="button" class="acw-button acw-button-hot" aria-label="hot" data-action="hot">${icon('hot', 22)}</button>
+      <div class="acw-lcd" role="img">
+        <div class="acw-lcd-main">
+          <span class="acw-lcd-mode-slot"></span>
+          <span class="acw-lcd-temp acw-digit"></span>
+        </div>
+        <div class="acw-lcd-status" aria-hidden="true">
+          <span class="acw-lcd-wind"><i></i><i></i><i></i></span>
+          ${icon('swing', 14, 'acw-lcd-swing')}
+          <span class="acw-lcd-sound-slot"></span>
+        </div>
       </div>
-      <button type="button" class="acw-button acw-button-temp" aria-label="add" data-action="increment">${icon('increase', 28)}</button>
-      <button type="button" class="acw-button acw-button-temp" aria-label="reduce" data-action="decrement">${icon('decrease', 28)}</button>
+      <button type="button" class="acw-button acw-button-power" aria-label="power" data-action="toggleStatus">${icon('power', 24)}</button>
+      <div class="acw-remote-temp">
+        <button type="button" class="acw-button acw-button-temp" aria-label="add" title="温度 +" data-action="increment">${icon('plus', 28)}</button>
+        <button type="button" class="acw-button acw-button-temp" aria-label="reduce" title="温度 −" data-action="decrement">${icon('minus', 28)}</button>
+      </div>
       <div class="acw-remote-row">
+        <div class="acw-remote-mode" role="group" aria-label="mode">
+          <button type="button" class="acw-button acw-button-cold" aria-label="cold" title="${acModeLabels.cold}" data-action="cold">${icon('cold', 18)}</button>
+          <button type="button" class="acw-button acw-button-hot" aria-label="hot" title="${acModeLabels.hot}" data-action="hot">${icon('hot', 18)}</button>
+        </div>
         <button type="button" class="acw-button acw-button-swing" aria-label="swing" data-action="toggleSwing">${icon('swing', 20)}</button>
         <button type="button" class="acw-button acw-button-sound" aria-label="sound" data-action="cycleSound"></button>
       </div>
@@ -226,19 +241,46 @@ function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | unde
 
   root.querySelector('.acw-led')!.setAttribute('aria-label', status)
   root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
-  root.querySelector('.acw-button-power')!.classList.toggle('acw-button-on', state.status)
+  updateRemote(root, state, previous)
+}
+
+/**
+ * 遥控器：小屏与按键状态，结构与 Vue / React 的 RemoteControl 一致。
+ */
+function updateRemote(root: ShadowRoot, state: AcState, previous: AcState | undefined) {
+  const text = getAcRemoteText(state)
+
+  const lcd = root.querySelector<HTMLElement>('.acw-lcd')!
+  lcd.setAttribute('aria-label', text.display)
+  lcd.dataset.status = state.status ? 'on' : 'off'
+  lcd.dataset.mode = state.mode
+  lcd.dataset.swing = state.swing ? 'on' : 'off'
+  root.querySelector('.acw-lcd-temp')!.innerHTML = `${state.temperature}<small>°C</small>`
+
+  const power = root.querySelector<HTMLElement>('.acw-button-power')!
+  power.classList.toggle('acw-button-on', state.status)
+  power.setAttribute('aria-pressed', String(state.status))
+  power.title = text.power
+
+  if (previous?.mode !== state.mode) {
+    root.querySelector('.acw-lcd-mode-slot')!.innerHTML = icon(state.mode, 22, 'acw-lcd-mode')
+    for (const mode of ['cold', 'hot'] as const)
+      root.querySelector(`.acw-button-${mode}`)!.setAttribute('aria-pressed', String(state.mode === mode))
+  }
 
   if (previous?.swing !== state.swing) {
     const swing = root.querySelector<HTMLElement>('.acw-button-swing')!
     swing.setAttribute('aria-pressed', String(state.swing))
-    swing.title = `扫风：${state.swing ? '开' : '关'}`
+    swing.title = text.swing
   }
 
   if (previous?.sound !== state.sound) {
     const sound = root.querySelector<HTMLElement>('.acw-button-sound')!
     sound.dataset.sound = state.sound
-    sound.title = `声音：${acSoundModeLabels[state.sound]}`
+    sound.title = text.sound
     sound.innerHTML = icon(acSoundIcons[state.sound], 20)
+    root.querySelector('.acw-lcd-sound-slot')!.innerHTML = icon(acSoundIcons[state.sound], 14, 'acw-lcd-sound')
+    root.querySelector('.acw-lcd-sound')!.setAttribute('data-sound', state.sound)
   }
 }
 

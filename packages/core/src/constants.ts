@@ -48,6 +48,14 @@ export const defaultAcState: AcState = {
  */
 export const acSoundModes: readonly AcSoundMode[] = ['normal', 'sleep', 'mute']
 
+/**
+ * 各模式的中文名称（遥控器小屏与按键提示共用）。
+ */
+export const acModeLabels: Record<AcMode, string> = {
+  cold: '制冷',
+  hot: '制热',
+}
+
 export const acSoundModeLabels: Record<AcSoundMode, string> = {
   normal: '标准',
   sleep: '睡眠',

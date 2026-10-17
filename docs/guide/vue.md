@@ -116,6 +116,10 @@ import '@yunlefun-home/air-conditioner/style.css'
 
 机身用渐变与阴影模拟顶部受光、底部弧面和墙面投影；使用鼠标 / 触控板时，机身会随指针轻微 3D 倾斜（core 的 `observeAcTilt`，触屏与减少动效时不启用）。
 
+## 遥控器
+
+`RemoteControl` 是一只白色圆角遥控器，按键只用图标：顶部小屏显示模式图标、设定温度、风量格与扫风 / 睡眠图标；下面依次是电源键、温度 +/- 胶囊，以及一行图标键（制冷 / 制热分段键、扫风、声音）。每个按键都是带 `aria-label` 的原生 `<button>`，制冷 / 制热、电源与扫风用 `aria-pressed` 表示当前状态；小屏用 `role="img"` 读出完整状态（文案来自 core 的 `getAcRemoteText`）。按键会以 `command` 事件发出 `power` / `cold` / `hot` / `increase` / `decrease` / `swing` / `sound`。
+
 ## 动效
 
 开关机时依次点亮指示灯与显示屏（先短暂显示「88」自检）、打开导风板、淡入出风；温度数字按升 / 降方向滚动，模式图标切换时轻微弹出，遥控按钮有按下回缩反馈。
