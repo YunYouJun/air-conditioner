@@ -1,5 +1,5 @@
 import type { AcAction, AcState } from '@yunlefun-home/air-conditioner-core'
-import type { YunHomeSandboxPlugin } from './types'
+import type { PluginContext, YunHomeSandboxPlugin } from './types'
 import {
   acReducer,
   acSoundModes,
@@ -22,6 +22,12 @@ function normalize(value: unknown): AcState {
     sound: isAcSoundMode(record.sound) ? record.sound : defaultAcState.sound,
     swing: typeof record.swing === 'boolean' ? record.swing : defaultAcState.swing,
   })
+}
+
+/** The host's room temperature, if it granted `sensor:thermal` and has one. */
+function roomCelsius(context: PluginContext | undefined): number | undefined {
+  const celsius = isRecord(context) && isRecord(context.room) ? context.room.celsius : undefined
+  return typeof celsius === 'number' && Number.isFinite(celsius) ? Math.round(celsius) : undefined
 }
 
 function isAction(value: unknown): value is AcAction {
@@ -56,13 +62,15 @@ export const airConditionerPlugin: YunHomeSandboxPlugin<AcState, AcAction> = {
   normalize,
   isAction,
   reduce: (state, action, context) => acReducer(normalize(state), action, context?.limits),
-  present(state) {
+  present(state, context) {
     const current = normalize(state)
     const temperature = `${current.temperature}°C`
+    const summary = current.status ? `${current.mode === 'hot' ? '制热' : '制冷'} · ${temperature}` : `待机 · ${temperature}`
+    const room = roomCelsius(context)
     return {
       active: current.status,
       tone: acTone(current),
-      summary: current.status ? `${current.mode === 'hot' ? '制热' : '制冷'} · ${temperature}` : `待机 · ${temperature}`,
+      summary: room === undefined ? summary : `${summary} · 室温 ${room}°C`,
     }
   },
 }

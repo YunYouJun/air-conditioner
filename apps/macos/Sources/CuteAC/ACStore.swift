@@ -1,18 +1,5 @@
+import CuteACKit
 import Foundation
-
-enum ACMode: String, Codable {
-  case cold
-  case hot
-}
-
-/// Same state shape and limits as `@yunlefun-home/air-conditioner` core.
-struct ACState: Codable, Equatable {
-  var status = false
-  var mode = ACMode.cold
-  var temperature = 26
-
-  static let temperatureRange = 16...31
-}
 
 @MainActor
 final class ACStore: ObservableObject {
@@ -40,9 +27,8 @@ final class ACStore: ObservableObject {
     state.mode = mode
   }
 
-  func changeTemperature(by delta: Int) {
-    let range = ACState.temperatureRange
-    state.temperature = min(range.upperBound, max(range.lowerBound, state.temperature + delta))
+  func changeTemperature(by delta: Double) {
+    state.temperature = ACState.clamp(state.temperature + delta)
   }
 
   private func persist() {

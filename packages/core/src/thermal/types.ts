@@ -39,3 +39,18 @@ export interface CoolingPlan {
   /** 0–1, drives airflow intensity */
   airflow: number
 }
+
+/**
+ * A native host's reading of the computer it runs on, seen as the room the
+ * air conditioner cools. Same JSON as `RoomReading` in the Swift CuteACCore
+ * package; Yun Home passes it to plugins granted `sensor:thermal`.
+ */
+export interface RoomReading {
+  /** CPU/SoC temperature, rounded; absent when no sensor is readable */
+  celsius?: number
+  thermalState: HeatLevel
+  /** Fastest fan, rounded to 100 RPM; absent on fanless computers */
+  fanRPM?: number
+  /** Airflow strength 1–3, from fan load or the heat level */
+  windLevel: number
+}

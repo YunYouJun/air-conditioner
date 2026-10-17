@@ -29,6 +29,10 @@ open build/CuteAC.app
 
 应用只在菜单栏显示，不出现在 Dock 里。退出可以点弹窗右下角的“退出”。
 
+## 共享包 CuteACKit
+
+仓库根目录的 `Package.swift` 是一个 Swift 包，提供 `CuteACCore`（状态、室温读数）和 `CuteACKit`（显示窗贴图、出风动画、配色、字体、模型）。CuteAC 和云之彼端的 Yun Home 原生客户端都依赖它，所以两边的空调长得一样，室温能力也只实现一次。在 Yun Home 里，空调插件通过 `sensor:thermal` 权限拿到室温；这个权限只授予官方插件。
+
 ## 为什么用原生实现
 
 这个小空调是常驻后台的，所以功耗是第一优先级：

@@ -5,6 +5,8 @@
  * these pure functions with JSON values. No timers, network or file access
  * exist in that context.
  */
+import type { RoomReading } from '@yunlefun-home/air-conditioner-core'
+
 export type DeviceTone = 'idle' | 'cool' | 'heat' | 'warm' | 'active'
 
 export interface DevicePresentation {
@@ -24,6 +26,11 @@ export interface PluginLimits {
 export interface PluginContext {
   /** Device limits reported by the host, e.g. a bound climate entity */
   limits?: PluginLimits
+  /**
+   * The computer the host runs on, seen as the room. Only passed to plugins
+   * granted `sensor:thermal`, which hosts reserve for official plugins.
+   */
+  room?: RoomReading
 }
 
 export interface YunHomeSandboxPlugin<State, Action> {
@@ -31,5 +38,5 @@ export interface YunHomeSandboxPlugin<State, Action> {
   normalize: (value: unknown) => State
   isAction: (value: unknown) => value is Action
   reduce: (state: State, action: Action, context?: PluginContext) => State
-  present: (state: State) => DevicePresentation
+  present: (state: State, context?: PluginContext) => DevicePresentation
 }

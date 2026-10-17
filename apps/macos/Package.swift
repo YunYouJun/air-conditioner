@@ -4,13 +4,13 @@ import PackageDescription
 let package = Package(
   name: "CuteAC",
   platforms: [.macOS(.v14)],
+  // The shared kit (state, thermal readings, LCD, airflow, model) is the
+  // repository root package; Yun Home consumes the same products remotely.
+  dependencies: [.package(name: "CuteACKit", path: "../..")],
   targets: [
     .executableTarget(
       name: "CuteAC",
-      resources: [
-        .copy("Resources/CuteAC.usdz"),
-        .copy("Resources/digital-7-mono.ttf"),
-      ],
+      dependencies: [.product(name: "CuteACKit", package: "CuteACKit")],
       swiftSettings: [.swiftLanguageMode(.v5)]
     ),
   ]

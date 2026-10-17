@@ -1,31 +1,57 @@
+import Combine
 import Foundation
+
+/// `ProcessInfo.ThermalState` as a Codable value, so a reading can cross a
+/// process boundary (e.g. to a Yun Home plugin) as JSON.
+public enum ThermalLevel: String, Codable, Sendable {
+  case nominal, fair, serious, critical
+
+  public init(_ state: ProcessInfo.ThermalState) {
+    switch state {
+    case .fair: self = .fair
+    case .serious: self = .serious
+    case .critical: self = .critical
+    default: self = .nominal
+    }
+  }
+
+  /// Short Chinese label used by every UI that shows the reading.
+  public var label: String {
+    switch self {
+    case .nominal: "散热正常"
+    case .fair: "有点热"
+    case .serious: "很热"
+    case .critical: "过热"
+    }
+  }
+}
 
 /// The Mac seen as the AC's "room": CPU/SoC temperature, the system thermal
 /// state and how hard the fans are blowing. Values are rounded so the UI only
 /// redraws when something visible changes.
-struct RoomReading: Equatable {
-  var celsius: Int?
-  var thermalState: ProcessInfo.ThermalState
+public struct RoomReading: Codable, Equatable, Sendable {
+  public var celsius: Int?
+  public var thermalState: ThermalLevel
   /// Fastest fan, rounded to 100 RPM; nil on fanless Macs.
-  var fanRPM: Int?
+  public var fanRPM: Int?
   /// AC-style wind speed, 1...3. Comes from fan load when there are fans,
   /// otherwise from the thermal state.
-  var windLevel: Int
+  public var windLevel: Int
 
-  static let windLevels = 1...3
+  public static let windLevels = 1...3
 
-  /// Fixed reading for `--snapshot` and `--capture`, so docs images do not
+  /// Fixed reading for snapshots and demo captures, so docs images do not
   /// depend on how warm the machine happened to be.
-  static let demo = RoomReading(celsius: 48, thermalState: .nominal, fanRPM: 1500, windLevel: 1)
+  public static let demo = RoomReading(celsius: 48, thermalState: .nominal, fanRPM: 1500, windLevel: 1)
 
-  init(celsius: Int?, thermalState: ProcessInfo.ThermalState, fanRPM: Int?, windLevel: Int) {
+  public init(celsius: Int?, thermalState: ThermalLevel, fanRPM: Int?, windLevel: Int) {
     self.celsius = celsius
     self.thermalState = thermalState
     self.fanRPM = fanRPM
     self.windLevel = windLevel
   }
 
-  init(celsius: Double?, thermalState: ProcessInfo.ThermalState, fans: [FanSample]) {
+  public init(celsius: Double?, thermalState: ThermalLevel, fans: [FanSample]) {
     let fastest = fans.max { $0.rpm < $1.rpm }
     let level: Int
     if let load = fans.map(\.load).max() {
@@ -47,12 +73,13 @@ struct RoomReading: Equatable {
   }
 }
 
-/// Samples `ThermalSensors` on a background queue, but only while the popover
-/// or desktop pet is on screen; with neither visible it does no work at all.
-/// Thermal-state changes are pushed by the system and always observed.
+/// Samples `ThermalSensors` on a background queue, but only while the host
+/// says something showing it is on screen (`setActive`); otherwise it does no
+/// work at all. Thermal-state changes are pushed by the system and always
+/// observed.
 @MainActor
-final class ThermalMonitor: ObservableObject {
-  @Published private(set) var reading: RoomReading
+public final class ThermalMonitor: ObservableObject {
+  @Published public private(set) var reading: RoomReading
 
   private let worker = Worker()
   private var timer: DispatchSourceTimer?
@@ -61,8 +88,8 @@ final class ThermalMonitor: ObservableObject {
 
   private static let interval: DispatchTimeInterval = .seconds(3)
 
-  init() {
-    reading = RoomReading(celsius: nil, thermalState: ProcessInfo.processInfo.thermalState, fanRPM: nil, windLevel: 1)
+  public init() {
+    reading = RoomReading(celsius: nil, thermalState: Self.currentLevel, fanRPM: nil, windLevel: 1)
     observer = NotificationCenter.default.addObserver(
       forName: ProcessInfo.thermalStateDidChangeNotification,
       object: nil,
@@ -72,7 +99,9 @@ final class ThermalMonitor: ObservableObject {
     }
   }
 
-  func setActive(_ active: Bool) {
+  private static var currentLevel: ThermalLevel { ThermalLevel(ProcessInfo.processInfo.thermalState) }
+
+  public func setActive(_ active: Bool) {
     guard !pinned, active != (timer != nil) else { return }
     if active {
       let timer = DispatchSource.makeTimerSource(queue: worker.queue)
@@ -90,8 +119,8 @@ final class ThermalMonitor: ObservableObject {
     }
   }
 
-  /// Stops sampling and holds `reading`; used by the docs capture.
-  func pin(_ reading: RoomReading) {
+  /// Stops sampling and holds `reading`; used by docs captures.
+  public func pin(_ reading: RoomReading) {
     setActive(false)
     pinned = true
     self.reading = reading
@@ -102,7 +131,7 @@ final class ThermalMonitor: ObservableObject {
   private func sampleNow() {
     guard !pinned else { return }
     guard timer != nil else {
-      reading.thermalState = ProcessInfo.processInfo.thermalState
+      reading.thermalState = Self.currentLevel
       return
     }
     worker.queue.async { [weak self, worker] in
@@ -126,7 +155,7 @@ final class ThermalMonitor: ObservableObject {
     func sample() -> RoomReading {
       RoomReading(
         celsius: sensors.cpuTemperature(),
-        thermalState: ProcessInfo.processInfo.thermalState,
+        thermalState: ThermalLevel(ProcessInfo.processInfo.thermalState),
         fans: sensors.fans()
       )
     }

@@ -19,6 +19,25 @@
   - 省电：只在弹窗或桌面挂件可见时，每 3 秒在后台队列采样一次；都不可见时完全不采样。散热状态由系统主动通知。
 - **状态持久化**：状态保存在 `UserDefaults` 里，数据结构和 `@yunlefun-home/air-conditioner` 的 core 一致。
 
+## 共享包 CuteACKit
+
+空调本身的原生能力放在仓库根目录的 Swift 包里（源码在 `Kit/`），CuteAC 和 [Yun Home](https://github.com/YunLeFun/home) 都依赖它，避免两边各写一份：
+
+| 产品 | 内容 | 依赖 |
+|---|---|---|
+| `CuteACCore` | `ACState` / `ACMode`（温度为 `Double`，兼容 Home Assistant 的小数步进）、`RoomReading`、`ThermalLevel`、`ThermalSensors`、`ThermalMonitor` | Foundation、IOKit |
+| `CuteACKit` | `ACDisplay`（显示窗贴图）、`ACAirflowLayer`（出风动画）、`ACPalette`、`ACFonts`、`ACModel`（`CuteAC.usdz` 和部件名） | AppKit，并重新导出 `CuteACCore` |
+
+3D 渲染器不在包里：CuteAC 用 SceneKit，Yun Home 用 RealityKit，但两边加载同一个模型、画同一张显示窗贴图、用同一个出风层。`RoomReading` 的 JSON 形状和 core 的 TypeScript 类型 `RoomReading` 一致，Yun Home 会把它传给获得 `sensor:thermal` 权限的插件。
+
+其他仓库这样依赖：
+
+```swift
+.package(url: "https://github.com/YunYouJun/air-conditioner.git", revision: "<commit>")
+```
+
+在仓库根目录运行 `swift test` 测试共享包。
+
 ## 运行
 
 ```bash
@@ -26,7 +45,7 @@ scripts/bundle.sh          # 构建 build/CuteAC.app（不在 Dock 显示，只�
 open build/CuteAC.app
 ```
 
-改动 `apps/macos/` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上执行 release 构建、运行 `scripts/bundle.sh` 打包并做 ad-hoc 签名，再用 `--snapshot` 离屏渲染三张状态图，作为 `macos-snapshots` 产物上传。CI 不运行 Blender，直接使用仓库里的 `CuteAC.usdz`。
+改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上先运行共享包测试，再执行 release 构建、运行 `scripts/bundle.sh` 打包并做 ad-hoc 签名，再用 `--snapshot` 离屏渲染三张状态图，作为 `macos-snapshots` 产物上传。CI 不运行 Blender，直接使用仓库里的 `CuteAC.usdz`。
 
 调试参数：
 
@@ -57,7 +76,7 @@ gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/
 /Applications/Blender.app/Contents/MacOS/Blender -b -P Model/build_cute_ac.py
 ```
 
-- 输出 `Sources/CuteAC/Resources/CuteAC.usdz` 给应用使用，同时在 `Model/renders/` 生成预渲染图，以后可以给 WidgetKit 小组件用。
+- 输出 `Kit/Sources/CuteACKit/Resources/CuteAC.usdz`，CuteAC 和 Yun Home 共用，同时在 `Model/renders/` 生成预渲染图，以后可以给 WidgetKit 小组件用。
 - 外形参照真实壁挂空调：顶部进风格栅、分成三个斜面的前面板、底部出风口和导风板、右侧显示窗。全部用平面着色，保留低多边形的棱角感。
 - 应用会控制这几个命名节点：`Louver`（导风板，转轴在顶边）、`Display`（UV 为 0–1 的平面，用来贴温度画面）、`Led`（指示灯）。改模型时请保持这些名字不变。
 - 坐标约定：导出时已转换成 Y 轴朝上，但每个节点内部仍沿用 Blender 的局部坐标轴（Z 轴朝上）。

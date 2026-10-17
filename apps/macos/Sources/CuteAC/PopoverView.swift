@@ -1,3 +1,4 @@
+import CuteACKit
 import SwiftUI
 
 @MainActor
@@ -14,7 +15,7 @@ struct PopoverView: View {
 
   private var state: ACState { store.state }
   private var room: RoomReading { thermal.reading }
-  private var accent: Color { Color(nsColor: ACSceneController.accent(for: state.mode)) }
+  private var accent: Color { Color(nsColor: ACPalette.accent(for: state.mode)) }
 
   var body: some View {
     VStack(spacing: 14) {
@@ -35,7 +36,7 @@ struct PopoverView: View {
             .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
           HStack(alignment: .firstTextBaseline, spacing: 2) {
-            Text("\(state.temperature)")
+            Text(state.temperatureLabel)
               .font(Font(ACFonts.digital(size: 56)))
               .foregroundStyle(state.status ? accent : Color.secondary)
               .contentTransition(.numericText())
@@ -95,7 +96,7 @@ struct PopoverView: View {
   /// The Mac is the AC's "room": its CPU/SoC temperature, fan speed and how
   /// macOS rates the heat.
   private var roomRow: some View {
-    let warning = ACSceneController.warning(for: room.thermalState).map { Color(nsColor: $0) }
+    let warning = ACPalette.warning(for: room.thermalState).map { Color(nsColor: $0) }
     return HStack(spacing: 12) {
       if let celsius = room.celsius {
         Label("室温 \(celsius)°C", systemImage: "thermometer.medium")
@@ -106,7 +107,7 @@ struct PopoverView: View {
           .help("风扇转速")
       }
       Spacer(minLength: 0)
-      Text(Self.thermalLabel(room.thermalState))
+      Text(room.thermalState.label)
         .font(.caption2.weight(.semibold))
         .padding(.horizontal, 7)
         .padding(.vertical, 2)
@@ -118,16 +119,7 @@ struct PopoverView: View {
     .foregroundStyle(.secondary)
   }
 
-  private static func thermalLabel(_ state: ProcessInfo.ThermalState) -> String {
-    switch state {
-    case .fair: "有点热"
-    case .serious: "很热"
-    case .critical: "过热"
-    default: "散热正常"
-    }
-  }
-
-  private func stepButton(_ symbol: String, delta: Int, disabled: Bool) -> some View {
+  private func stepButton(_ symbol: String, delta: Double, disabled: Bool) -> some View {
     Button {
       withAnimation(.snappy) { store.changeTemperature(by: delta) }
     } label: {

@@ -8,7 +8,7 @@
   "category": "climate",
   "symbol": "air.conditioner.horizontal",
   "tint": "#5F939E",
-  "permissions": [],
+  "permissions": ["sensor:thermal"],
   "renderer": "cute-ac-3d",
   "entry": { "state": "state.js", "controls": "controls.json" }
 }

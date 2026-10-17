@@ -1,4 +1,5 @@
 import AppKit
+import CuteACKit
 import SceneKit
 
 /// Owns the SceneKit scene and maps `ACState` onto the named nodes exported by
@@ -17,8 +18,7 @@ final class ACSceneController {
   private var lastRoom: RoomReading?
 
   init() {
-    let url = Bundle.module.url(forResource: "CuteAC", withExtension: "usdz")!
-    let loaded = (try? SCNScene(url: url)) ?? SCNScene()
+    let loaded = ACModel.url.flatMap { try? SCNScene(url: $0) } ?? SCNScene()
     let root = SCNNode()
     for child in loaded.rootNode.childNodes {
       root.addChildNode(child)
@@ -27,10 +27,10 @@ final class ACSceneController {
     scene.rootNode.addChildNode(root)
     model = root
 
-    louver = root.childNode(withName: "Louver", recursively: true)
-    displayMaterial = root.childNode(withName: "Display", recursively: true)
+    louver = root.childNode(withName: ACModel.Part.louver, recursively: true)
+    displayMaterial = root.childNode(withName: ACModel.Part.display, recursively: true)
       .flatMap(Self.firstGeometry(in:))?.firstMaterial
-    ledMaterial = root.childNode(withName: "Led", recursively: true)
+    ledMaterial = root.childNode(withName: ACModel.Part.led, recursively: true)
       .flatMap(Self.firstGeometry(in:))?.firstMaterial
 
     Self.flattenMaterials(in: root)
@@ -54,17 +54,16 @@ final class ACSceneController {
     guard stateChanged || room != lastRoom else { return }
     lastState = state
     lastRoom = room
-    displayMaterial?.diffuse.contents = Self.displayImage(for: state, room: room)
+    displayMaterial?.diffuse.contents = ACDisplay.image(for: state, room: room)
     guard stateChanged else { return }
 
     SCNTransaction.begin()
     SCNTransaction.animationDuration = animated ? 0.5 : 0
     SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-    louver?.eulerAngles.x = state.status ? CGFloat(40 * Double.pi / 180) : 0
+    louver?.eulerAngles.x = state.status ? CGFloat(ACModel.openLouverAngle) : 0
     SCNTransaction.commit()
 
-    let ledColor = state.status ? Self.accent(for: state.mode) : NSColor(calibratedRed: 0.56, green: 0.6, blue: 0.67, alpha: 1)
-    ledMaterial?.diffuse.contents = ledColor
+    ledMaterial?.diffuse.contents = ACPalette.led(for: state)
 
     if animated && state.status && previous?.status == false {
       bounce()
@@ -77,108 +76,11 @@ final class ACSceneController {
     scene.isPaused = !active
   }
 
-  /// Nil while the Mac is comfortable; a warm warning colour once macOS
-  /// starts managing heat.
-  static func warning(for thermalState: ProcessInfo.ThermalState) -> NSColor? {
-    switch thermalState {
-    case .fair: NSColor(calibratedRed: 1, green: 0.78, blue: 0.3, alpha: 1)
-    case .serious: NSColor(calibratedRed: 1, green: 0.55, blue: 0.25, alpha: 1)
-    case .critical: NSColor(calibratedRed: 1, green: 0.32, blue: 0.3, alpha: 1)
-    default: nil
-    }
-  }
-
-  static func accent(for mode: ACMode) -> NSColor {
-    switch mode {
-    case .cold: NSColor(calibratedRed: 0.35, green: 0.66, blue: 1, alpha: 1)
-    case .hot: NSColor(calibratedRed: 1, green: 0.62, blue: 0.35, alpha: 1)
-    }
-  }
-
   /// World position just below the louver, used to place the airflow overlay.
   var airflowOrigin: SCNVector3 {
     guard let louver else { return SCNVector3(0, -0.3, 0.3) }
     let world = louver.worldPosition
     return SCNVector3(world.x, world.y - 0.1, world.z + 0.05)
-  }
-
-  // MARK: Display
-
-  /// LCD readout drawn once per change with the Digital-7 seven-segment face;
-  /// unlit "88" segments sit behind the digits like a real panel. The room
-  /// (Mac) temperature sits top right and the wind bars next to the mode
-  /// icon. The texture is tiny and costs nothing while idle.
-  private static func displayImage(for state: ACState, room: RoomReading?) -> NSImage {
-    let size = NSSize(width: 250, height: 100)
-    return NSImage(size: size, flipped: false) { rect in
-      NSColor(calibratedRed: 0.07, green: 0.09, blue: 0.12, alpha: 1).setFill()
-      rect.fill()
-
-      let font = ACFonts.digital(size: 84)
-      let color = state.status ? accent(for: state.mode) : NSColor(calibratedWhite: 1, alpha: 0)
-      let ghost = NSAttributedString(string: "88", attributes: [
-        .font: font,
-        .foregroundColor: NSColor(calibratedWhite: 1, alpha: 0.06),
-      ])
-      let digitsSize = ghost.size()
-      let origin = NSPoint(x: 24, y: (rect.height - digitsSize.height) / 2 + 4)
-      ghost.draw(at: origin)
-      guard state.status else { return true }
-
-      NSAttributedString(string: String(format: "%2d", state.temperature), attributes: [
-        .font: font,
-        .foregroundColor: color,
-      ]).draw(at: origin)
-
-      NSAttributedString(string: "°C", attributes: [
-        .font: NSFont.systemFont(ofSize: 22, weight: .bold),
-        .foregroundColor: color.withAlphaComponent(0.85),
-      ]).draw(at: NSPoint(x: origin.x + digitsSize.width + 6, y: rect.midY + 6))
-
-      let symbolName = state.mode == .cold ? "snowflake" : "sun.max.fill"
-      if let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
-        .withSymbolConfiguration(.init(pointSize: 26, weight: .bold)) {
-        let tinted = NSImage(size: symbol.size, flipped: false) { symbolRect in
-          symbol.draw(in: symbolRect)
-          color.set()
-          symbolRect.fill(using: .sourceAtop)
-          return true
-        }
-        tinted.draw(in: NSRect(x: rect.maxX - 58, y: 16, width: 28, height: 28))
-      }
-      if let room {
-        drawRoom(room, accent: color, in: rect)
-      }
-      return true
-    }
-  }
-
-  private static func drawRoom(_ room: RoomReading, accent: NSColor, in rect: NSRect) {
-    // Wind bars: three rising bars left of the mode icon, lit up to the level.
-    let barWidth: CGFloat = 5
-    for index in 0..<RoomReading.windLevels.upperBound {
-      let height = 8 + CGFloat(index) * 6
-      let bar = NSRect(x: rect.maxX - 90 + CGFloat(index) * (barWidth + 3), y: 18, width: barWidth, height: height)
-      (index < room.windLevel ? accent : NSColor(calibratedWhite: 1, alpha: 0.08)).setFill()
-      NSBezierPath(roundedRect: bar, xRadius: 1, yRadius: 1).fill()
-    }
-
-    guard let celsius = room.celsius else { return }
-    let color = warning(for: room.thermalState) ?? NSColor(calibratedWhite: 1, alpha: 0.55)
-    let digits = NSAttributedString(string: "\(min(celsius, 99))", attributes: [
-      .font: ACFonts.digital(size: 30),
-      .foregroundColor: color,
-    ])
-    // A thermometer glyph turns to mush at LCD size; a small degree mark
-    // after the digits reads better.
-    let degree = NSAttributedString(string: "°", attributes: [
-      .font: NSFont.systemFont(ofSize: 16, weight: .bold),
-      .foregroundColor: color,
-    ])
-    let size = digits.size()
-    let origin = NSPoint(x: rect.maxX - 26 - size.width, y: rect.maxY - 16 - size.height)
-    digits.draw(at: origin)
-    degree.draw(at: NSPoint(x: origin.x + size.width + 1, y: origin.y + size.height - degree.size().height))
   }
 
   // MARK: Motion

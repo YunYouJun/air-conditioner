@@ -1,4 +1,5 @@
 import AppKit
+import CuteACKit
 import SwiftUI
 
 /// Borderless, fully transparent panel that shows only the 3D unit on the

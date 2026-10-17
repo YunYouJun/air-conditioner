@@ -1,4 +1,5 @@
 import AppKit
+import CuteACKit
 import SwiftUI
 
 /// `CuteAC --capture <dir>` opens the popover, plays a short scripted demo and

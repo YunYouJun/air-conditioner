@@ -22,6 +22,14 @@ describe('air conditioner home plugin', () => {
     expect(plugin.present(state)).toEqual({ active: true, tone: 'heat', summary: '制热 · 26°C' })
   })
 
+  it('shows the room temperature when the host grants it', () => {
+    const state = plugin.reduce(plugin.create(), { type: 'toggleStatus' })
+    const room = { celsius: 52.6, thermalState: 'nominal' as const, fanRPM: 1500, windLevel: 1 }
+    expect(plugin.present(state, { room }).summary).toBe('制冷 · 26°C · 室温 53°C')
+    expect(plugin.present(state, { room: { thermalState: 'fair', windLevel: 2 } }).summary).toBe('制冷 · 26°C')
+    expect(plugin.present(state, {}).summary).toBe('制冷 · 26°C')
+  })
+
   it('validates actions', () => {
     expect(plugin.isAction({ type: 'sound', sound: 'sleep' })).toBe(true)
     expect(plugin.isAction({ type: 'sound', sound: 'loud' })).toBe(false)

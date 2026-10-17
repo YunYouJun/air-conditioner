@@ -2,13 +2,19 @@ import Foundation
 import IOKit
 
 /// One fan as reported by the SMC.
-struct FanSample: Equatable {
-  var rpm: Double
-  var minRPM: Double
-  var maxRPM: Double
+public struct FanSample: Equatable, Sendable {
+  public var rpm: Double
+  public var minRPM: Double
+  public var maxRPM: Double
+
+  public init(rpm: Double, minRPM: Double, maxRPM: Double) {
+    self.rpm = rpm
+    self.minRPM = minRPM
+    self.maxRPM = maxRPM
+  }
 
   /// 0 when stopped or at its floor, 1 at full speed.
-  var load: Double {
+  public var load: Double {
     guard maxRPM > minRPM, rpm > 0 else { return 0 }
     return min(1, max(0, (rpm - minRPM) / (maxRPM - minRPM)))
   }
@@ -20,13 +26,15 @@ struct FanSample: Equatable {
 /// readings from the SMC. Nothing is ever written to the hardware.
 ///
 /// Not thread-safe; `ThermalMonitor` only calls it from one serial queue.
-final class ThermalSensors {
+public final class ThermalSensors {
   private let hid = HIDTemperatureSensors()
   private let smc = SMCConnection()
   private lazy var fanCount: Int = smc.map { Int($0.read("FNum") ?? 0) } ?? 0
 
+  public init() {}
+
   /// Average CPU/SoC die temperature in °C, or nil when no sensor is readable.
-  func cpuTemperature() -> Double? {
+  public func cpuTemperature() -> Double? {
     if let celsius = hid?.averageCelsius() {
       return celsius
     }
@@ -40,7 +48,7 @@ final class ThermalSensors {
   }
 
   /// Empty on fanless Macs (e.g. MacBook Air).
-  func fans() -> [FanSample] {
+  public func fans() -> [FanSample] {
     guard let smc, fanCount > 0 else { return [] }
     return (0..<fanCount).compactMap { index in
       guard let rpm = smc.read("F\(index)Ac") else { return nil }

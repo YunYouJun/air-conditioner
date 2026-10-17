@@ -42,3 +42,7 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Swift (root CuteACKit package)
+.build/
+.swiftpm/

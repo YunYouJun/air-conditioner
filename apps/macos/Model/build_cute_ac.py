@@ -4,8 +4,8 @@ Build the low-poly cartoon air-conditioner headlessly and export it for SceneKit
     /Applications/Blender.app/Contents/MacOS/Blender -b -P Model/build_cute_ac.py
 
 Outputs:
-  Sources/CuteAC/Resources/CuteAC.usdz   model used by the macOS app
-  Model/renders/*.png                    pre-rendered previews (cold / hot / off)
+  Kit/Sources/CuteACKit/Resources/CuteAC.usdz   model shared by CuteAC and Yun Home
+  Model/renders/*.png                           pre-rendered previews (cold / hot / off)
 
 Named nodes the app drives: Louver (hinge at its top edge), Display (a plane
 with 0..1 UVs that receives the temperature texture) and Led. Keep these
@@ -20,7 +20,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-USDZ_PATH = os.path.join(ROOT, 'Sources', 'CuteAC', 'Resources', 'CuteAC.usdz')
+USDZ_PATH = os.path.join(ROOT, 'Kit', 'Sources', 'CuteACKit', 'Resources', 'CuteAC.usdz')
 RENDER_DIR = os.path.join(ROOT, 'Model', 'renders')
 
 # Wall split unit proportions (~3.2 : 1). Front faces -Y, up is +Z.

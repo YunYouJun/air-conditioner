@@ -9,7 +9,8 @@ APP=build/CuteAC.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp .build/release/CuteAC "$APP/Contents/MacOS/CuteAC"
-cp -R .build/release/CuteAC_CuteAC.bundle "$APP/Contents/Resources/"
+# SwiftPM resource bundles (the kit's model and font) live next to the binary.
+cp -R .build/release/*.bundle "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

@@ -1,4 +1,5 @@
 import AppKit
+import CuteACKit
 import SceneKit
 
 /// `CuteAC --snapshot <dir>` renders each state offscreen and exits; used to
