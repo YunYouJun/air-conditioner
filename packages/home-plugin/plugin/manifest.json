@@ -7,7 +7,7 @@
   "author": { "name": "YunYouJun", "url": "https://ac.yunyoujun.cn/" },
   "category": "climate",
   "symbol": "air.conditioner.horizontal",
-  "tint": "#5F939E",
+  "tint": "#06B6D4",
   "permissions": ["sensor:thermal"],
   "renderer": "cute-ac-3d",
   "entry": { "state": "state.js", "controls": "controls.json" }
