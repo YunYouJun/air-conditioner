@@ -1,5 +1,9 @@
 # React
 
+::: warning 尚未发布到 npm
+`@air-conditioner/react` 目前只在本仓库（pnpm workspace）里使用，网站 ac.yunyoujun.cn 就是用它做的，下面的 `pnpm add` 暂时还装不到。想在其他 React 项目里用，可以先用 [Web Component](/guide/web-component) 嵌入（同样还在仓库内），或使用已发布的 [Vue 组件](/guide/vue)。
+:::
+
 安装 React 适配包：
 
 ```bash

@@ -79,6 +79,12 @@ const AcStage: React.FC<AcStageProps> = (props) => {
     }
   }, [phase])
 
+  // 平面版停在原地（取消切换、3D 加载失败）时，把拖动留下的转角回正
+  useEffect(() => {
+    if (phase.name === 'idle' && shown === '2d')
+      setTurn(0)
+  }, [phase, shown])
+
   // 3D 加载失败：留在平面版
   function fail() {
     setPhase({ name: 'idle' })
@@ -133,9 +139,13 @@ const AcStage: React.FC<AcStageProps> = (props) => {
     // 没转够就弹回正面
     if (!current.snapped)
       setTurn(0)
-    // 拖动过就别再触发点击（例如 Logo 链接）
-    if (current.moved)
-      event.currentTarget.addEventListener('click', stopClick, { capture: true, once: true })
+    // 拖动过就别再触发紧跟着的那次点击（例如 Logo 链接）；松手时不在元素上就没有点击，
+    // 所以下一轮事件循环就撤掉，不吞掉之后真正的点击
+    if (current.moved) {
+      const target = event.currentTarget
+      target.addEventListener('click', stopClick, { capture: true, once: true })
+      setTimeout(() => target.removeEventListener('click', stopClick, { capture: true }))
+    }
     drag.current = undefined
   }
 

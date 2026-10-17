@@ -16,6 +16,10 @@ export default defineConfig({
       '~/': `${path.resolve(import.meta.dirname, 'src')}/`,
     },
   },
+  // 3D 模式按需导入 Three.js：开发时预先打包好，免得第一次打开 3D 时才发现新依赖、整页重新加载
+  optimizeDeps: {
+    include: ['three', 'three/addons/loaders/GLTFLoader.js'],
+  },
   build: {
     // 3D 模式的按需分包里有整个 Three.js（约 160 kB gzip），不影响首屏
     chunkSizeWarningLimit: 700,

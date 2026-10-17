@@ -2,6 +2,10 @@
 
 Web Component 不依赖 React 或 Vue，适合普通网页、CMS 页面或跨框架嵌入。
 
+::: warning 尚未发布到 npm
+`@air-conditioner/widget` 目前只在本仓库（pnpm workspace）里使用，下面的 npm 用法暂时还装不到；已发布的是 [Vue 组件](/guide/vue)（`@yunlefun-home/air-conditioner`）和 core（`@yunlefun-home/air-conditioner-core`）。
+:::
+
 ## npm
 
 ```ts
