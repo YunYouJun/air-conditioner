@@ -4,13 +4,14 @@ import React, { useState } from 'react'
 
 import { useLocalStorage } from 'usehooks-ts'
 import * as pkg from '~/../package.json'
-import Ac3D, { supportsWebGL } from '~/components/ac3d'
+import { supportsWebGL } from '~/components/ac3d'
+import AcStage from '~/components/AcStage'
 import ComputerCooling from '~/components/ComputerCooling'
 import { EnergySavingLabel } from '~/components/EnergySavingLabel'
 import ProTip from '~/components/ProTip'
 
 import RemoteControl from '~/components/RemoteControl'
-import { peekAudioController } from '~/components/RemoteControl/audio'
+import { getAudioController, peekAudioController } from '~/components/RemoteControl/audio'
 import { useFloatingRemote } from '~/components/RemoteControl/floating'
 import Toast from '~/components/Toast'
 
@@ -52,25 +53,32 @@ const Home: React.FC = () => {
             便携小空调
           </h1>
           <ProTip />
-          {show3D
-            ? <Ac3D state={ac} form={form} onError={() => setFailed(true)} />
-            : (
-                // 与组件库同一个空调，用 3 : 1 的长款机身
-                <AirConditioner
-                  size="wide"
-                  status={ac.status}
-                  temperature={ac.temperature}
-                  mode={ac.mode}
-                  swing={ac.swing}
-                  fan={ac.fan}
-                  title={pkg.description}
-                  logoUrl={`${import.meta.env.BASE_URL}yun-logo.svg`}
-                  logoHref={pkg.repository.url}
-                  onDrip={() => peekAudioController()?.drip()}
-                >
-                  {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
-                </AirConditioner>
-              )}
+          {/* 平面版与 3D 版之间「把空调转过来」；横向拖动平面机身也能把它拧成 3D */}
+          <AcStage
+            view={view}
+            onViewChange={setView}
+            can3D={webgl && !failed}
+            state={ac}
+            form={form}
+            onFail={() => setFailed(true)}
+            onSnap={() => getAudioController(ac.sound, ac.fan).beep()}
+          >
+            {/* 与组件库同一个空调，用 3 : 1 的长款机身 */}
+            <AirConditioner
+              size="wide"
+              status={ac.status}
+              temperature={ac.temperature}
+              mode={ac.mode}
+              swing={ac.swing}
+              fan={ac.fan}
+              title={pkg.description}
+              logoUrl={`${import.meta.env.BASE_URL}yun-logo.svg`}
+              logoHref={pkg.repository.url}
+              onDrip={() => peekAudioController()?.drip()}
+            >
+              {import.meta.env.VITE_DISABLE_ADSENSE ? null : <EnergySavingLabel />}
+            </AirConditioner>
+          </AcStage>
           {/* 紧贴出风口：节能建议从这里被风吹出来 */}
           <Toast />
           <div className="ac-actions">
@@ -89,10 +97,15 @@ const Home: React.FC = () => {
               className="ac-chip"
               aria-pressed={show3D}
               disabled={!webgl || failed}
-              title={!webgl ? '这个浏览器不支持 WebGL' : failed ? '3D 模型没加载出来' : show3D ? '换回平面版' : '和桌面版共用同一个 3D 模型，拖动可以转一转'}
+              title={!webgl ? '这个浏览器不支持 WebGL' : failed ? '3D 模型没加载出来' : show3D ? '换回平面版（3D 里回正后双击也可以）' : '和桌面版共用同一个 3D 模型（也可以横向拖动空调把它拧过来）'}
               onClick={() => setView(show3D ? '2d' : '3d')}
             >
-              <span className="i-mdi-cube-outline ac-chip__icon" aria-hidden="true" />
+              {/* 平面时是一个方块，打开 3D 时「弹」成立体方块 */}
+              <svg className="ac-cube ac-chip__icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path className="ac-cube__edges" d="M5 9 9 5M15 9l4-4M15 19l4-4" />
+                <rect className="ac-cube__back" x="7" y="7" width="10" height="10" rx="1" />
+                <rect className="ac-cube__front" x="7" y="7" width="10" height="10" rx="1" />
+              </svg>
               3D
             </button>
             {show3D && (

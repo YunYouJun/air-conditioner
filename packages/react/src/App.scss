@@ -97,6 +97,54 @@ html.dark .hot-color .ac-chip {
   --ac-chip-accent: #ffb74d;
 }
 
+/* 3D 开关的方块图标：平面时前后两个面重合成一个方块，打开 3D 时前面往左下、后面往右上「弹」开，连上棱就是立体方块 */
+.ac-cube {
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  rect,
+  path {
+    transition:
+      transform var(--acw-motion-duration-slow) var(--acw-motion-ease-spring),
+      opacity var(--acw-motion-duration-base) var(--acw-motion-ease-standard);
+  }
+
+  .ac-cube__edges,
+  .ac-cube__back {
+    opacity: 0;
+  }
+
+  .ac-cube__front {
+    fill: color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+
+.ac-chip[aria-pressed='true'] .ac-cube {
+  .ac-cube__back {
+    opacity: 1;
+    transform: translate(2px, -2px);
+  }
+
+  .ac-cube__front {
+    fill: color-mix(in srgb, currentColor 22%, transparent);
+    transform: translate(-2px, 2px);
+  }
+
+  .ac-cube__edges {
+    opacity: 1;
+  }
+}
+
+/* 悬停时后面先探出一点，预告「要立起来了」 */
+.ac-chip:not(:disabled, [aria-pressed='true']):hover .ac-cube .ac-cube__back {
+  opacity: 0.5;
+  transform: translate(1px, -1px);
+}
+
 /* 不可用时（浏览器不支持 WebGL）变淡、不可点 */
 .ac-chip:disabled {
   cursor: not-allowed;

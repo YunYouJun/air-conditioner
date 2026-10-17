@@ -1,0 +1,132 @@
+// 空调舞台：平面版与 3D 版之间「把空调转过来」。
+// --ac-turn 是平面机身当前的转角（拖动时由组件写入），--ac-turn-sign 是转动方向（1 / -1）。
+// 转身角度 32deg 与 AcStage.tsx 的 acTurnAngle、时长 420ms 与 turnMs 一致。
+.ac-stage {
+  position: relative;
+}
+
+// 转身时进场的那一层叠在上面，不占位置
+.ac-stage__over {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+.ac-stage__flat {
+  --ac-turn: 0deg;
+
+  // 横向拖动转机身，纵向仍可滚动页面
+  touch-action: pan-y;
+  transform: perspective(1400px) rotateY(var(--ac-turn));
+  // 没转够松手时弹回正面
+  transition: transform 520ms var(--acw-motion-ease-spring);
+
+  &[data-dragging] {
+    cursor: grabbing;
+    transition: none;
+  }
+
+  // 3D 还在下载：机身微微晃动，像正在被搬起来
+  &[data-turn='hold'] {
+    animation: ac-turn-hold 700ms ease-in-out infinite;
+  }
+
+  &[data-turn='out'] {
+    animation: ac-turn-out 420ms cubic-bezier(0.55, 0, 0.8, 0.4) forwards;
+    pointer-events: none;
+  }
+
+  &[data-turn='in'] {
+    animation: ac-turn-in 420ms cubic-bezier(0.2, 0.6, 0.35, 1) both;
+    pointer-events: none;
+  }
+}
+
+.ac-stage__solid {
+  &[data-turn='pending'] {
+    visibility: hidden;
+  }
+
+  &[data-turn='in'] {
+    animation: ac-solid-in 420ms ease-out both;
+  }
+
+  // 先转回侧面，再淡出，平面版同时从这个角度转回来
+  &[data-turn='out'] {
+    animation: ac-solid-out 300ms ease-in 120ms both;
+    pointer-events: none;
+  }
+}
+
+@keyframes ac-turn-hold {
+  0%,
+  100% {
+    transform: perspective(1400px) rotateY(var(--ac-turn));
+  }
+
+  50% {
+    transform: perspective(1400px) rotateY(calc(var(--ac-turn) + var(--ac-turn-sign) * 4deg));
+  }
+}
+
+@keyframes ac-turn-out {
+  from {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(var(--ac-turn));
+  }
+
+  to {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(calc(var(--ac-turn-sign) * 32deg)) scale(0.97);
+  }
+}
+
+@keyframes ac-turn-in {
+  from {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(calc(var(--ac-turn-sign) * 32deg)) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(0deg);
+  }
+}
+
+@keyframes ac-solid-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ac-solid-out {
+  to {
+    opacity: 0;
+  }
+}
+
+// 减弱动态效果：不转、不晃，只做淡入淡出
+@media (prefers-reduced-motion: reduce) {
+  .ac-stage__flat {
+    transform: none;
+    transition: none;
+
+    &[data-turn='hold'] {
+      animation: none;
+    }
+
+    &[data-turn='out'] {
+      animation: ac-solid-out 200ms ease-in forwards;
+    }
+
+    &[data-turn='in'] {
+      animation: ac-solid-in 200ms ease-out both;
+    }
+  }
+
+  .ac-stage__solid[data-turn='out'] {
+    animation-duration: 200ms;
+    animation-delay: 0ms;
+  }
+}

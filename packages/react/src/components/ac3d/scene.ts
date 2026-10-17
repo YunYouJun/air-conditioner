@@ -48,11 +48,19 @@ export interface AcSceneOptions {
   onError?: (error: unknown) => void
   /** 减弱动态效果：不跑出风、雾气粒子，导风板直接到位 */
   reducedMotion?: boolean
+  /** 一开始侧转的角度（弧度）：从平面版「转过来」时，模型从这个角度转回正面 */
+  initialYaw?: number
+  /** 第一个模型显示出来 */
+  onReady?: () => void
+  /** 已经回正时再双击：请求变回平面版 */
+  onFlatten?: () => void
 }
 
 export interface AcScene {
   update: (state: AcSceneState) => void
   setForm: (form: AcForm) => void
+  /** 带缓动地转到这个角度（弧度，绕竖轴；俯仰回到 0） */
+  turnTo: (yaw: number) => void
   dispose: () => void
 }
 
@@ -213,9 +221,12 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
   let state: AcSceneState = { status: false, mode: 'cold', temperature: 26, swing: false, fan: 'auto' }
 
   /** 拖动旋转：左右最多约 40°，上下约 17°；双击回正 */
-  let yaw = 0
+  let yaw = options.initialYaw ?? 0
   let pitch = 0
   let drag: { x: number, y: number, yaw: number, pitch: number } | undefined
+  /** 正在缓动转向的目标角度 */
+  let turnTarget: number | undefined
+  let ready = false
 
   /** 导风板当前角度（弧度），向目标角度缓动 */
   let louverAngle = 0
@@ -258,7 +269,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     const box = new Box3().setFromObject(root)
     // 给出风留出空间：挂机向下、柜机向右
     if (anchor.direction === 'down')
-      box.min.y -= 0.5
+      box.min.y -= 0.36
     else
       box.max.x += 0.5
     return { form, root, louver, movers, vanes, led, origin, lip, center: box.getCenter(new Vector3()), size: box.getSize(new Vector3()) }
@@ -275,7 +286,8 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     const fov = MathUtils.degToRad(camera.fov)
     const fitHeight = current.size.y / 2 / Math.tan(fov / 2)
     const fitWidth = current.size.x / 2 / Math.tan(fov / 2) / camera.aspect
-    const distance = Math.max(fitHeight, fitWidth) * 1.08 + current.size.z
+    // 从机身中心算起，正面离相机近半个厚度；挂机让正面的宽度和平面版差不多，两者转身时能接上
+    const distance = Math.max(fitHeight, fitWidth) * 1.04 + current.size.z / 2
     // 略微从右下方仰视，和原生版的预览角度相近
     camera.position.copy(current.center).add(new Vector3(distance * 0.16, -distance * 0.08, distance))
     camera.lookAt(current.center)
@@ -307,6 +319,12 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       louverAngle = state.status ? MathUtils.degToRad(acLouverMotion[form].openAngle) : 0
       fitCamera()
       apply()
+      if (!ready) {
+        ready = true
+        // 先画好第一帧，再通知外面开始「转过来」
+        renderer.render(scene, camera)
+        options.onReady?.()
+      }
     }
     catch (error) {
       cache.delete(form)
@@ -356,6 +374,19 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     const running = state.status && current !== undefined
     const fan = state.fan ?? 'auto'
     const motion = !options.reducedMotion
+
+    // 转身：向目标角度缓动（平面 / 3D 切换、双击回正）
+    if (turnTarget !== undefined) {
+      yaw = motion ? MathUtils.damp(yaw, turnTarget, 7, delta / 1000) : turnTarget
+      pitch = motion ? MathUtils.damp(pitch, 0, 7, delta / 1000) : 0
+      if (Math.abs(yaw - turnTarget) < 0.002 && Math.abs(pitch) < 0.002) {
+        yaw = turnTarget
+        pitch = 0
+        turnTarget = undefined
+      }
+      current?.root.rotation.set(pitch, yaw, 0)
+    }
+    const turning = turnTarget !== undefined
 
     // 导风板：开机打开、关机合上；扫风时在打开角度上来回摆
     if (current) {
@@ -432,7 +463,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     }
 
     // 开机时一直有出风；关机后等导风板合上就停下，不再逐帧渲染
-    return running ? motion : Math.abs(louverAngle) > 0.001
+    return (running ? motion : Math.abs(louverAngle) > 0.001) || turning
   }
 
   function tick(time: number) {
@@ -455,6 +486,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
   }
 
   function rotate(nextYaw: number, nextPitch: number) {
+    turnTarget = undefined
     yaw = MathUtils.clamp(nextYaw, -0.7, 0.7)
     pitch = MathUtils.clamp(nextPitch, -0.3, 0.3)
     current?.root.rotation.set(pitch, yaw, 0)
@@ -471,7 +503,17 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
   const onPointerUp = () => {
     drag = undefined
   }
-  const onDoubleClick = () => rotate(0, 0)
+  // 双击回正；已经是正面时再双击，交给外面变回平面版
+  const onDoubleClick = () => {
+    if (Math.abs(yaw) < 0.02 && Math.abs(pitch) < 0.02 && turnTarget === undefined)
+      options.onFlatten?.()
+    else
+      turnTo(0)
+  }
+  function turnTo(target: number) {
+    turnTarget = MathUtils.clamp(target, -0.7, 0.7)
+    wake()
+  }
   canvas.addEventListener('pointerdown', onPointerDown)
   canvas.addEventListener('pointermove', onPointerMove)
   canvas.addEventListener('pointerup', onPointerUp)
@@ -504,6 +546,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       state = { ...next, fan: next.fan ?? 'auto' }
       apply()
     },
+    turnTo,
     setForm(form) {
       if (form !== current?.form)
         void load(form)

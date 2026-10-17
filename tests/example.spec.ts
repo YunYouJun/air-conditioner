@@ -123,3 +123,38 @@ test('switches to the 3D model and back', async ({ page }) => {
   await expect(page.locator('.acw-unit')).toBeVisible()
   await expect(page.locator('.ac-3d')).toHaveCount(0)
 })
+
+// Easter egg: dragging the flat unit far enough twists it into 3D; double-clicking the
+// model once it faces front turns it back.
+test('twists the flat unit into 3D and double-clicks it back', async ({ page }) => {
+  await gotoFresh(page)
+  await page.evaluate(() => localStorage.removeItem('ac-view'))
+  await page.reload()
+  test.skip(await page.getByRole('button', { name: '3D' }).isDisabled(), 'WebGL is not available in this browser')
+
+  const shell = (await page.locator('.acw-shell').boundingBox())!
+  const y = shell.y + shell.height / 2
+  // A short drag springs back.
+  await page.mouse.move(shell.x + shell.width / 2, y)
+  await page.mouse.down()
+  await page.mouse.move(shell.x + shell.width / 2 + 80, y, { steps: 5 })
+  await page.mouse.up()
+  await expect(page.locator('.ac-3d')).toHaveCount(0)
+
+  // Past the threshold it snaps into 3D.
+  await page.mouse.move(shell.x + shell.width / 2, y)
+  await page.mouse.down()
+  await page.mouse.move(shell.x + shell.width / 2 + 260, y, { steps: 10 })
+  await page.mouse.up()
+  await expect(page.locator('.ac-3d__canvas')).toBeVisible()
+  await expect(page.locator('.acw-unit')).toHaveCount(0)
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('ac-view'))).toBe('"3d"')
+
+  // Facing front, a double-click flattens it again (the first one may only straighten it).
+  const canvas = (await page.locator('.ac-3d__canvas').boundingBox())!
+  await expect(async () => {
+    await page.mouse.dblclick(canvas.x + canvas.width / 2, canvas.y + canvas.height / 3)
+    await expect(page.locator('.acw-unit')).toBeVisible({ timeout: 1500 })
+  }).toPass({ timeout: 8000 })
+  await expect(page.locator('.ac-3d')).toHaveCount(0)
+})

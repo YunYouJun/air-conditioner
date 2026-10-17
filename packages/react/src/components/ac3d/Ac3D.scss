@@ -2,7 +2,8 @@
 .ac-3d {
   position: relative;
   width: 100%;
-  aspect-ratio: 2 / 1;
+  // 和平面版（600 × 200 机身加下方出风）的比例相近
+  aspect-ratio: 1.9 / 1;
   margin: 0 auto;
 
   &[data-form='tower'] {

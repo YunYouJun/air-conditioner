@@ -1,6 +1,5 @@
-import type { AcForm } from '@yunlefun-home/air-conditioner-core'
 import type { ErrorInfo, PropsWithChildren, ReactNode } from 'react'
-import type { AcSceneState } from './scene'
+import type { Ac3DViewProps } from './Ac3DView'
 import React, { Component, lazy, Suspense } from 'react'
 import './Ac3D.scss'
 
@@ -35,12 +34,12 @@ class LoadBoundary extends Component<PropsWithChildren<{ onError: (error: unknow
   }
 }
 
-const Ac3D: React.FC<{ state: AcSceneState, form: AcForm, onError: (error: unknown) => void }> = (props) => {
+const Ac3D: React.FC<Ac3DViewProps> = (props) => {
   return (
     <div className="ac-3d" data-form={props.form}>
       <LoadBoundary onError={props.onError}>
         <Suspense fallback={<div className="ac-3d__loading">正在搬空调…</div>}>
-          <Ac3DView state={props.state} form={props.form} onError={props.onError} />
+          <Ac3DView {...props} />
         </Suspense>
       </LoadBoundary>
     </div>
