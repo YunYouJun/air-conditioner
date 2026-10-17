@@ -10,7 +10,10 @@ let package = Package(
   targets: [
     .executableTarget(
       name: "CuteAC",
-      dependencies: [.product(name: "CuteACKit", package: "CuteACKit")],
+      dependencies: [
+        .product(name: "CuteACKit", package: "CuteACKit"),
+        .product(name: "ReleaseCheck", package: "CuteACKit"),
+      ],
       swiftSettings: [.swiftLanguageMode(.v5)]
     ),
   ]

@@ -17,6 +17,7 @@
   - 风速条：显示窗上的三格风速跟随真实风扇负载；没有风扇的机型（如 MacBook Air）改为跟随散热状态。风速越高，雪花和暖风越多、越快、吹得越远。
   - 只读取，不修改：Apple Silicon 的温度来自 HID 事件系统（私有 API，运行时用 `dlsym` 查找），Intel 的温度和所有风扇数据来自 SMC。全部不需要 root，也不会写入任何硬件参数。
   - 省电：只在弹窗或桌面挂件可见时，每 3 秒在后台队列采样一次；都不可见时完全不采样。散热状态由系统主动通知。
+- **检查更新**：每天最多查一次 GitHub Releases（`v*` 标签），有新版本时弹窗右下角显示“新版本 vX”，点击下载 `CuteAC-X.zip`；也可以点“检查更新”手动查。只读取公开的发布信息，不上传任何数据。API 被限流时改读 `releases/latest` 页面。`swift run` 启动的开发版本不检查。
 - **状态持久化**：状态保存在 `UserDefaults` 里，数据结构和 `@yunlefun-home/air-conditioner` 的 core 一致。
 
 ## 共享包 CuteACKit
@@ -27,6 +28,7 @@
 |---|---|---|
 | `CuteACCore` | `ACState` / `ACMode`（温度为 `Double`，兼容 Home Assistant 的小数步进）、`RoomReading`、`ThermalLevel`、`ThermalSensors`、`ThermalMonitor` | Foundation、IOKit |
 | `CuteACKit` | `ACDisplay`（显示窗贴图）、`ACAirflowLayer`（出风动画）、`ACPalette`、`ACFonts`、`ACModel`（`CuteAC.usdz` 和部件名） | AppKit，并重新导出 `CuteACCore` |
+| `ReleaseCheck` | `ReleaseChecker`（按标签前缀找最新的稳定版）、`UpdateMonitor`（每天一次的自动检查和手动检查） | Foundation |
 
 3D 渲染器不在包里：CuteAC 用 SceneKit，Yun Home 用 RealityKit，但两边加载同一个模型、画同一张显示窗贴图、用同一个出风层。`RoomReading` 的 JSON 形状和 core 的 TypeScript 类型 `RoomReading` 一致，Yun Home 会把它传给获得 `sensor:thermal` 权限的插件。
 
@@ -37,6 +39,12 @@
 ```
 
 在仓库根目录运行 `swift test` 测试共享包。
+
+## 发布
+
+CuteAC 和 npm 包共用仓库版本号（bumpp 同步各个 `package.json`），`scripts/bundle.sh` 把它写进 `CFBundleShortVersionString`。推送 `v*` 标签后，[Release 工作流](../../.github/workflows/release.yml)会在 macOS 上测试共享包、打包 `CuteAC.app`，压缩成 `CuteAC-<版本>.zip` 上传到同名 GitHub Release，应用的检查更新读的就是这里。
+
+应用只做了 ad-hoc 签名，没有公证。下载后第一次打开会被 Gatekeeper 拦下：到“系统设置 → 隐私与安全性”里点“仍要打开”，或者执行 `xattr -dr com.apple.quarantine CuteAC.app`。
 
 ## 运行
 

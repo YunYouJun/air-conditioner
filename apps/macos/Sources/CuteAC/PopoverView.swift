@@ -1,4 +1,5 @@
 import CuteACKit
+import ReleaseCheck
 import SwiftUI
 
 @MainActor
@@ -11,6 +12,7 @@ struct PopoverView: View {
   @ObservedObject var settings: AppSettings
   @ObservedObject var visibility: PopoverVisibility
   @ObservedObject var thermal: ThermalMonitor
+  @ObservedObject var updates: UpdateMonitor
   let sceneController: ACSceneController
 
   private var state: ACState { store.state }
@@ -84,6 +86,7 @@ struct PopoverView: View {
           .font(.caption2)
           .foregroundStyle(.tertiary)
         Spacer()
+        updateButton
         Button("退出") { NSApp.terminate(nil) }
           .buttonStyle(.link)
           .font(.caption)
@@ -91,6 +94,33 @@ struct PopoverView: View {
     }
     .padding(16)
     .frame(width: 320)
+  }
+
+  /// A newer release links to its download; otherwise a manual check whose
+  /// result replaces the label until the popover is reopened.
+  @ViewBuilder
+  private var updateButton: some View {
+    if let release = updates.available {
+      Button("新版本 v\(release.version)") { NSWorkspace.shared.open(release.downloadURL ?? release.pageURL) }
+        .buttonStyle(.link)
+        .font(.caption.weight(.semibold))
+        .help("下载 CuteAC \(release.version)，解压后替换旧版即可")
+    } else {
+      Button(updateLabel) { Task { await updates.check() } }
+        .buttonStyle(.link)
+        .font(.caption)
+        .disabled(updates.status == .checking)
+        .help(AppVersion.current.map { "当前版本 v\($0)" } ?? "开发版本")
+    }
+  }
+
+  private var updateLabel: String {
+    switch updates.status {
+    case .checking: "检查中…"
+    case .upToDate: "已是最新"
+    case .failed: "检查失败"
+    default: "检查更新"
+    }
   }
 
   /// The Mac is the AC's "room": its CPU/SoC temperature, fan speed and how

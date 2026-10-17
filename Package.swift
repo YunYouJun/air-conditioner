@@ -13,6 +13,8 @@ let package = Package(
     // AppKit drawing shared by every renderer: LCD texture, airflow overlay,
     // palette, Digital-7 font and the CuteAC.usdz model.
     .library(name: "CuteACKit", targets: ["CuteACKit"]),
+    // GitHub Releases update check shared by CuteAC and Yun Home. Foundation only.
+    .library(name: "ReleaseCheck", targets: ["ReleaseCheck"]),
   ],
   targets: [
     .target(name: "CuteACCore", path: "apps/macos/Kit/Sources/CuteACCore"),
@@ -25,6 +27,8 @@ let package = Package(
         .copy("Resources/digital-7-mono.ttf"),
       ]
     ),
+    .target(name: "ReleaseCheck", path: "apps/macos/Kit/Sources/ReleaseCheck"),
+    .testTarget(name: "ReleaseCheckTests", dependencies: ["ReleaseCheck"], path: "apps/macos/Kit/Tests/ReleaseCheckTests"),
     .testTarget(name: "CuteACCoreTests", dependencies: ["CuteACCore"], path: "apps/macos/Kit/Tests/CuteACCoreTests"),
     .testTarget(name: "CuteACKitTests", dependencies: ["CuteACKit"], path: "apps/macos/Kit/Tests/CuteACKitTests"),
   ],

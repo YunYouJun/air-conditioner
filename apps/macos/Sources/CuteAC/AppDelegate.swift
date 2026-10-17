@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import CuteACKit
+import ReleaseCheck
 import SwiftUI
 
 @MainActor
@@ -25,6 +26,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   private let settings = AppSettings()
   private let visibility = PopoverVisibility()
   private let thermalMonitor = ThermalMonitor()
+  /// Daily GitHub Releases check; tags are `v<version>` with a `CuteAC-<version>.zip` asset.
+  private let updates = UpdateMonitor(
+    checker: ReleaseChecker(repository: "YunYouJun/air-conditioner", tagPrefix: "v", assetPrefix: "CuteAC-"),
+    keyPrefix: "cute-ac"
+  )
   private lazy var sceneController = ACSceneController()
   private var statusItem: NSStatusItem?
   private let popover = NSPopover()
@@ -46,6 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         settings: settings,
         visibility: visibility,
         thermal: thermalMonitor,
+        updates: updates,
         sceneController: sceneController
       )
     )
@@ -67,6 +74,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
       .store(in: &cancellables)
 
     handleDebugArguments(button: item.button)
+
+    // Docs captures stay offline; normal launches check once a day.
+    if !CommandLine.arguments.contains("--capture") {
+      Task { await updates.checkIfDue() }
+    }
   }
 
   // MARK: Desktop pet

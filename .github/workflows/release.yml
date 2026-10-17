@@ -4,6 +4,9 @@ name: Release
 # with npm trusted publishing (OIDC): no NPM_TOKEN secret, provenance is attached.
 # Each package must list this repository and `release.yml` as a trusted publisher
 # on npmjs.com.
+#
+# Tag pushes also attach the Yun Home plugin and the CuteAC app
+# (CuteAC-<version>.zip) to the GitHub Release, which the app's update check reads.
 
 on:
   push:
@@ -106,3 +109,42 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" --clobber \
             packages/home-plugin/dist/air-conditioner.yunplugin \
             packages/home-plugin/dist/air-conditioner.yunplugin.sha256
+
+  # Attach the CuteAC menu bar app to the GitHub Release for this tag. The app
+  # reads releases tagged v* and links to CuteAC-<version>.zip.
+  cuteac:
+    if: github.ref_type == 'tag'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Verify tag matches the app version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::package.json is $version but the tag is $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Test kit
+        run: swift test
+
+      - name: Bundle
+        working-directory: apps/macos
+        run: scripts/bundle.sh
+
+      - name: Zip
+        run: ditto -c -k --keepParent apps/macos/build/CuteAC.app "CuteAC-${GITHUB_REF_NAME#v}.zip"
+
+      # The plugin job may create the release first; either order works.
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes \
+            || gh release view "$GITHUB_REF_NAME" >/dev/null
+          gh release upload "$GITHUB_REF_NAME" --clobber "CuteAC-${GITHUB_REF_NAME#v}.zip"

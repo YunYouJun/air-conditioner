@@ -12,7 +12,11 @@ cp .build/release/CuteAC "$APP/Contents/MacOS/CuteAC"
 # SwiftPM resource bundles (the kit's model and font) live next to the binary.
 cp -R .build/release/*.bundle "$APP/Contents/Resources/"
 
-cat > "$APP/Contents/Info.plist" <<'PLIST'
+# The app shares the repository version (bumpp keeps package.json files in
+# sync), so a v0.4.0 tag ships CuteAC 0.4.0 and the update check can compare.
+VERSION="${VERSION:-$(sed -n 's/^  "version": "\(.*\)",$/\1/p' ../../package.json)}"
+
+cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -22,8 +26,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleName</key><string>CuteAC</string>
   <key>CFBundleDisplayName</key><string>云空调</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.1.0</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
+  <key>CFBundleVersion</key><string>$VERSION</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
