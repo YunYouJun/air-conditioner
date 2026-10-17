@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AcIconName, AcMode, AcRemoteCommand } from '@yunlefun-home/air-conditioner-core'
-import { acIconPaths, acSoundIcons, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { acIconPaths, acSoundIcons, bindAcPressRepeat, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useAirConditioner } from '../composables/useAirConditioner'
 
 const emit = defineEmits<{
@@ -39,9 +39,23 @@ function run(command: AcRemoteCommand, action: () => void) {
   action()
 }
 
+// 模式键：关机时按下也会开机，和真的遥控器一样
 function setMode(mode: AcMode) {
-  run(mode, () => airConditioner.setMode(mode))
+  run(mode, () => airConditioner.dispatch({ type: 'mode', mode, powerOn: true }))
 }
+
+// 温度键：长按连续调温，到上下限就停
+const increaseButton = ref<HTMLButtonElement>()
+const decreaseButton = ref<HTMLButtonElement>()
+const unbind: (() => void)[] = []
+onMounted(() => {
+  const value = () => state.value.temperature
+  if (increaseButton.value)
+    unbind.push(bindAcPressRepeat(increaseButton.value, () => run('increase', airConditioner.increase), { value }))
+  if (decreaseButton.value)
+    unbind.push(bindAcPressRepeat(decreaseButton.value, () => run('decrease', airConditioner.decrease), { value }))
+})
+onUnmounted(() => unbind.forEach(stop => stop()))
 </script>
 
 <template>
@@ -81,20 +95,20 @@ function setMode(mode: AcMode) {
 
     <div class="acw-remote-temp">
       <button
+        ref="increaseButton"
         type="button"
         class="acw-button acw-button-temp"
         aria-label="add"
-        title="温度 +"
-        @click="run('increase', airConditioner.increase)"
+        title="温度 +（长按连续调）"
       >
         <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" :d="acIconPaths.plus" /></svg>
       </button>
       <button
+        ref="decreaseButton"
         type="button"
         class="acw-button acw-button-temp"
         aria-label="reduce"
-        title="温度 −"
-        @click="run('decrease', airConditioner.decrease)"
+        title="温度 −（长按连续调）"
       >
         <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" :d="acIconPaths.minus" /></svg>
       </button>

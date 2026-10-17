@@ -186,6 +186,7 @@ html.dark .acw-note[data-mode="hot"],
   right: 24px;
   bottom: 13px;
   left: 24px;
+  overflow: hidden;
   height: 5px;
   border-radius: 0 0 4px 4px;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.03));
@@ -233,6 +234,70 @@ html.dark .acw-note[data-mode="hot"],
 
 .acw-unit[data-status="on"] .acw-louver {
   transform: translateY(4px) perspective(80px) rotateX(-38deg);
+}
+
+/*
+ * 扫风（#50）：导风板上下摆动，出风口里的竖向导风叶片随气流左右摆。
+ * 和出风线一样用同一个时长、关闭扫风时暂停，叶片停在当前位置；
+ * 导风板摆动放在独立的 rotate 属性上，不影响开关机时 transform 的过渡。
+ */
+.acw-louver {
+  animation: acw-louver-swing var(--acw-motion-duration-swing) ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+/* 竖向导风叶片：一排细条纹，倾斜（skewX）表示叶片左右摆 */
+.acw-vent::before {
+  content: "";
+  position: absolute;
+  inset: 0 6px;
+  background: repeating-linear-gradient(to right, transparent 0 9px, rgba(15, 23, 42, 0.22) 9px 10px);
+  transform-origin: 50% 0;
+  animation: acw-vane-swing var(--acw-motion-duration-swing) linear infinite;
+  animation-play-state: paused;
+}
+
+.acw-unit[data-status="on"][data-swing="on"] .acw-louver,
+.acw-unit[data-status="on"][data-swing="on"] .acw-vent::before {
+  animation-play-state: running;
+}
+
+/* 关机时导风板合上，摆动角度归零 */
+.acw-unit[data-status="off"] .acw-louver {
+  animation: none;
+}
+
+@keyframes acw-louver-swing {
+  0%,
+  100% {
+    rotate: x 0deg;
+  }
+
+  50% {
+    rotate: x -26deg;
+  }
+}
+
+/* 与 acw-wind-swing 同步：出风线向左转时叶片下端向右，方向相反、节奏一致 */
+@keyframes acw-vane-swing {
+  0% {
+    transform: skewX(0deg);
+    animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+  }
+
+  25% {
+    transform: skewX(22deg);
+    animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  }
+
+  75% {
+    transform: skewX(-22deg);
+    animation-timing-function: cubic-bezier(0.12, 0, 0.39, 0);
+  }
+
+  100% {
+    transform: skewX(0deg);
+  }
 }
 
 /* 状态指示灯：亮起的光晕放在伪元素上，只过渡 opacity / transform */
@@ -866,6 +931,10 @@ html.dark .acw-note[data-mode="hot"],
   height: 64px;
   background: transparent;
   color: #3c4043;
+  /* 支持长按连续调温：触屏上不选中文字、不弹出菜单、不双击缩放 */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .acw-button-temp:first-child {
@@ -1125,6 +1194,11 @@ html.dark .acw-note[data-mode="hot"],
 
   .acw-unit[data-status="on"] .acw-louver {
     transform: translateY(2px);
+  }
+
+  .acw-louver,
+  .acw-vent::before {
+    animation: none;
   }
 
   .acw-button:active {

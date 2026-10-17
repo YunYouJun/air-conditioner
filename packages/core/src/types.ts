@@ -68,7 +68,11 @@ export interface AcState {
 export type AcAction
   = | { type: 'increment' | 'decrement' | 'toggleStatus' | 'cycleSound' | 'toggleSwing' | 'cycleFan' }
     | { type: 'status', status: AcState['status'] }
-    | { type: 'mode', mode: AcState['mode'] }
+    /**
+     * 切换模式。`powerOn` 为 true 时关机状态下顺便开机（遥控器的模式键就是这样）；
+     * Home Assistant 等外部同步不传，只改模式。
+     */
+    | { type: 'mode', mode: AcState['mode'], powerOn?: boolean }
     | { type: 'sound', sound: AcState['sound'] }
     | { type: 'swing', swing: AcState['swing'] }
     | { type: 'fan', fan: AcFanSpeed }

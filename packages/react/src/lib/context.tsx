@@ -25,7 +25,7 @@ export interface AirConditionerContextValue {
   decrease: () => void
   /** 声音键：标准 → 睡眠 → 静音 */
   cycleSound: () => void
-  /** 扫风键：出风左右摆动 / 停在当前位置 */
+  /** 扫风键：导风板与出风来回摆动 / 停在当前位置 */
   toggleSwing: () => void
   /** 风速键：自动 → 低 → 中 → 高 */
   cycleFan: () => void

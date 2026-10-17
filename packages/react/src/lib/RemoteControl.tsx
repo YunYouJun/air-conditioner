@@ -13,8 +13,9 @@ export function RemoteControl(props: RemoteControlProps = {}) {
 
   const actions: Record<AcRemoteCommand, () => void> = {
     power: airConditioner.toggleStatus,
-    cold: () => airConditioner.setMode('cold'),
-    hot: () => airConditioner.setMode('hot'),
+    // 模式键：关机时按下也会开机，和真的遥控器一样
+    cold: () => airConditioner.dispatch({ type: 'mode', mode: 'cold', powerOn: true }),
+    hot: () => airConditioner.dispatch({ type: 'mode', mode: 'hot', powerOn: true }),
     increase: airConditioner.increase,
     decrease: airConditioner.decrease,
     swing: airConditioner.toggleSwing,

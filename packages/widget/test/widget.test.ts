@@ -74,7 +74,7 @@ describe('@air-conditioner/widget', () => {
     expect(unit.dataset.status).toBe('on')
     expect(power.classList.contains('acw-button-on')).toBe(true)
 
-    root.querySelector<HTMLButtonElement>('[data-action="increment"]')!.click()
+    root.querySelector<HTMLButtonElement>('[data-repeat="increment"]')!.click()
     const temperature = root.querySelector<HTMLElement>('.acw-temperature')!
     expect(temperature.textContent).toBe(String(defaultAcState.temperature + 1))
     expect(temperature.dataset.dir).toBe('up')
@@ -93,7 +93,7 @@ describe('@air-conditioner/widget', () => {
     element.addEventListener('ac-notify', event => notifications.push((event as CustomEvent).detail.notification))
     document.body.appendChild(element)
 
-    const increment = element.shadowRoot?.querySelector<HTMLButtonElement>('[data-action="increment"]')
+    const increment = element.shadowRoot?.querySelector<HTMLButtonElement>('[data-repeat="increment"]')
     increment?.click()
 
     expect(changes).toHaveLength(1)
@@ -111,7 +111,7 @@ describe('@air-conditioner/widget', () => {
     const element = document.createElement('test-air-conditioner-notes')
     document.body.appendChild(element)
     const root = element.shadowRoot!
-    const press = (action: string) => root.querySelector<HTMLElement>(`[data-action="${action}"]`)!.click()
+    const press = (action: string) => root.querySelector<HTMLElement>(`[data-action="${action}"], [data-repeat="${action}"]`)!.click()
     const announced = () => root.querySelector('.acw-notification-region .acw-sr-only')!.textContent
 
     // At the limit: no note, the LCD shakes and the message is only announced.

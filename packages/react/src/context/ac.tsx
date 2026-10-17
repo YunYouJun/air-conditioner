@@ -66,8 +66,11 @@ export function useAc() {
     toggleStatus() {
       dispatch({ type: 'toggleStatus' })
     },
+    /**
+     * 模式键：关机时按下也会开机，和真的遥控器一样
+     */
     toggleMode(mode: AcMode) {
-      dispatchWithToast({ type: 'mode', mode })
+      dispatchWithToast({ type: 'mode', mode, powerOn: true })
     },
     /**
      * 声音键：标准 → 睡眠 → 静音
@@ -76,7 +79,7 @@ export function useAc() {
       dispatchWithToast({ type: 'cycleSound' })
     },
     /**
-     * 扫风键：出风左右摆动 / 停在当前位置
+     * 扫风键：导风板与出风来回摆动 / 停在当前位置
      */
     toggleSwing() {
       dispatchWithToast({ type: 'toggleSwing' })

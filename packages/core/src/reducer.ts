@@ -91,12 +91,14 @@ export function acReducer(state: AcState, action: AcAction, limits?: AcLimits): 
         status: action.status,
       }
     case 'mode': {
+      const status = state.status || action.powerOn === true
       if (action.mode === state.mode)
-        return state
+        return status === state.status ? state : { ...state, status }
       // Remember this mode's temperature and restore the other one's.
       const temperatures = { cold: state.temperature, hot: state.temperature, ...state.temperatures, [state.mode]: state.temperature }
       return {
         ...state,
+        status,
         mode: action.mode,
         temperature: clampTemperature(temperatures[action.mode] ?? state.temperature, limits),
         temperatures,
@@ -197,7 +199,7 @@ export function getFanSpeedMessage(fan: AcFanSpeed): string {
 }
 
 export function getSwingMessage(swing: AcState['swing']): string {
-  return swing ? '扫风已开启：出风左右摆动' : '扫风已关闭：导风板停在当前位置'
+  return swing ? '扫风已开启：导风板上下摆动，出风左右扫' : '扫风已关闭：导风板停在当前位置'
 }
 
 /**

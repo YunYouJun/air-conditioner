@@ -45,6 +45,16 @@ describe('@yunlefun-home/air-conditioner-core', () => {
     expect(acReducer(state, { type: 'mode', mode: 'cold' })).toBe(state)
   })
 
+  // #115: a remote's mode key also powers the unit on; external syncs don't.
+  it('powers on from a mode key only when asked', () => {
+    const off = { ...defaultAcState, status: false }
+    expect(acReducer(off, { type: 'mode', mode: 'hot' })).toMatchObject({ status: false, mode: 'hot' })
+    expect(acReducer(off, { type: 'mode', mode: 'hot', powerOn: true })).toMatchObject({ status: true, mode: 'hot' })
+    expect(acReducer(off, { type: 'mode', mode: 'cold', powerOn: true })).toMatchObject({ status: true, mode: 'cold' })
+    const on = { ...defaultAcState, status: true }
+    expect(acReducer(on, { type: 'mode', mode: 'cold', powerOn: true })).toBe(on)
+  })
+
   // #29
   it('cycles and validates the fan speed', () => {
     expect(defaultAcState.fan).toBe('auto')

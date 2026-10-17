@@ -17,6 +17,7 @@ import {
   acModeLabels,
   acShellSize,
   acSoundIcons,
+  bindAcPressRepeat,
   createAcAudioController,
   createAcNotificationPresenter,
   createAirConditionerStore,
@@ -44,7 +45,7 @@ export interface WidgetAcState {
   mode: WidgetAcMode
   temperature: number
   sound: WidgetAcSoundMode
-  /** 扫风：出风左右摆动 */
+  /** 扫风：导风板与出风来回摆动 */
   swing: boolean
   /** 风速，旧版本保存的状态缺省为自动 */
   fan?: WidgetAcFanSpeed
@@ -205,8 +206,8 @@ function widgetTemplate(view: WidgetViewOptions) {
       </div>
       <button type="button" class="acw-button acw-button-power" aria-label="power" data-action="toggleStatus">${icon('power', 24)}</button>
       <div class="acw-remote-temp">
-        <button type="button" class="acw-button acw-button-temp" aria-label="add" title="温度 +" data-action="increment">${icon('plus', 28)}</button>
-        <button type="button" class="acw-button acw-button-temp" aria-label="reduce" title="温度 −" data-action="decrement">${icon('minus', 28)}</button>
+        <button type="button" class="acw-button acw-button-temp" aria-label="add" title="温度 +（长按连续调）" data-repeat="increment">${icon('plus', 28)}</button>
+        <button type="button" class="acw-button acw-button-temp" aria-label="reduce" title="温度 −（长按连续调）" data-repeat="decrement">${icon('minus', 28)}</button>
       </div>
       <div class="acw-remote-row">
         <div class="acw-remote-mode" role="group" aria-label="mode">
@@ -456,10 +457,11 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.render()
 
       // 窄容器下机身等比缩小，保持长款比例；精细指针下轻微 3D 倾斜
+      this.stopObservers.forEach(stop => stop())
+      this.stopObservers = []
       const unit = this.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
       if (unit) {
-        this.stopObservers.forEach(stop => stop())
-        this.stopObservers = [
+        this.stopObservers.push(
           observeAcScale(unit, acShellSize.compact.width, (scale) => {
             unit.style.setProperty('--acw-scale', String(scale))
           }),
@@ -467,7 +469,14 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
             unit.style.setProperty('--acw-tilt-x', `${x}deg`)
             unit.style.setProperty('--acw-tilt-y', `${y}deg`)
           }),
-        ]
+        )
+      }
+
+      // 温度键：长按连续调温，到上下限就停
+      const value = () => this.store?.getState().temperature
+      for (const button of this.shadowRoot?.querySelectorAll<HTMLElement>('[data-repeat]') ?? []) {
+        const type = button.dataset.repeat === 'increment' ? 'increment' : 'decrement'
+        this.stopObservers.push(bindAcPressRepeat(button, () => this.store?.dispatch({ type }), { value }))
       }
     }
 
@@ -497,11 +506,12 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       if (!action || !this.store)
         return
 
+      // 模式键：关机时按下也会开机，和真的遥控器一样
       if (action === 'cold' || action === 'hot')
-        this.store.dispatch({ type: 'mode', mode: action })
+        this.store.dispatch({ type: 'mode', mode: action, powerOn: true })
       else if (action === 'toggleStatus')
         this.store.dispatch({ type: 'toggleStatus' })
-      else if (action === 'increment' || action === 'decrement' || action === 'cycleSound' || action === 'toggleSwing' || action === 'cycleFan')
+      else if (action === 'cycleSound' || action === 'toggleSwing' || action === 'cycleFan')
         this.store.dispatch({ type: action })
     }
 

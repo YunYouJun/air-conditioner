@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import { createAirConditionerStore, defaultAcState, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
 import RemoteControl from '../src/components/RemoteControl.vue'
 import { airConditionerKey, createAirConditionerContext } from '../src/composables/useAirConditioner'
@@ -86,5 +86,29 @@ describe('vue RemoteControl', () => {
     expect(remote.key('fan').dataset.fan).toBe('medium')
     expect(remote.key('fan').title).toBe('风速：中风')
     expect(remote.lcd().getAttribute('aria-label')).toContain('风速：中风')
+  })
+
+  // #115
+  it('powers on from a mode key and repeats the temperature keys while held', async () => {
+    const remote = mountRemote()
+    unmount = () => remote.app.unmount()
+
+    expect(remote.store.getState().status).toBe(false)
+    await remote.press('hot')
+    expect(remote.store.getState()).toMatchObject({ status: true, mode: 'hot' })
+
+    vi.useFakeTimers()
+    try {
+      const add = remote.key('add')
+      add.dispatchEvent(new PointerEvent('pointerdown', { button: 0 }))
+      vi.advanceTimersByTime(1000)
+      add.dispatchEvent(new PointerEvent('pointerup', { button: 0 }))
+      vi.advanceTimersByTime(1000)
+    }
+    finally {
+      vi.useRealTimers()
+    }
+    expect(remote.store.getState().temperature).toBeGreaterThan(defaultAcState.temperature + 2)
+    expect(remote.commands.filter(command => command === 'increase').length).toBe(remote.store.getState().temperature - defaultAcState.temperature)
   })
 })

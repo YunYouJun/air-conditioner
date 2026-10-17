@@ -1,5 +1,6 @@
 import type { AcIconName, AcMode, AcRemoteCommand, AcState } from '@yunlefun-home/air-conditioner-core'
-import { acIconPaths, acSoundIcons, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
+import { acIconPaths, acSoundIcons, bindAcPressRepeat, getAcRemoteText } from '@yunlefun-home/air-conditioner-core'
+import { useEffect, useRef } from 'react'
 
 export interface RemoteControlViewProps {
   state: AcState
@@ -26,6 +27,19 @@ function Icon(props: { name: AcIconName, size: number, className?: string, sound
  */
 export function RemoteControlView({ state, onCommand, alert }: RemoteControlViewProps) {
   const text = getAcRemoteText(state)
+
+  // 温度键：长按连续调温，到上下限就停。长按期间会多次渲染，用 ref 读最新的状态和回调
+  const latest = useRef({ state, onCommand })
+  latest.current = { state, onCommand }
+  const increaseButton = useRef<HTMLButtonElement>(null)
+  const decreaseButton = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    const value = () => latest.current.state.temperature
+    const bind = (button: HTMLButtonElement | null, command: AcRemoteCommand) =>
+      button ? bindAcPressRepeat(button, () => latest.current.onCommand(command), { value }) : () => {}
+    const unbind = [bind(increaseButton.current, 'increase'), bind(decreaseButton.current, 'decrease')]
+    return () => unbind.forEach(stop => stop())
+  }, [])
 
   return (
     <div className="acw-remote" role="group" aria-label="Air conditioner remote control">
@@ -70,10 +84,10 @@ export function RemoteControlView({ state, onCommand, alert }: RemoteControlView
       </button>
 
       <div className="acw-remote-temp">
-        <button type="button" className="acw-button acw-button-temp" aria-label="add" title="温度 +" onClick={() => onCommand('increase')}>
+        <button ref={increaseButton} type="button" className="acw-button acw-button-temp" aria-label="add" title="温度 +（长按连续调）">
           <Icon name="plus" size={28} />
         </button>
-        <button type="button" className="acw-button acw-button-temp" aria-label="reduce" title="温度 −" onClick={() => onCommand('decrease')}>
+        <button ref={decreaseButton} type="button" className="acw-button acw-button-temp" aria-label="reduce" title="温度 −（长按连续调）">
           <Icon name="minus" size={28} />
         </button>
       </div>

@@ -153,6 +153,32 @@
     }
   }
 
+  &__eco {
+    margin: 0;
+    padding-left: 1.1rem;
+    list-style: decimal;
+
+    li {
+      margin-bottom: 0.35rem;
+      opacity: 0.75;
+
+      &::marker {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 10px;
+      }
+    }
+
+    b {
+      font-weight: 500;
+    }
+  }
+
+  &__note {
+    margin: 0.2rem 0 0;
+    font-size: 11px;
+    opacity: 0.6;
+  }
+
   &__cloud {
     display: inline-block;
     margin-left: 0.15rem;

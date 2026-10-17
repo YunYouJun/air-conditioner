@@ -50,6 +50,9 @@ const socialList = [
 
 const sponsorsLink = 'https://sponsors.yunyoujun.cn'
 
+/** 26 度空调节能倡导行动（#125） */
+const ecoProposalLink = 'https://baike.baidu.com/item/26%E5%BA%A6%E7%A9%BA%E8%B0%83%E8%8A%82%E8%83%BD%E5%80%A1%E5%AF%BC%E8%A1%8C%E5%8A%A8/12788752'
+
 /**
  * 页脚：一本折起来的空调使用说明书，点开才展开常见问题、电费与售后服务
  */
@@ -99,6 +102,8 @@ const Copyright: React.FC = () => {
                 </a>
                 。
               </dd>
+              <dt>调温太慢？</dt>
+              <dd>长按遥控器的 + / − 可以连续调温；关机时直接按制冷或制热，空调会开机并进入该模式。</dd>
               <dt>出现故障？</dt>
               <dd>请先关机再开机（万能方法），仍无效请联系售后服务。</dd>
             </dl>
@@ -107,6 +112,31 @@ const Copyright: React.FC = () => {
           <section>
             <h3>
               <span className="ac-manual__num">2</span>
+              节能倡议
+            </h3>
+            <ol className="ac-manual__eco">
+              <li>
+                <b>制冷调到 26°C 以上。</b>
+                夏天室内保持 26–27°C、湿度 40%–60% 最舒服；温度太低反而容易着凉，引起感冒、关节不适等「空调病」。
+              </li>
+              <li>
+                <b>调高 1°C，省电约 6%–8%。</b>
+                大约少烧 0.4 千克煤、少排 1 千克二氧化碳；夏天正是用电高峰，也能替电网分担一点压力。
+              </li>
+              <li>
+                <b>制热调到 20°C 以下。</b>
+                冬天多穿一件，每调低 1°C 同样省电。
+              </li>
+            </ol>
+            <p className="ac-manual__note">
+              现在就拿起遥控器，把温度调到 26°C 吧。参考：
+              <a href={ecoProposalLink} target="_blank" rel="noreferrer">26 度空调节能倡导行动</a>
+            </p>
+          </section>
+
+          <section>
+            <h3>
+              <span className="ac-manual__num">3</span>
               售后服务
             </h3>
             <div className="ac-manual__social">

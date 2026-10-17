@@ -30,7 +30,7 @@ renderAcMotionCssVars(':host')
 
 开机后导风板打开，三股气流以出风口为轴向两侧扇形散开，并沿出风线持续向下流动；制冷 / 制热切换时气流颜色交叉淡化。
 
-遥控器最下方的「扫风」键开启后，气流左右来回摆动（经过正中最快、两端减速折返，一个来回 `acMotion.duration.swing` 毫秒）；关闭扫风时停在当前角度，和真的导风板一样。状态保存在 `AcState.swing` 中（旧版本保存的状态视为 `false`），开启「减少动态效果」时不摆动。
+遥控器最下方的「扫风」键开启后，气流左右来回摆动（经过正中最快、两端减速折返，一个来回 `acMotion.duration.swing` 毫秒）；导风板同时上下摆动，出风口里的竖向导风叶片跟着气流左右摆。关闭扫风时都停在当前角度，和真的导风板一样。状态保存在 `AcState.swing` 中（旧版本保存的状态视为 `false`），开启「减少动态效果」时不摆动。
 
 ```ts
 store.dispatch({ type: 'toggleSwing' })
@@ -57,6 +57,26 @@ audio.setFanSpeed('low') // createAcAudioController 也可以用 fanSpeed 选项
 ```
 
 视图层在空调根元素和遥控器小屏上输出 `data-fan="auto" | "low" | "medium" | "high"`：小屏按档位点亮风速格，自动时三格全亮并标出「自动」；出风的快慢由 CSS 变量 `--acw-wind-pace`、浓淡由 `--acw-wind-strength` 控制。macOS 原生版 CuteAC 的「自动」跟随这台 Mac 的风扇转速。
+
+## 遥控器按键
+
+- **长按温度键**：按下立即调一度，按住约 0.5 秒后连续调节并逐渐加快，到上下限自动停下；键盘的 Enter / 空格每按一次调一度。
+- **模式键直接开机**：关机时按制冷或制热，空调会开机并进入该模式。遥控器发出的是 `{ type: 'mode', mode, powerOn: true }`；不带 `powerOn` 时（例如从 Home Assistant 同步模式）只改模式、不改开关。
+
+```ts
+store.dispatch({ type: 'mode', mode: 'hot', powerOn: true })
+```
+
+自己做遥控器时可以用 `bindAcPressRepeat` 给按键加上长按连续触发：
+
+```ts
+import { bindAcPressRepeat } from '@yunlefun-home/air-conditioner-core'
+
+const unbind = bindAcPressRepeat(button, () => store.dispatch({ type: 'increment' }), {
+  // 连续触发时温度不再变化（到了上下限）就停下
+  value: () => store.getState().temperature,
+})
+```
 
 ## 制冷 / 制热分别记温度
 
