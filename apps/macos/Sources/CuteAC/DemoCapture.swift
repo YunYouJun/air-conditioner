@@ -90,7 +90,8 @@ final class DemoCapture {
     // Popover-like card behind the content.
     NSColor(calibratedWhite: 0.97, alpha: 1).setFill()
     NSBezierPath(roundedRect: bounds, xRadius: 14, yRadius: 14).fill()
-    controls.draw(in: bounds)
+    // draw(in:) copies, which would wipe the card; blend over it instead.
+    controls.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
 
     if let container = Self.find(ACSceneContainerView.self, in: view) {
       var rect = container.convert(container.bounds, to: view)
