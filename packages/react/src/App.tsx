@@ -60,7 +60,7 @@ const App: FC = () => {
   return (
     <main className="p-2">
       <div className="max-w-600px m-auto">
-        <Router>
+        <Router basename={import.meta.env.BASE_URL}>
           <Routes />
         </Router>
 

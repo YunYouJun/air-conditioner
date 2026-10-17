@@ -27,8 +27,15 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      # 部署到 yunyoujun.github.io/air-conditioner/；自定义域名 ac.yunyoujun.cn 由 Cloudflare Pages 负责
       - name: Build
         run: pnpm run react:build
+        env:
+          VITE_BASE: /air-conditioner/
+
+      # GitHub Pages 没有 SPA 回退，/air-conditioner/rc 等子页面直接打开时用 404.html 兜底
+      - name: SPA fallback
+        run: cp packages/react/dist/index.html packages/react/dist/404.html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4

@@ -4,13 +4,9 @@
 export const isProd = import.meta.env.PROD
 
 /**
- * 获取资源 URL
+ * 获取资源 URL（带上部署的 base 路径，如 GitHub Pages 的 /air-conditioner/）
  * @param url
  */
 export function getAssetsUrl(url: string) {
-  const jsdelivrCDN
-    = 'https://fastly.jsdelivr.net/gh/YunYouJun/air-conditioner/public'
-  return (isProd ? jsdelivrCDN : import.meta.env.BASE_URL) + url.startsWith('/')
-    ? url.slice(1)
-    : url
+  return import.meta.env.BASE_URL + url.replace(/^\//, '')
 }

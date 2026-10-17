@@ -55,7 +55,7 @@ const AcLogo: React.FC = () => {
           style={{
             width: 12,
           }}
-          src="/yun-logo.svg"
+          src={`${import.meta.env.BASE_URL}yun-logo.svg`}
           alt="logo"
         />
       </a>

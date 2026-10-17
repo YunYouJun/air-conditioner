@@ -1,4 +1,5 @@
 import * as path from 'node:path'
+import process from 'node:process'
 import react from '@vitejs/plugin-react'
 import Unocss from 'unocss/vite'
 
@@ -8,6 +9,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // GitHub Pages 部署在 yunyoujun.github.io/air-conditioner/ 子路径下，由 workflow 传入；其余部署在根路径
+  base: process.env.VITE_BASE || '/',
   resolve: {
     alias: {
       '@yunlefun-home/air-conditioner-core': path.resolve(import.meta.dirname, '../core/src/index.ts'),
