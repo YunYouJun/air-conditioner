@@ -24,7 +24,7 @@ Air Conditioner
 | 仓库 | 类型 | 链接 |
 | --- | --- | --- |
 | 裸机 | main | [ac.yunyoujun.cn](https://ac.yunyoujun.cn) |
-| 测试机 | dev | [ac.yyj.moe](https://ac.yyj.moe) |
+| 备用机 | main | [ac.yyj.moe](https://ac.yyj.moe) |
 | 样板房 | 空调房 | [https://www.yunyoujun.cn/air-conditioner-room/](https://www.yunyoujun.cn/air-conditioner-room/) |
 
 ## Features

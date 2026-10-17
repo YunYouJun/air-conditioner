@@ -20,7 +20,7 @@ Cloud air conditioner. Portable air conditioner. Invite a cool breeze into your 
 > History: [云空调，便携小空调｜云游君的小站](https://www.yunyoujun.cn/posts/air-conditioner/)
 
 - Machine Only[main]：[ac.yunyoujun.cn](https://ac.yunyoujun.cn)
-- Test Machine[dev]：[ac.yyj.moe](https://ac.yyj.moe)
+- Spare Machine[main]：[ac.yyj.moe](https://ac.yyj.moe)
 - Sample Room：<https://www.yunyoujun.cn/air-conditioner-room/>
 
 ## Features
