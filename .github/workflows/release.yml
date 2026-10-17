@@ -14,6 +14,14 @@ on:
       - 'v*'
   # Publish the versions on the selected branch; already published versions are skipped.
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to complete with npm packages and the Home plugin (optional)
+        required: false
+        type: string
+
+env:
+  RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
 
 permissions:
   contents: read
@@ -45,12 +53,12 @@ jobs:
         run: pnpm run check
 
       - name: Verify tag matches package versions
-        if: github.ref_type == 'tag'
+        if: env.RELEASE_TAG != ''
         run: |
-          for pkg in packages/core packages/vue; do
+          for pkg in . packages/core packages/vue packages/home-plugin; do
             version=$(node -p "require('./$pkg/package.json').version")
-            if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-              echo "::error::$pkg is $version but the tag is $GITHUB_REF_NAME"
+            if [ "v$version" != "$RELEASE_TAG" ]; then
+              echo "::error::$pkg is $version but the tag is $RELEASE_TAG"
               exit 1
             fi
           done
@@ -79,7 +87,7 @@ jobs:
 
   # Attach the Yun Home plugin package to the GitHub Release for this tag.
   plugin:
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' || inputs.release_tag != ''
     needs: publish
     runs-on: ubuntu-latest
     permissions:
@@ -104,14 +112,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes=(--generate-notes)
-          if [ -f "docs/releases/$GITHUB_REF_NAME.md" ]; then
-            notes=(--notes-file "docs/releases/$GITHUB_REF_NAME.md")
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            gh release view "$RELEASE_TAG" >/dev/null
           fi
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --verify-tag "${notes[@]}" --title "云空调 CuteAC ${GITHUB_REF_NAME#v}" \
-            || gh release view "$GITHUB_REF_NAME" >/dev/null
-          gh release upload "$GITHUB_REF_NAME" --clobber \
+          notes=(--generate-notes)
+          if [ -f "docs/releases/$RELEASE_TAG.md" ]; then
+            notes=(--notes-file "docs/releases/$RELEASE_TAG.md")
+          fi
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 \
+            || gh release create "$RELEASE_TAG" --verify-tag "${notes[@]}" --title "云空调 CuteAC ${RELEASE_TAG#v}" \
+            || gh release view "$RELEASE_TAG" >/dev/null
+          gh release upload "$RELEASE_TAG" --clobber \
             packages/home-plugin/dist/air-conditioner.yunplugin \
             packages/home-plugin/dist/air-conditioner.yunplugin.sha256
 

@@ -107,6 +107,8 @@ pnpm release
 
 `bumpp` 同步更新版本、提交并推送 `v*` Tag，[Release 工作流](.github/workflows/release.yml) 随即检查、构建并按 core → vue 的顺序发布。预发布版本（如 `0.4.0-beta.1`）发布到同名 dist-tag，已存在的版本会被跳过。也可在 Actions 中手动运行该工作流，发布当前分支上的版本。
 
+补齐已有 Release 的 npm 包与 Home 插件时，可在修复后的分支手动运行 Release，并填写 `release_tag`（例如 `v0.4.0`）。工作流会核对四个包的版本与标签一致，再向已有 Release 上传插件；不会改写标签或重新上传 CuteAC App。普通推送与 PR 的 CI 同时运行单元测试，提前检查包版本一致性。
+
 首次使用前，需要在 npmjs.com 两个包的 Settings → Trusted publishing 中添加 GitHub Actions：仓库 `YunYouJun/air-conditioner`，工作流 `release.yml`。
 
 `v*` Tag 的 Release 还会把 Yun Home 设备插件 `air-conditioner.yunplugin` 及其 SHA-256 上传到 GitHub Release。插件由 [`packages/home-plugin`](packages/home-plugin) 构建：`state.js` 直接打包 core 的 reducer，在 Yun Home 的沙箱中运行，控件以 `controls.json` 声明，由宿主原生渲染。本地构建：
