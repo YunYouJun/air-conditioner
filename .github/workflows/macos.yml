@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: YunLeFun/home
-          ref: 9e71679dd0ef0f0e5329413e910e46c17d945a4c # Shared HA bindings and device collection
+          ref: cfc81f3aa1c981e4dc44d64aedc83f7662519299 # Home 0.2.0
           path: .deps/home
 
       - name: Swift version

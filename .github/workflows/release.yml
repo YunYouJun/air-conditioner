@@ -104,8 +104,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          notes=(--generate-notes)
+          if [ -f "docs/releases/$GITHUB_REF_NAME.md" ]; then
+            notes=(--notes-file "docs/releases/$GITHUB_REF_NAME.md")
+          fi
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+            || gh release create "$GITHUB_REF_NAME" --verify-tag "${notes[@]}" --title "云空调 CuteAC ${GITHUB_REF_NAME#v}" \
+            || gh release view "$GITHUB_REF_NAME" >/dev/null
           gh release upload "$GITHUB_REF_NAME" --clobber \
             packages/home-plugin/dist/air-conditioner.yunplugin \
             packages/home-plugin/dist/air-conditioner.yunplugin.sha256
@@ -127,7 +132,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: YunLeFun/home
-          ref: 9e71679dd0ef0f0e5329413e910e46c17d945a4c # Shared HA bindings and device collection
+          ref: cfc81f3aa1c981e4dc44d64aedc83f7662519299 # Home 0.2.0
           path: .deps/home
 
       - name: Verify tag matches the app version
@@ -141,6 +146,9 @@ jobs:
       - name: Test kit
         run: swift test
 
+      - name: Test native connectivity
+        run: swift test --package-path apps/macos
+
       - name: Bundle
         working-directory: apps/macos
         run: scripts/bundle.sh
@@ -153,7 +161,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          notes=(--generate-notes)
+          if [ -f "docs/releases/$GITHUB_REF_NAME.md" ]; then
+            notes=(--notes-file "docs/releases/$GITHUB_REF_NAME.md")
+          fi
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes \
+            || gh release create "$GITHUB_REF_NAME" --verify-tag "${notes[@]}" --title "云空调 CuteAC ${GITHUB_REF_NAME#v}" \
             || gh release view "$GITHUB_REF_NAME" >/dev/null
           gh release upload "$GITHUB_REF_NAME" --clobber "CuteAC-${GITHUB_REF_NAME#v}.zip"

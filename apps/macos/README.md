@@ -76,7 +76,7 @@ open build/CuteAC.app
 
 改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上先运行共享包测试，再执行 release 构建、运行 `scripts/bundle.sh` 打包并做 ad-hoc 签名，再用 `--snapshot` 离屏渲染三张状态图，作为 `macos-snapshots` 产物上传。CI 不运行 Blender，直接使用仓库里的 `CuteAC.usdz`。
 
-CI 和发布工作流将 `YunLeFun/home` 固定提交 `9e71679dd0ef0f0e5329413e910e46c17d945a4c` 检出到 `.deps/home`，并设置 `HOME_DEVICE_KIT_PATH`。该提交提供共享绑定目录与设备集合 API。跨仓库发布时先推送 Home 的这笔提交，再推送或发布 CuteAC，确保 CI 可以获取依赖；本机开发仍可使用相邻仓库的源码。
+CI 和发布工作流将 `YunLeFun/home` 的 Home 0.2.0 提交 `cfc81f3aa1c981e4dc44d64aedc83f7662519299` 检出到 `.deps/home`，并设置 `HOME_DEVICE_KIT_PATH`。该提交提供共享绑定目录与设备集合 API。跨仓库发布时先推送 Home 的这笔提交，再推送或发布 CuteAC，确保 CI 可以获取依赖；本机开发仍可使用相邻仓库的源码。
 
 调试参数：
 
