@@ -17,6 +17,8 @@ export interface Ac3DViewProps {
   onReady?: () => void
   /** 已经回正时再双击：变回平面版 */
   onFlatten?: () => void
+  /** 换上了这个机型的模型 */
+  onForm?: (form: AcForm) => void
   /** WebGL 不可用或模型加载失败 */
   onError: (error: unknown) => void
 }
@@ -26,6 +28,7 @@ export interface Ac3DViewProps {
  */
 const Ac3DView: React.FC<Ac3DViewProps> = (props) => {
   const { state, form, turn } = props
+  const surfaceRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sceneRef = useRef<AcScene>(undefined)
   // 回调和初始角度只在创建场景时读取；之后的变化通过 ref 拿到最新值
@@ -41,7 +44,9 @@ const Ac3DView: React.FC<Ac3DViewProps> = (props) => {
         onError: error => latest.current.onError(error),
         onReady: () => latest.current.onReady?.(),
         onFlatten: () => latest.current.onFlatten?.(),
+        onForm: form => latest.current.onForm?.(form),
         initialYaw: latest.current.initialYaw,
+        surface: surfaceRef.current!,
         reducedMotion: prefersReducedMotion(),
       })
     }
@@ -70,7 +75,12 @@ const Ac3DView: React.FC<Ac3DViewProps> = (props) => {
       sceneRef.current?.turnTo(turn)
   }, [turn])
 
-  return <canvas ref={canvasRef} className="ac-3d__canvas" data-form={form} />
+  // 拖动落在和布局一样大的 surface 上；画布上下溢出，只负责画
+  return (
+    <div ref={surfaceRef} className="ac-3d__surface">
+      <canvas ref={canvasRef} className="ac-3d__canvas" data-form={form} />
+    </div>
+  )
 }
 
 export default Ac3DView

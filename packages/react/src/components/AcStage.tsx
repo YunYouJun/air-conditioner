@@ -1,7 +1,7 @@
 import type { AcForm } from '@yunlefun-home/air-conditioner-core'
 import type { CSSProperties, PointerEvent, ReactNode } from 'react'
 import type { AcSceneState } from './ac3d/scene'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Ac3D from './ac3d'
 import './AcStage.scss'
 
@@ -51,6 +51,7 @@ const AcStage: React.FC<AcStageProps> = (props) => {
   const [phase, setPhase] = useState<Phase>({ name: 'idle' })
   /** 转动方向：按钮切换时向右，拖动时跟着拖动方向 */
   const [sign, setSign] = useState<1 | -1>(1)
+  const stageRef = useRef<HTMLDivElement>(null)
   const flatRef = useRef<HTMLDivElement>(null)
   /** 拖动「咔」地立起来时的方向，开始转身时读取一次 */
   const snapSign = useRef<1 | -1>(undefined)
@@ -77,6 +78,32 @@ const AcStage: React.FC<AcStageProps> = (props) => {
       }, turnMs)
       return () => clearTimeout(timer)
     }
+  }, [phase])
+
+  // 两版高度不同：转身的同时把舞台高度过渡到进场那一层的高度，换完视图再交还给内容撑开，
+  // 免得转完那一下页面猛地一跳
+  useLayoutEffect(() => {
+    const stage = stageRef.current
+    if (!stage)
+      return
+    const incoming = phase.name === 'to2d' || (phase.name === 'to3d' && phase.ready)
+      ? stage.querySelector<HTMLElement>(':scope > .ac-stage__over')
+      : null
+    if (!incoming) {
+      stage.style.height = ''
+      return
+    }
+    stage.style.height = `${stage.offsetHeight}px`
+    // 先按当前高度布局一次，过渡才有起点
+    void stage.offsetHeight
+    const fit = () => {
+      stage.style.height = `${incoming.offsetHeight}px`
+    }
+    fit()
+    // 进场的平面版刚挂上时还没按容器宽度缩放，缩放后高度会变：跟着它走
+    const observer = new ResizeObserver(fit)
+    observer.observe(incoming)
+    return () => observer.disconnect()
   }, [phase])
 
   // 平面版停在原地（取消切换、3D 加载失败）时，把拖动留下的转角回正
@@ -155,7 +182,7 @@ const AcStage: React.FC<AcStageProps> = (props) => {
   const solidTurn = phase.name === 'to3d' ? (phase.ready ? 'in' : 'pending') : phase.name === 'to2d' ? 'out' : undefined
 
   return (
-    <div className="ac-stage" style={{ '--ac-turn-sign': sign } as CSSProperties}>
+    <div ref={stageRef} className="ac-stage" style={{ '--ac-turn-sign': sign } as CSSProperties}>
       {showFlat && (
         <div
           ref={flatRef}

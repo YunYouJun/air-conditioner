@@ -1,22 +1,27 @@
 // 3D 空调：挂机横长、柜机竖长；下方 / 右侧留出出风的空间
+// 100cqw 是舞台（.ac-stage）的宽度
 .ac-3d {
   position: relative;
   width: 100%;
-  // 和平面版（600 × 200 机身加下方出风）的比例相近
-  aspect-ratio: 1.9 / 1;
+  // 挂机和平面版一样高，切换时页面不动：600 × 200 的长款机身按宽度等比缩小，
+  // 加上下方 40px 的出风和上下各 20px 的间距（见 lib/style.css 的 .acw-wind）
+  height: calc(min(100cqw, 600px) / 3 + 80px);
   margin: 0 auto;
+  // 挂机、柜机互换时高度跟着过渡，与 AcStage.scss 的转身同一节奏
+  transition:
+    height 420ms cubic-bezier(0.2, 0, 0, 1),
+    margin-bottom 420ms cubic-bezier(0.2, 0, 0, 1);
 
+  // 柜机铺满宽度、固定高度：机身居中，右侧的空白正好给出风
   &[data-form='tower'] {
-    max-width: 360px;
-    aspect-ratio: 3 / 4;
+    height: 480px;
     // 节能小纸条从出风口下方吹出，给柜机的底座留点距离
     margin-bottom: 24px;
   }
 
-  &__canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
+  &__surface {
+    position: absolute;
+    inset: 0;
     // 横向拖动旋转，纵向仍可滚动页面
     touch-action: pan-y;
     cursor: grab;
@@ -24,6 +29,23 @@
     &:active {
       cursor: grabbing;
     }
+  }
+
+  // 画布上下各溢出 30%：挂机和平面版同高后上下没多少余量，转动时机身探出来也不被裁掉。
+  // 只往上下溢出（左右会撑出横向滚动），也不挡住上下内容的点击
+  &__canvas {
+    position: absolute;
+    // 画布是替换元素，不会被 top / bottom 拉伸，宽高要写明
+    top: -30%;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 160%;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 200ms;
   }
 
   &__loading {

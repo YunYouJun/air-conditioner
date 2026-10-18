@@ -54,6 +54,13 @@ export interface AcSceneOptions {
   onReady?: () => void
   /** 已经回正时再双击：请求变回平面版 */
   onFlatten?: () => void
+  /** 换上了这个机型的模型（第一次加载也算） */
+  onForm?: (form: AcForm) => void
+  /**
+   * 接收拖动、并作为取景框的元素（默认画布本身）。画布可以比它高、上下对称地溢出，
+   * 转动时机身探出取景框也不会被裁掉
+   */
+  surface?: HTMLElement
 }
 
 export interface AcScene {
@@ -162,6 +169,8 @@ interface LoadedForm {
   /** 相机看向的中心与需要容纳的尺寸 */
   center: Vector3
   size: Vector3
+  /** 取景时要放得下的尺寸：挂机只算机身，让正面和平面版一样宽 */
+  fit: Vector3
 }
 
 interface Particle {
@@ -173,11 +182,17 @@ interface Particle {
 
 export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions): AcScene {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true })
+  const surface = options.surface ?? canvas
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.outputColorSpace = SRGBColorSpace
 
   const scene = new Scene()
-  const camera = new PerspectiveCamera(30, 2, 0.1, 50)
+  /**
+   * 取景框的竖向视角（度）。视角窄、相机远，透视平缓：侧转时近的一端不会胀得探出画面，
+   * 也更接近平面版 perspective(1400px) 的转身
+   */
+  const fov = 20
+  const camera = new PerspectiveCamera(fov, 2, 0.1, 50)
   scene.add(new HemisphereLight('#ffffff', '#b4bccb', 1.7))
   const sun = new DirectionalLight('#ffffff', 1.5)
   sun.position.set(2, 3, 4)
@@ -267,25 +282,37 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       : new Vector3(louverBox.max.x - 0.04, louverBox.min.y, louverBox.max.z)
 
     const box = new Box3().setFromObject(root)
-    // 给出风留出空间：挂机向下、柜机向右
-    if (anchor.direction === 'down')
+    const body = box.getSize(new Vector3())
+    // 给出风留出空间：挂机向下；柜机向右吹，但左右对称地留，机身才在画面正中
+    if (anchor.direction === 'down') {
       box.min.y -= 0.36
-    else
+    }
+    else {
+      box.min.x -= 0.5
       box.max.x += 0.5
-    return { form, root, louver, movers, vanes, led, origin, lip, center: box.getCenter(new Vector3()), size: box.getSize(new Vector3()) }
+    }
+    const size = box.getSize(new Vector3())
+    // 挂机和平面版同高（见 Ac3D.scss），画面偏扁：按含出风的高度取景机身会变小，
+    // 所以只按机身取景，出风区仍然通过下移的中心留在机身下方
+    const fit = anchor.direction === 'down' ? body : size
+    return { form, root, louver, movers, vanes, led, origin, lip, center: box.getCenter(new Vector3()), size, fit }
   }
 
   function fitCamera() {
     if (!current)
       return
-    const { width, height } = canvas.getBoundingClientRect()
+    // 用布局尺寸：转身时外层带着 rotateY / scale，getBoundingClientRect 量到的是投影
+    const { clientWidth: width, clientHeight: height } = canvas
+    const frameHeight = surface.clientHeight || height
     if (!width || !height)
       return
     renderer.setSize(width, height, false)
+    // 按取景框取景；画布上下多出来的部分只是把视野等比例往外扩
+    const tanHalf = Math.tan(MathUtils.degToRad(fov) / 2)
+    camera.fov = MathUtils.radToDeg(2 * Math.atan(tanHalf * height / frameHeight))
     camera.aspect = width / height
-    const fov = MathUtils.degToRad(camera.fov)
-    const fitHeight = current.size.y / 2 / Math.tan(fov / 2)
-    const fitWidth = current.size.x / 2 / Math.tan(fov / 2) / camera.aspect
+    const fitHeight = current.fit.y / 2 / tanHalf
+    const fitWidth = current.fit.x / 2 / tanHalf / (width / frameHeight)
     // 从机身中心算起，正面离相机近半个厚度；挂机让正面的宽度和平面版差不多，两者转身时能接上
     const distance = Math.max(fitHeight, fitWidth) * 1.04 + current.size.z / 2
     // 略微从右下方仰视，和原生版的预览角度相近
@@ -318,6 +345,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       })
       louverAngle = state.status ? MathUtils.degToRad(acLouverMotion[form].openAngle) : 0
       fitCamera()
+      options.onForm?.(form)
       apply()
       if (!ready) {
         ready = true
@@ -488,13 +516,14 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
   function rotate(nextYaw: number, nextPitch: number) {
     turnTarget = undefined
     yaw = MathUtils.clamp(nextYaw, -0.7, 0.7)
-    pitch = MathUtils.clamp(nextPitch, -0.3, 0.3)
+    // 挂机贴着画面上沿（和平面版同高）：侧转后近的一端伸向镜头，再往上翻就会探出画面，所以往上少翻一点
+    pitch = MathUtils.clamp(nextPitch, current?.form === 'tower' ? -0.3 : -0.12, 0.3)
     current?.root.rotation.set(pitch, yaw, 0)
     wake()
   }
   const onPointerDown = (event: PointerEvent) => {
     drag = { x: event.clientX, y: event.clientY, yaw, pitch }
-    canvas.setPointerCapture(event.pointerId)
+    surface.setPointerCapture(event.pointerId)
   }
   const onPointerMove = (event: PointerEvent) => {
     if (drag)
@@ -514,11 +543,11 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     turnTarget = MathUtils.clamp(target, -0.7, 0.7)
     wake()
   }
-  canvas.addEventListener('pointerdown', onPointerDown)
-  canvas.addEventListener('pointermove', onPointerMove)
-  canvas.addEventListener('pointerup', onPointerUp)
-  canvas.addEventListener('pointercancel', onPointerUp)
-  canvas.addEventListener('dblclick', onDoubleClick)
+  surface.addEventListener('pointerdown', onPointerDown)
+  surface.addEventListener('pointermove', onPointerMove)
+  surface.addEventListener('pointerup', onPointerUp)
+  surface.addEventListener('pointercancel', onPointerUp)
+  surface.addEventListener('dblclick', onDoubleClick)
 
   // 看不见（滚出屏幕、切到后台）时不渲染
   const intersection = new IntersectionObserver(([entry]) => {
@@ -557,11 +586,11 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       intersection.disconnect()
       resize.disconnect()
       document.removeEventListener('visibilitychange', onVisibility)
-      canvas.removeEventListener('pointerdown', onPointerDown)
-      canvas.removeEventListener('pointermove', onPointerMove)
-      canvas.removeEventListener('pointerup', onPointerUp)
-      canvas.removeEventListener('pointercancel', onPointerUp)
-      canvas.removeEventListener('dblclick', onDoubleClick)
+      surface.removeEventListener('pointerdown', onPointerDown)
+      surface.removeEventListener('pointermove', onPointerMove)
+      surface.removeEventListener('pointerup', onPointerUp)
+      surface.removeEventListener('pointercancel', onPointerUp)
+      surface.removeEventListener('dblclick', onDoubleClick)
       scene.traverse((object) => {
         const mesh = object as Mesh
         mesh.geometry?.dispose()

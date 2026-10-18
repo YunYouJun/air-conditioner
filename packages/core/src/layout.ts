@@ -45,7 +45,9 @@ export function observeAcScale(target: Element, designWidth: number, onScale: (s
     }
   }
 
-  update(target.getBoundingClientRect().width)
+  // 用布局宽度而不是 getBoundingClientRect：容器正在转身（rotateY / scale）时，
+  // 后者量到的是变换后的投影宽度，会算出偏小的比例，等 ResizeObserver 纠正时机身猛地一缩放
+  update((target as HTMLElement).offsetWidth ?? target.getBoundingClientRect().width)
   const observer = new ResizeObserver((entries) => {
     for (const entry of entries)
       update(entry.contentRect.width)

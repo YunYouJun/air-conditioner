@@ -3,6 +3,12 @@
 // 转身角度 32deg 与 AcStage.tsx 的 acTurnAngle、时长 420ms 与 turnMs 一致。
 .ac-stage {
   position: relative;
+  // 3D 版按舞台宽度（cqw）算出和平面版一样的高度
+  container-type: inline-size;
+  // 子元素的外边距（柜机底座留白）算进舞台高度，测量与过渡才对得上
+  display: flow-root;
+  // 转身时组件写入固定高度，在两版之间过渡
+  transition: height 420ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 // 转身时进场的那一层叠在上面，不占位置
@@ -108,6 +114,10 @@
 
 // 减弱动态效果：不转、不晃，只做淡入淡出
 @media (prefers-reduced-motion: reduce) {
+  .ac-stage {
+    transition-duration: 200ms;
+  }
+
   .ac-stage__flat {
     transform: none;
     transition: none;

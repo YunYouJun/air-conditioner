@@ -46,6 +46,18 @@ describe('shell layout', () => {
     stop()
     expect(disconnect).toHaveBeenCalled()
   })
+  it('measures the initial width without transforms', () => {
+    vi.stubGlobal('ResizeObserver', class {
+      observe() {}
+      disconnect() {}
+    })
+    // 正在转身的容器：投影宽度比布局宽度窄
+    const target = { offsetWidth: 360, getBoundingClientRect: () => ({ width: 300 }) } as unknown as Element
+    const onScale = vi.fn()
+    observeAcScale(target, 360, onScale)
+
+    expect(onScale.mock.calls).toEqual([[1]])
+  })
   it('keeps both shells close to a real 3:1 wall unit', () => {
     for (const { width, height } of Object.values(acShellSize)) {
       expect(width / height).toBeGreaterThanOrEqual(2.7)
