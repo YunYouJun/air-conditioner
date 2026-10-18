@@ -1,8 +1,9 @@
-import type { AcForm, AcState } from '@yunlefun-home/air-conditioner-core'
+import type { AcDotRow, AcForm, AcState } from '@yunlefun-home/air-conditioner-core'
 import type { Group, Material, Mesh, Object3D } from 'three'
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js'
 import {
   acAirflowAnchors,
+  acEnergyLabel,
   acIconPaths,
   acLouverMotion,
   acModelColors,
@@ -23,6 +24,7 @@ import {
   MeshBasicMaterial,
   MeshLambertMaterial,
   PerspectiveCamera,
+  PlaneGeometry,
   Points,
   PointsMaterial,
   Scene,
@@ -139,6 +141,94 @@ function createDisplay() {
   return { texture, draw }
 }
 
+/**
+ * 能效标签贴图：和平面版（lib/EnergyLabel.tsx 与 style.css 的 .acw-energy-label）同一套 50 × 80 的布局，
+ * 点阵与等级条来自 core 的 acEnergyLabel，按 k 倍画到画布上。
+ */
+function createEnergyLabel(k = 8): CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 50 * k
+  canvas.height = 80 * k
+  const context = canvas.getContext('2d')!
+  context.scale(k, k)
+  const rect = (x: number, y: number, w: number, h: number, color: string) => {
+    context.fillStyle = color
+    context.fillRect(x, y, w, h)
+  }
+  /** 一行点阵，整行在 [left, left + width] 里居中（width 省略时靠左），返回行高 */
+  const dots = (row: AcDotRow, left: number, top: number, width?: number) => {
+    const step = row.size + row.mx * 2
+    let x = width === undefined ? left : left + (width - step * row.num) / 2
+    context.fillStyle = row.color
+    for (let n = 0; n < row.num; n++, x += step) {
+      context.beginPath()
+      context.arc(x + row.mx + row.size / 2, top + row.my + row.size / 2, row.size / 2, 0, Math.PI * 2)
+      context.fill()
+    }
+    return row.size + row.my * 2
+  }
+
+  context.fillStyle = '#4ea5f5'
+  context.beginPath()
+  context.roundRect(0, 0, 50, 80, 2)
+  context.fill()
+
+  // 内容区：4px 内边距，宽 42
+  const left = 4
+  const width = 42
+  // 顶部：标识名称（白点）靠左，能效信息码（11 × 11 的二维码）靠右，垂直居中
+  const top = acEnergyLabel.top[0]
+  dots(top, left, 4 + (11 - (top.size + top.my * 2)) / 2)
+  const qr = left + width - 11
+  rect(qr, 4, 11, 11, '#fff')
+  for (let y = 0; y < 9; y++) {
+    for (let x = 0; x < 9; x++) {
+      if ((x + y) % 2 === 0)
+        rect(qr + 1 + x, 5 + y, 1, 1, '#000')
+    }
+  }
+  for (const [x, y] of [[0, 0], [6, 0], [0, 6]])
+    rect(qr + 1 + x, 5 + y, 3, 3, '#000')
+
+  // 等级区：白底，5 行 3px 的条均匀分布；首行是 1 级绿条和朝左的指示箭头
+  rect(left, 19, width, 28, '#fff')
+  const barLeft = left + 8
+  const barWidth = width - 16
+  const gap = (24 - 15) / 6
+  let y = 19 + 2 + gap
+  rect(barLeft, y, barWidth * 0.4, 3, 'green')
+  context.fillStyle = 'green'
+  context.beginPath()
+  context.moveTo(barLeft + barWidth * 0.8, y + 1.5)
+  context.lineTo(barLeft + barWidth * 0.8 + 2, y)
+  context.lineTo(barLeft + barWidth * 0.8 + 2, y + 3)
+  context.fill()
+  rect(barLeft + barWidth * 0.8 + 2, y, barWidth * 0.1, 3, 'green')
+  for (const level of acEnergyLabel.levels) {
+    y += 3 + gap
+    rect(barLeft, y, barWidth * Number.parseFloat(level.width) / 100, 3, level.background)
+  }
+
+  // 文字明细区：白底，黑点行，首行下面一条分隔线
+  rect(left, 51, width, 20, '#fff')
+  y = 51.8
+  acEnergyLabel.detail.forEach((row, index) => {
+    y += dots(row, left, y, width)
+    if (index === 0) {
+      rect(left, y + 0.8, width, 1, '#000')
+      y += 2.6
+    }
+  })
+
+  // 底部：国家标准编号（白点）
+  dots(acEnergyLabel.footer, left, 73, width)
+
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.anisotropy = 4
+  return texture
+}
+
 /** Blender 导出的 PBR 材质换成平面着色的 Lambert，保留低多边形的棱角感（原生版同样处理） */
 function toFlat(material: Material): Material {
   const source = material as Material & { color?: Color, emissive?: Color, emissiveIntensity?: number, name: string }
@@ -200,6 +290,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
 
   const display = createDisplay()
   const dot = softDot()
+  const energyLabel = createEnergyLabel()
 
   // 出风粒子：冷风淡蓝、暖风淡橙，透明度随寿命淡入淡出
   const airflowGeometry = new BufferGeometry()
@@ -251,6 +342,26 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
   let visible = true
   let disposed = false
 
+  /** 能效标签贴在机身右侧面正中：高约机身的 4/10，比例和平面版一样 50 : 80 */
+  function stickEnergyLabel(root: Object3D) {
+    const body = root.getObjectByName('Body')
+    if (!body)
+      return
+    root.updateMatrixWorld(true)
+    const box = new Box3().setFromObject(body)
+    const center = box.getCenter(new Vector3())
+    const height = (box.max.y - box.min.y) * 0.4
+    const label = new ThreeMesh(
+      new PlaneGeometry(height * 50 / 80, height),
+      new MeshLambertMaterial({ map: energyLabel }),
+    )
+    label.name = 'EnergyLabel'
+    // 平面朝 +Z，绕竖轴转 90° 朝向 +X（右侧面）；贴图左边正好在机身前侧。离表面一点点，免得和侧面闪烁
+    label.rotation.y = Math.PI / 2
+    label.position.set(box.max.x + 0.002, center.y, center.z)
+    root.add(label)
+  }
+
   function prepare(form: AcForm, gltf: GLTF): LoadedForm {
     const root = gltf.scene.clone(true)
     let led: MeshLambertMaterial | undefined
@@ -272,6 +383,10 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     const movers = acLouverMotion[form].pivot === 'children' ? [...louver.children] : [louver]
     const vanes: Object3D[] = []
     root.traverse(object => /^Vane\d+$/.test(object.name) && vanes.push(object))
+
+    // 挂机右侧面贴能效标签（平面版贴在正面左上角，立体的正面留给面板，就贴到侧面）
+    if (form === 'wall')
+      stickEnergyLabel(root)
 
     root.updateMatrixWorld(true)
     const louverBox = new Box3().setFromObject(louver)
@@ -598,6 +713,7 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
         materials.forEach(material => material.dispose())
       })
       display.texture.dispose()
+      energyLabel.dispose()
       dot.dispose()
       renderer.dispose()
     },
