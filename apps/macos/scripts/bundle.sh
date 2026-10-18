@@ -42,6 +42,17 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-codesign --force --deep --sign - "$APP"
+# Use the same Developer ID identity for every upgrade to preserve Keychain trust.
+SIGN_IDENTITY="${CODE_SIGN_IDENTITY:--}"
+SIGN_ARGS=(--force --sign "$SIGN_IDENTITY")
+if [[ -n "${CODE_SIGN_KEYCHAIN:-}" ]]; then
+  SIGN_ARGS+=(--keychain "$CODE_SIGN_KEYCHAIN")
+fi
+if [[ "$SIGN_IDENTITY" != - ]]; then
+  SIGN_ARGS+=(--timestamp)
+else
+  printf 'Ad-hoc signing: upgrades may require Keychain authorization again.\n' >&2
+fi
+codesign "${SIGN_ARGS[@]}" --deep "$APP"
 codesign --verify --deep --strict "$APP"
 echo "Built $PWD/$APP"

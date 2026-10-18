@@ -51,6 +51,8 @@
 
 Home 是绑定目录的维护方：`~/Library/Application Support/YunHome/ha-bindings.json` 只保存设备元数据。令牌仍在 service 为 `fun.yunle.home.home-assistant` 的钥匙串中；CuteAC 不复制、导出或删除它。可用“在 Home 管理”返回 Home，更新令牌后在 CuteAC 点“重新连接”。两边各自保存选中设备，互不切换对方的控制目标，设备状态则通过 HA 同步。
 
+新版 HomeDeviceKit 按 HA 地址复用当前进程已授权读取的令牌，切换三台空调和网络自动重连不再各读一次钥匙串。取消授权后暂停重复读取，点击“重新连接”再重试；Home 更新令牌后也可用此按钮刷新。缓存仅在内存中，现有绑定、房间映射和钥匙串项目均保留。CI 通过 `.github/workflows/macos.yml` 与 `release.yml` 固定包含该修复的 Home 提交；本地通过 `HOME_DEVICE_KIT_PATH` 使用同一模块。
+
 “本机虚拟空调”保留原有状态，真实设备数据不会覆盖它。真实设备的风速维持设备设置；Mac 风速控件仅供虚拟模式使用。`--capture` 固定使用虚拟模式，忽略记住的真实绑定，避免演示脚本操作实体设备。
 
 连接逻辑来自 [home/HomeDeviceKit](https://github.com/YunLeFun/home/tree/main/packages/home-device-kit)，只有 `apps/macos` App 包依赖它；根目录 CuteACKit 仍独立，不形成 Home → CuteACKit → Home 的循环。
@@ -59,7 +61,9 @@ Home 是绑定目录的维护方：`~/Library/Application Support/YunHome/ha-bin
 
 CuteAC 和 npm 包共用仓库版本号（bumpp 同步各个 `package.json`），`scripts/bundle.sh` 把它写进 `CFBundleShortVersionString`。推送 `v*` 标签后，[Release 工作流](../../.github/workflows/release.yml)会在 macOS 上测试共享包、打包 `CuteAC.app`，压缩成 `CuteAC-<版本>.zip` 上传到同名 GitHub Release，应用的检查更新读的就是这里。
 
-应用只做了 ad-hoc 签名，没有公证。下载后第一次打开会被 Gatekeeper 拦下：到“系统设置 → 隐私与安全性”里点“仍要打开”，或者执行 `xattr -dr com.apple.quarantine CuteAC.app`。
+从 0.4.2 起发布包使用 Developer ID 签名，尚未进行 Apple 公证；若系统提示无法验证，按 macOS 的“隐私与安全性”界面确认来源后打开。
+
+减少升级钥匙串提示需要持续使用同一 Developer ID 身份和 Bundle ID。打包支持 `CODE_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' scripts/bundle.sh`，未设置时仍使用 ad-hoc 签名。main CI 与正式发布会从 Actions Secrets 向临时钥匙串导入同一证书，强制校验团队及代码身份并在结束时清理；缺失配置直接失败。PR 构建不读取证书。配置约定与脚本复用 [Home 发布签名配置](https://github.com/YunLeFun/home/blob/main/apps/macos/docs/release-signing.md)。首次从 ad-hoc 切换时可能需选择“始终允许”，以后使用同一签名身份才能保持信任。不要放宽钥匙串项目为“允许所有应用访问”。此签名选项不执行公证。
 
 ## 运行
 
@@ -74,7 +78,7 @@ scripts/bundle.sh          # 构建 build/CuteAC.app（不在 Dock 显示，只�
 open build/CuteAC.app
 ```
 
-改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上运行共享包与原生连接测试、release 构建，再运行 `scripts/bundle.sh` 打包并校验 ad-hoc 签名。`python3 scripts/verify-bundle.py` 将 App 复制到独立目录、临时隐藏 `.build`，启动安装包并离屏渲染挂机与柜机各三种状态，共六张图，作为 `macos-snapshots` 产物上传。此模式不读取 HA 绑定或控制真实设备。发布流程包含同样检查；本机运行时请先结束其他构建和测试，脚本结束后会恢复构建缓存。
+改动 `apps/macos/` 或根目录 `Package.swift` 的推送和 PR 会触发 GitHub Actions 的 [macOS 工作流](../../.github/workflows/macos.yml)：在 `macos-latest` 上运行共享包与原生连接测试、release 构建，再运行 `scripts/bundle.sh` 打包并校验签名（main 使用 Developer ID，PR 使用 ad-hoc）。`python3 scripts/verify-bundle.py` 将 App 复制到独立目录、临时隐藏 `.build`，启动安装包并离屏渲染挂机与柜机各三种状态，共六张图，作为 `macos-snapshots` 产物上传。此模式不读取 HA 绑定或控制真实设备。发布流程包含同样检查；本机运行时请先结束其他构建和测试，脚本结束后会恢复构建缓存。
 
 打包显式使用 Xcode 构建后端，并用相同后端的 `--show-bin-path` 定位文件，使资源从 App 的 `Contents/Resources` 加载，不依赖构建机器的目录。CI 不运行 Blender，直接使用仓库里的 USDZ 模型。
 

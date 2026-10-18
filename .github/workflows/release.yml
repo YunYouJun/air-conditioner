@@ -134,6 +134,8 @@ jobs:
     timeout-minutes: 30
     env:
       HOME_DEVICE_KIT_PATH: ${{ github.workspace }}/.deps/home
+      MACOS_SIGNING_IDENTITY: ${{ vars.MACOS_SIGNING_IDENTITY }}
+      MACOS_SIGNING_TEAM_ID: ${{ vars.MACOS_SIGNING_TEAM_ID }}
     permissions:
       contents: write
     steps:
@@ -143,7 +145,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: YunLeFun/home
-          ref: cfc81f3aa1c981e4dc44d64aedc83f7662519299 # Home 0.2.0
+          ref: 932bb3a1ad908097586631ad3bd641443a2c81ca # Home 0.2.2
           path: .deps/home
 
       - name: Verify tag matches the app version
@@ -160,12 +162,25 @@ jobs:
       - name: Test native connectivity
         run: swift test --package-path apps/macos
 
+      - name: Import Developer ID certificate
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: python3 .deps/home/apps/macos/scripts/ci-signing.py install
+
       - name: Bundle
         working-directory: apps/macos
         run: scripts/bundle.sh
 
+      - name: Verify Developer ID signature
+        run: python3 .deps/home/apps/macos/scripts/ci-signing.py verify apps/macos/build/CuteAC.app fun.yunle.cute-ac
+
       - name: Verify relocated app launch
         run: python3 apps/macos/scripts/verify-bundle.py
+
+      - name: Remove temporary signing keychain
+        if: always() && env.MACOS_SIGNING_DIR != ''
+        run: python3 .deps/home/apps/macos/scripts/ci-signing.py cleanup
 
       - name: Zip
         run: ditto -c -k --keepParent apps/macos/build/CuteAC.app "CuteAC-${GITHUB_REF_NAME#v}.zip"
