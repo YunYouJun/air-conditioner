@@ -1,7 +1,7 @@
 {
   "name": "@yunlefun-home/air-conditioner-core",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Framework-agnostic air conditioner state and runtime helpers.",
   "author": {
     "url": "https://www.yunyoujun.cn",

@@ -1,7 +1,7 @@
 {
   "name": "@air-conditioner/home-plugin",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "description": "Yun Home device plugin (.yunplugin) for the air conditioner.",
   "license": "MIT",

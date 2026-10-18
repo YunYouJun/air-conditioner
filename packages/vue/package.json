@@ -1,7 +1,7 @@
 {
   "name": "@yunlefun-home/air-conditioner",
   "type": "module",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Vue components for Yun Air Conditioner.",
   "author": {
     "url": "https://www.yunyoujun.cn",
