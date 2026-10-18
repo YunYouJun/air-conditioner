@@ -31,6 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   private let store = ACStore(allowsRealDevices: !CommandLine.arguments.contains("--capture"))
   private let settings = AppSettings()
   private let visibility = PopoverVisibility()
+  private let presentation = PopoverPresentation()
   private let thermalMonitor = ThermalMonitor()
   /// Daily GitHub Releases check; tags are `v<version>` with a `CuteAC-<version>.zip` asset.
   private let updates = UpdateMonitor(
@@ -40,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   private lazy var sceneController = ACSceneController(form: settings.form)
   private var statusItem: NSStatusItem?
   private let popover = NSPopover()
+  private var popoverContent: PopoverContentController<PopoverView>?
   private var petPanel: DesktopPetPanel?
   private var cancellables = Set<AnyCancellable>()
 
@@ -52,16 +54,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     popover.behavior = .transient
     popover.animates = true
     popover.delegate = self
-    popover.contentViewController = NSHostingController(
-      rootView: PopoverView(
-        store: store,
-        settings: settings,
-        visibility: visibility,
-        thermal: thermalMonitor,
-        updates: updates,
-        sceneController: sceneController
-      )
-    )
+    let content = PopoverContentController(rootView: PopoverView(
+      store: store,
+      settings: settings,
+      visibility: visibility,
+      thermal: thermalMonitor,
+      updates: updates,
+      sceneController: sceneController
+    ))
+    content.onSizeChange = { [weak popover] size in popover?.contentSize = size }
+    popoverContent = content
+    popover.contentViewController = content
 
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     item.button?.target = self
@@ -152,13 +155,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
       popover.performClose(sender)
     }
     else {
-      popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
+      store.reloadBindings()
+      guard let target = presentation.prepare(for: sender) else { return }
+      popoverContent?.prepare(maximumContentHeight: target.maximumContentHeight)
+      popover.contentSize = popoverContent?.preferredContentSize ?? popover.contentSize
+      popover.show(relativeTo: target.view.bounds, of: target.view, preferredEdge: .minY)
+      presentation.observeScreenChanges(for: popover)
       popover.contentViewController?.view.window?.makeKey()
     }
   }
 
   func popoverWillShow(_ notification: Notification) {
-    store.reloadBindings()
     visibility.isVisible = true
     updateSceneActivity()
   }
@@ -166,6 +173,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   func applicationWillTerminate(_ notification: Notification) { store.shutdown() }
 
   func popoverDidClose(_ notification: Notification) {
+    presentation.close()
     visibility.isVisible = false
     updateSceneActivity()
   }

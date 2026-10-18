@@ -33,20 +33,13 @@ struct PopoverView: View {
             ))
         )
 
-      HStack(alignment: .firstTextBaseline) {
+      HStack(alignment: .center) {
         VStack(alignment: .leading, spacing: 2) {
           Text(store.status)
             .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
-          HStack(alignment: .firstTextBaseline, spacing: 2) {
-            Text(state.temperatureLabel)
-              .font(Font(ACFonts.digital(size: 56)))
-              .foregroundStyle(state.status ? accent : Color.secondary)
-              .contentTransition(.numericText())
-            Text("°C")
-              .font(.system(size: 15, weight: .bold))
-              .foregroundStyle(.secondary)
-          }
+          TemperatureReadout(value: state.temperature)
+            .foregroundStyle(state.status ? accent : Color.secondary)
         }
         Spacer()
         Button {

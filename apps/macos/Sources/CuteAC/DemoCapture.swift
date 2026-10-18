@@ -38,6 +38,7 @@ final class DemoCapture {
       ("on-hot", 1.4, { self.store.setMode(.hot) }),
       (nil, 0.5, { self.store.changeTemperature(by: 3) }),
       ("hot-28", 1.6, { self.store.changeTemperature(by: 3) }),
+      ("decimal-25-5", 1.0, { self.store.changeTemperature(by: 25.5 - self.store.state.temperature) }),
       ("off", 1.4, { self.store.togglePower() }),
     ]
     for (still, seconds, action) in steps {
