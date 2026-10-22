@@ -77,6 +77,12 @@ Air Conditioner
 
 [![cloudbase](https://cloudbase.net/deploy.svg)](https://console.cloud.tencent.com/webify/new?tpl=https%3A%2F%2Fgithub.com%2FYunYouJun%2Fair-conditioner&reponame=my-air-conditioner)
 
+## 文档
+
+说明书位于 [`docs`](./docs)，使用 VitePress 与 `vitepress-theme-yunlefun`。本地运行 `pnpm docs:dev`，独立构建运行 `pnpm docs:build`。
+
+计划通过独立 Cloudflare Pages 项目使用 `docs.ac.yunyoujun.cn`，目前尚未确认绑定或上线；配置步骤见 [文档部署说明](./docs/DEPLOYMENT.md)。主站部署保持不变。
+
 ## Dev
 
 ```bash

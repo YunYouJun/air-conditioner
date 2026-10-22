@@ -16,6 +16,11 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await expect(widget.locator('audio')).toHaveCount(0)
     await page.getByRole('button', { name: '右侧悬浮', exact: true }).click()
     await expect(widget).toHaveAttribute('placement', 'top-right')
+    await expect.poll(async () => Math.round((await widget.boundingBox())!.y)).toBe(16)
+    await expect.poll(async () => {
+      const box = (await widget.boundingBox())!
+      return Math.round(viewport.width - box.x - box.width)
+    }).toBe(16)
     const toggle = widget.getByRole('button', { name: '打开遥控器', exact: true })
     await toggle.press('Enter')
     const power = widget.getByRole('button', { name: 'power', exact: true })
@@ -50,6 +55,17 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await page.goBack()
     await expect(widget).toHaveCount(1)
     await expect(widget).toHaveAttribute('placement', 'inline')
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' })
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await testInfo.attach(`docs-theme-${viewport.width}x${viewport.height}-dark`, {
+      body: await page.screenshot({ animations: 'disabled' }),
+      contentType: 'image/png',
+    })
+    if (viewport.width < 768) {
+      await page.locator('.VPNavBarHamburger').click()
+      await expect(page.locator('.VPNavScreen')).toBeVisible()
+      await page.locator('.VPNavBarHamburger').click()
+    }
     expect(errors).toEqual([])
   })
 }

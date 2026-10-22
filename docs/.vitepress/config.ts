@@ -1,7 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
+import { withYunlefun, yunlefunMarkdown } from 'vitepress-theme-yunlefun/config'
 
-export default defineConfig({
+export default defineConfig(withYunlefun({
+  lang: 'zh-CN',
+  markdown: { config: md => md.use(yunlefunMarkdown) },
   title: 'Air Conditioner',
   description: '便携小空调组件库文档',
   cleanUrls: true,
@@ -63,4 +66,4 @@ export default defineConfig({
       copyright: 'Copyright © YunYouJun.',
     },
   },
-})
+}))

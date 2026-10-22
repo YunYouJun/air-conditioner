@@ -60,7 +60,7 @@ onBeforeUnmount(() => {
 .widget-demo { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 16px; }
 .demo-controls { display: flex; flex-wrap: wrap; gap: 8px; }
 .demo-controls button { border: 1px solid var(--vp-c-brand-1); border-radius: 6px; padding: 8px 12px; min-height: 44px; }
-.demo-controls button[aria-pressed="true"] { background: var(--vp-c-brand-1); color: var(--vp-c-white); }
+.demo-controls button[aria-pressed="true"] { background: var(--vp-c-brand-1); color: var(--vp-button-brand-text); }
 .demo-controls button:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 3px; }
 .demo-mount { max-width: 320px; margin: 24px auto; }
 .demo-mount.floating { margin: 0; }
