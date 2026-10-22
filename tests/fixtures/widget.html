@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Floating widget test fixture</title>
+    <style>
+      body { min-height: 150vh; margin: 0; font-family: sans-serif; background: #f4f7fb; }
+      #background { position: fixed; top: 180px; }
+    </style>
+  </head>
+  <body>
+    <button id="background" type="button">Page button</button>
+    <output id="clicks">0</output>
+    <script type="module">
+      import { mountAirConditioner } from '../../packages/widget/src/index.ts'
+
+      const placement = new URLSearchParams(location.search).get('placement') || 'top-right'
+      const widget = mountAirConditioner(document.body, {
+        placement,
+        storage: null,
+        enableAudio: false,
+        logoUrl: '',
+      })
+      let clicks = 0
+      document.querySelector('#background').onclick = () => {
+        document.querySelector('#clicks').textContent = String(++clicks)
+      }
+      document.querySelector('#background').style[placement === 'top-left' ? 'left' : 'right'] = '100px'
+      widget.addEventListener('ac-change', event => {
+        document.body.dataset.acState = JSON.stringify(event.detail.state)
+      })
+    </script>
+  </body>
+</html>

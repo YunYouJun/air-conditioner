@@ -39,10 +39,42 @@ mountAirConditioner('#ac', {
 | `enableAudio` | `true` | 是否启用按键与开关机音效 |
 | `showEnergyLabel` | `true` | 是否显示能效标签 |
 | `title` | — | Logo 的替代文字 / 链接标题 |
+| `placement` | `inline` | 行内布局，或 `top-left` / `top-right` 悬浮在页面角落 |
 
 > 由于 Shadow DOM 内声明的 `@font-face` 不生效，组件会在 `document.head` 注入一次数码管字体。
 >
 > 未设置 `status` / `mode` / `temperature` / `sound` / `swing` / `fan` 属性时，沿用本地持久化的状态。`fan` 可取 `auto`、`low`、`medium`、`high`，详见 [风速](/api/#风速)。`sound` 可取 `normal`、`sleep`、`mute`，与遥控器最下方的「声音」键一致，详见 [音效与声音模式](/api/#音效与声音模式)；`swing="false"` 关闭扫风，其余取值开启，详见 [出风与扫风](/api/#出风与扫风)。
+
+## 悬浮安装
+
+想让访客在文章或博客页面里也能吹空调，可以把机身固定在右上角，遥控器收在右下角，不再需要为 iframe 预留整块页面空间（[#31](https://github.com/YunYouJun/air-conditioner/issues/31)）。
+
+```ts
+import { mountAirConditioner } from '@air-conditioner/widget'
+
+// 在客户端挂载到 body，避免祖先的 transform / filter 改变 fixed 定位。
+const widget = mountAirConditioner(document.body, {
+  placement: 'top-right',
+  storageKey: 'blog:ac',
+  assetsBaseUrl: '/assets',
+})
+
+// 可随时换到左侧，或用 inline 恢复行内布局。
+widget.setAttribute('placement', 'top-left')
+
+// 页面卸载时移除，释放音频与事件监听。
+// widget.remove()
+```
+
+注册组件后也可以直接写 HTML：
+
+```html
+<air-conditioner-widget placement="top-right" storage-key="blog:ac"></air-conditioner-widget>
+```
+
+点击「打开遥控器」展开，点击「收起遥控器」或按 `Esc` 收起；键盘可用 `Tab` 聚焦、`Enter` / 空格展开，手机可直接点按。收起只隐藏遥控器，空调继续按原来的温度、声音和风速运行。默认行内布局始终显示遥控器。未知 `placement` 值回退到行内布局。
+
+机身宽度随窄屏收缩，空调和遥控器之间的页面仍可点击、滚动。默认层级为 `1000`，需要避让网站菜单时可设置 `--acw-floating-z-index`。悬浮安装与上面的用法一样，需要自行提供 Logo、字体和音频资源；目前使用仓库内构建的 widget，尚无已发布的 npm / CDN 安装地址。
 
 ## Events
 
