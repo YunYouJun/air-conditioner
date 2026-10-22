@@ -1,0 +1,1 @@
+import{a as e,n as t,t as n}from"./boot-C9VwiLaR.js";import{D as r,T as i,b as a}from"./index-kSS8KgWn.js";var o=r(i(),1),s=a(),c=()=>(t(),(0,o.useLayoutEffect)(n,[]),(0,s.jsx)(e,{acSound:!1}));export{c as default};

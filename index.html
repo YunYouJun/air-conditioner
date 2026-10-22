@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/air-conditioner/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#409EFF" />
+  <meta name="description" content="Air Conditioner" />
+  <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+  <title>便携小空调 - 为你的夏日带去清凉！</title>
+  <script>
+    (function () {
+      // 与 usehooks-ts 的 useDarkMode 一致：用户切换过就用记下的值，否则跟随系统
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      let stored = null
+      try {
+        stored = localStorage.getItem('usehooks-ts-dark-mode')
+      }
+      catch {}
+      if (stored === null ? prefersDark : stored === 'true')
+        document.documentElement.classList.add('dark')
+      // 独立遥控器（/rc）的骨架只画遥控器
+      if (/\/rc\/?$/i.test(location.pathname))
+        document.documentElement.dataset.page = 'rc'
+    })()
+  </script>
+  <style>body{color:#141414;-webkit-font-smoothing:antialiased;background:#fff;margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif}html.dark body{color:#fafafa;background:#121212}html:not(.ac-booted) #root{visibility:hidden;position:absolute;top:0;left:0;right:0}.ac-boot{--boot-block:#eceff3;--boot-shine:#f8f9fb;box-sizing:border-box;padding:8px}html.dark .ac-boot{--boot-block:#1f2329;--boot-shine:#2a2f37}.ac-boot__page{max-width:600px;margin:0 auto;padding-top:24px}.ac-boot--leaving{pointer-events:none;animation:.28s ease-out forwards ac-boot-leave;position:absolute;top:0;left:0;right:0}.ac-boot h1{text-align:center;margin:0;font-size:30px;font-weight:400;line-height:36px}.ac-boot__block{background:linear-gradient(100deg, var(--boot-block) 40%, var(--boot-shine) 50%, var(--boot-block) 60%) fixed;background-size:200vw 100%;animation:1.8s linear infinite ac-boot-shine;display:block}.ac-boot__tip{border-radius:7px;width:min(300px,80%);height:14px;margin:29px auto}.ac-boot__shell{box-sizing:border-box;aspect-ratio:3;background:linear-gradient(#fff 0%,#fdfdfd 48%,#eef0f3 100%);border:1px solid #e0e0e0;border-radius:10px 10px 20px 20px;position:relative;box-shadow:inset 0 1px #fff,inset 0 -10px 14px -10px #0f172a29,0 1px 2px #0f172a14,0 12px 22px -10px #0f172a47}.ac-boot__shell>i{position:absolute}.ac-boot__label{background:#4ea5f547;border-radius:2px;width:7.5%;height:36%;top:5.5%;left:1.8%}.ac-boot__sticker{background:#4caf5038;border-radius:2px;width:8.2%;height:17.5%;top:5.5%;left:10.7%}.ac-boot__outlet{border-top:1px solid #e0e0e0;top:87%;left:0;right:0;box-shadow:0 1px #fff}.ac-boot__led{background:#38f709;border-radius:50%;width:4px;height:4px;animation:1.6s ease-in-out infinite ac-boot-standby;top:89%;right:8px;box-shadow:0 0 6px #38f709b3}.ac-boot__wind{justify-content:center;gap:80px;height:40px;margin:20px 0;display:flex}.ac-boot__wind i{transform-origin:50% 0;opacity:.25;background:linear-gradient(#8cc4f28c,#0000);border-radius:2px;width:4px;height:40px;animation:1.8s ease-in-out infinite ac-boot-breeze}.ac-boot__wind i:first-child{rotate:14deg}.ac-boot__wind i:nth-child(2){animation-delay:.3s}.ac-boot__wind i:nth-child(3){animation-delay:.6s;rotate:-14deg}.ac-boot__chips{flex-wrap:wrap;justify-content:center;gap:10px;display:flex}.ac-boot__chips .ac-boot__block{border-radius:18px;height:36px}.ac-boot__status{text-align:center;opacity:.65;flex-basis:100%;margin:0;font-size:12px;line-height:18px}.ac-boot__status a{color:inherit}.ac-boot__dots:after{content:"...";vertical-align:bottom;width:0;animation:1.2s steps(4,jump-none) infinite ac-boot-dots;display:inline-block;overflow:hidden}.ac-boot__remote{box-sizing:border-box;background:#fff;border:1px solid #0000000f;border-radius:40px;width:200px;height:436px;margin:24px auto;position:relative;box-shadow:0 2px 6px #0000000f,0 16px 32px -16px #00000047}.ac-boot__remote>i{position:absolute}.ac-boot__remote .ac-boot__block{--boot-block:#eceff3;--boot-shine:#f8f9fb}html[data-page=rc] .ac-boot__home{display:none}html[data-page=rc] .ac-boot__page{padding-top:0}@keyframes ac-boot-shine{0%{background-position:100vw 0}to{background-position:-100vw 0}}@keyframes ac-boot-standby{0%,to{opacity:.25}50%{opacity:1}}@keyframes ac-boot-breeze{0%,to{opacity:.15;transform:scaleY(.6)}50%{opacity:.6;transform:scaleY(1)}}@keyframes ac-boot-dots{to{width:1.3em}}@keyframes ac-boot-leave{to{opacity:0}}@media (prefers-reduced-motion:reduce){.ac-boot__block,.ac-boot__wind i,.ac-boot__dots:after{animation:none}.ac-boot__dots:after{width:auto}.ac-boot__led{opacity:.6;animation:none}}</style>
+  <script type="module" crossorigin src="/air-conditioner/assets/index-kSS8KgWn.js"></script>
+  <link rel="stylesheet" crossorigin href="/air-conditioner/assets/index-GOQlePdL.css">
+<link rel="manifest" href="/air-conditioner/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/air-conditioner/registerSW.js"></script></head>
+
+<body>
+  <div id="ac-boot" class="ac-boot" role="status" aria-label="便携小空调正在加载">
+    <div class="ac-boot__page">
+      <div class="ac-boot__home">
+        <h1>便携小空调</h1>
+        <i class="ac-boot__block ac-boot__tip"></i>
+        <div class="ac-boot__shell" aria-hidden="true">
+          <i class="ac-boot__label"></i>
+          <i class="ac-boot__sticker"></i>
+          <i class="ac-boot__outlet"></i>
+          <i class="ac-boot__led"></i>
+        </div>
+        <div class="ac-boot__wind" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="ac-boot__chips">
+          <i class="ac-boot__block" style="width: 141px"></i>
+          <i class="ac-boot__block" style="width: 73px"></i>
+          <i class="ac-boot__block" style="width: 113px"></i>
+          <p id="ac-boot-status" class="ac-boot__status"><span class="ac-boot__dots">正在给空调通电</span></p>
+        </div>
+      </div>
+      <div class="ac-boot__remote" aria-hidden="true">
+        <i class="ac-boot__block" style="top: 18px; left: 18px; width: 162px; height: 76px; border-radius: 18px"></i>
+        <i class="ac-boot__block" style="top: 110px; left: 73px; width: 52px; height: 52px; border-radius: 50%"></i>
+        <i class="ac-boot__block" style="top: 178px; left: 63px; width: 72px; height: 128px; border-radius: 36px"></i>
+        <i class="ac-boot__block" style="top: 322px; left: 18px; width: 162px; height: 40px; border-radius: 20px"></i>
+        <i class="ac-boot__block" style="top: 372px; left: 29px; width: 40px; height: 40px; border-radius: 50%"></i>
+        <i class="ac-boot__block" style="top: 372px; left: 79px; width: 40px; height: 40px; border-radius: 50%"></i>
+        <i class="ac-boot__block" style="top: 372px; left: 129px; width: 40px; height: 40px; border-radius: 50%"></i>
+      </div>
+    </div>
+    <noscript><p class="ac-boot__status">需要开启 JavaScript 才能给空调通电。</p></noscript>
+  </div>
+  <div id="root"></div>
+  <script>
+    // 网络慢的时候告诉用户还在加载；太久没来就给一个刷新按钮
+    (function () {
+      function say(html) {
+        const status = document.getElementById('ac-boot-status')
+        if (status)
+          status.innerHTML = html
+      }
+      setTimeout(function () { say('<span class="ac-boot__dots">网络有点慢，空调还在路上</span>') }, 6000)
+      setTimeout(function () { say('空调好像堵在路上了，<a href="">刷新试试</a>') }, 20000)
+    })()
+  </script>
+</body>
+
+</html>
