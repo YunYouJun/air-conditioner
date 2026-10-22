@@ -56,6 +56,10 @@ Sample Room：[AC Room](https://www.yunyoujun.cn/air-conditioner-room/)
 
 ## Deploy It Yourself
 
+### Vercel
+
+Import the repository with the default Root Directory. [`vercel.json`](vercel.json) sets the site build command to `pnpm run react:build`, the output directory to `packages/react/dist`, and an SPA fallback for pages such as `/rc`. The root `pnpm build` command builds component libraries and is not the site build command.
+
 ### Docker
 
 You can use the following environment variables to customize the configuration.

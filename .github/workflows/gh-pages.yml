@@ -38,6 +38,7 @@ jobs:
         run: cp packages/react/dist/index.html packages/react/dist/404.html
 
       - name: Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
