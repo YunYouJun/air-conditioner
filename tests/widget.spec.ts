@@ -5,7 +5,7 @@ const fixture = `/@fs${fileURLToPath(new URL('./fixtures/widget.html', import.me
 
 for (const placement of ['top-left', 'top-right']) {
   for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }, { width: 667, height: 375 }]) {
-    test(`floating ${placement} at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
+    test(`floating ${placement} at ${viewport.width} × ${viewport.height}`, async ({ page }, testInfo) => {
       await page.setViewportSize(viewport)
       const errors: string[] = []
       page.on('pageerror', error => errors.push(error.message))
@@ -34,8 +34,20 @@ for (const placement of ['top-left', 'top-right']) {
       await page.getByRole('button', { name: '打开遥控器' }).press('Space')
       await expect(power).toHaveAttribute('aria-pressed', 'true')
       await expect(page.locator('.acw-temperature')).toHaveText('27')
+      if (placement === 'top-right') {
+        await testInfo.attach(`floating-${viewport.width}x${viewport.height}-expanded`, {
+          body: await page.screenshot({ animations: 'disabled' }),
+          contentType: 'image/png',
+        })
+      }
       await page.getByRole('button', { name: '收起遥控器' }).click()
       await expect(power).toBeHidden()
+      if (placement === 'top-right') {
+        await testInfo.attach(`floating-${viewport.width}x${viewport.height}-collapsed`, {
+          body: await page.screenshot({ animations: 'disabled' }),
+          contentType: 'image/png',
+        })
+      }
       await page.locator('air-conditioner-widget').evaluate(element => element.setAttribute('placement', 'inline'))
       await expect(power).toBeFocused()
       await expect(power).toBeVisible()
