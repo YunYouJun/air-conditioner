@@ -47,6 +47,8 @@ mountAirConditioner('#ac', {
 
 ## 悬浮安装
 
+[打开可交互的悬浮挂件安装演示](/guide/floating-widget)，试试左右角安装和遥控器展开 / 收起。
+
 想让访客在文章或博客页面里也能吹空调，可以把机身固定在右上角，遥控器收在右下角，不再需要为 iframe 预留整块页面空间（[#31](https://github.com/YunYouJun/air-conditioner/issues/31)）。
 
 ```ts

@@ -69,6 +69,10 @@ export const floatingStyleText = `
 }
 
 .acw-remote-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   pointer-events: auto;
   min-height: 44px;
   padding: 8px 16px;

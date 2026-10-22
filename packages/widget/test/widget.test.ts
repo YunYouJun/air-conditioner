@@ -37,11 +37,14 @@ describe('@air-conditioner/widget', () => {
     expect(panel.hidden).toBe(true)
     expect(toggle.getAttribute('aria-expanded')).toBe('false')
     expect(toggle.getAttribute('aria-controls')).toBe(panel.id)
+    expect(toggle.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(toggle.textContent).toBe('打开遥控器')
 
     toggle.click()
     expect(panel.hidden).toBe(false)
     expect(toggle.getAttribute('aria-expanded')).toBe('true')
     expect(toggle.textContent).toBe('收起遥控器')
+    expect(toggle.querySelector('svg')).not.toBeNull()
     toggle.click()
     expect(panel.hidden).toBe(true)
 

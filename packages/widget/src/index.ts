@@ -202,7 +202,7 @@ function widgetTemplate(view: WidgetViewOptions) {
     </div>
     <div class="acw-notification-region" role="status"><span class="acw-sr-only"></span></div>
     <div class="acw-dock">
-    <button type="button" class="acw-remote-toggle" aria-expanded="false" aria-controls="acw-remote-panel" hidden>打开遥控器</button>
+    <button type="button" class="acw-remote-toggle" aria-expanded="false" aria-controls="acw-remote-panel" hidden><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M9 6h6M9 10h6M9 14h2m2 0h2m-6 4h2m2 0h2"/></svg><span class="acw-toggle-label">打开遥控器</span></button>
     <div class="acw-remote-panel" id="acw-remote-panel">
     <div class="acw-remote" role="group" aria-label="Air conditioner remote control">
       <div class="acw-lcd" role="img">
@@ -589,7 +589,9 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         toggle.focus()
       panel.hidden = !open
       toggle.setAttribute('aria-expanded', String(open))
-      toggle.textContent = open ? '收起遥控器' : '打开遥控器'
+      const label = toggle.querySelector('.acw-toggle-label')
+      if (label)
+        label.textContent = open ? '收起遥控器' : '打开遥控器'
     }
 
     private onKeyDown = (event: Event) => {
