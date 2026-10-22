@@ -60,6 +60,10 @@ Air Conditioner
 
 ## 自行部署
 
+### Vercel
+
+从仓库根目录导入项目（Root Directory 保持默认）。[`vercel.json`](vercel.json) 指定网站构建命令 `pnpm run react:build`、输出目录 `packages/react/dist`，并为 `/rc` 等页面提供 SPA 回退。根目录的 `pnpm build` 用于构建组件库，不能作为网站部署命令。
+
 ### Docker
 
 部署时可使用以下环境变量进行配置自定义：
