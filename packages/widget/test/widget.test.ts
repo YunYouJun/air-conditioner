@@ -22,6 +22,100 @@ describe('@air-conditioner/widget', () => {
     expect(document.getElementById('acw-digit-font')?.textContent).toContain('/assets/fonts/digital-7-mono.ttf')
   })
 
+  it('keeps inline controls visible and makes floating controls a disclosure', () => {
+    defineAirConditionerElement({ tagName: 'test-ac-placement', enableAudio: false, storage: null })
+    const element = mountAirConditioner(document.body, { tagName: 'test-ac-placement' })
+    const root = element.shadowRoot!
+    const toggle = root.querySelector<HTMLButtonElement>('.acw-remote-toggle')!
+    const panel = root.querySelector<HTMLElement>('.acw-remote-panel')!
+    expect(toggle.hidden).toBe(true)
+    expect(panel.hidden).toBe(false)
+
+    element.setAttribute('placement', 'top-right')
+    expect(element.dataset.acPlacement).toBe('top-right')
+    expect(toggle.hidden).toBe(false)
+    expect(panel.hidden).toBe(true)
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    expect(toggle.getAttribute('aria-controls')).toBe(panel.id)
+    expect(toggle.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(toggle.textContent).toBe('打开遥控器')
+
+    toggle.click()
+    expect(panel.hidden).toBe(false)
+    expect(toggle.getAttribute('aria-expanded')).toBe('true')
+    expect(toggle.textContent).toBe('收起遥控器')
+    expect(toggle.querySelector('svg')).not.toBeNull()
+    toggle.click()
+    expect(panel.hidden).toBe(true)
+
+    element.setAttribute('placement', 'invalid')
+    expect(element.dataset.acPlacement).toBe('inline')
+    expect(toggle.hidden).toBe(true)
+    expect(panel.hidden).toBe(false)
+    element.remove()
+  })
+
+  it('preserves AC state and control nodes when the remote is collapsed or moved', () => {
+    defineAirConditionerElement({ tagName: 'test-ac-floating-state', enableAudio: false, storage: null })
+    const element = mountAirConditioner(document.body, { tagName: 'test-ac-floating-state', placement: 'top-left' })
+    const root = element.shadowRoot!
+    const toggle = root.querySelector<HTMLButtonElement>('.acw-remote-toggle')!
+    const panel = root.querySelector<HTMLElement>('.acw-remote-panel')!
+    const power = root.querySelector<HTMLButtonElement>('.acw-button-power')!
+    const changes: Event[] = []
+    element.addEventListener('ac-change', event => changes.push(event))
+
+    toggle.click()
+    power.click()
+    root.querySelector<HTMLButtonElement>('[data-repeat="increment"]')!.click()
+    const count = changes.length
+    toggle.click()
+    element.setAttribute('placement', 'top-right')
+    expect(panel.hidden).toBe(true)
+    toggle.click()
+    expect(root.querySelector('.acw-button-power')).toBe(power)
+    expect(power.getAttribute('aria-pressed')).toBe('true')
+    expect(root.querySelector('.acw-temperature')?.textContent).toBe('27')
+    element.setAttribute('placement', 'top-left')
+    expect(panel.hidden).toBe(false)
+    expect(changes).toHaveLength(count)
+    element.remove()
+  })
+
+  it('returns focus to the disclosure on Escape and to the remote when made inline', () => {
+    defineAirConditionerElement({ tagName: 'test-ac-floating-focus', enableAudio: false, storage: null })
+    const element = mountAirConditioner(document.body, { tagName: 'test-ac-floating-focus', placement: 'top-right' })
+    const root = element.shadowRoot!
+    const toggle = root.querySelector<HTMLButtonElement>('.acw-remote-toggle')!
+    const panel = root.querySelector<HTMLElement>('.acw-remote-panel')!
+    const power = root.querySelector<HTMLButtonElement>('.acw-button-power')!
+    toggle.click()
+    power.focus()
+    power.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }))
+    expect(panel.hidden).toBe(true)
+    expect(root.activeElement).toBe(toggle)
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+
+    element.removeAttribute('placement')
+    expect(panel.hidden).toBe(false)
+    expect(root.activeElement).toBe(power)
+    element.remove()
+  })
+
+  it('applies placement per mount even after the element is registered', () => {
+    const options = { tagName: 'test-ac-mount-placement', enableAudio: false, storage: null } as const
+    defineAirConditionerElement(options)
+    const left = mountAirConditioner(document.body, { ...options, placement: 'top-left' })
+    const right = mountAirConditioner(document.body, { ...options, placement: 'top-right' })
+    expect(left.dataset.acPlacement).toBe('top-left')
+    expect(right.dataset.acPlacement).toBe('top-right')
+    expect(mountAirConditioner(left, { ...options, placement: 'inline' })).toBe(left)
+    expect(left.dataset.acPlacement).toBe('inline')
+    expect(right.dataset.acPlacement).toBe('top-right')
+    left.remove()
+    right.remove()
+  })
+
   it('keeps the persisted mode when no mode attribute is given', () => {
     const storage = new Map<string, string>([['test:mode', JSON.stringify({ mode: 'hot', status: false, temperature: 22 })]])
     defineAirConditionerElement({

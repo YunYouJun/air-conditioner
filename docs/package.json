@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "vitepress": "catalog:",
+    "vitepress-theme-yunlefun": "catalog:",
     "vue": "catalog:"
   }
 }

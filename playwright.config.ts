@@ -62,11 +62,16 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: [{
     // A port of its own, and strictPort: if it is taken the run fails loudly
     // instead of reusing (and testing) whatever else is listening there.
     command: 'pnpm -C packages/react exec vite --host 127.0.0.1 --port 5179 --strictPort',
     url: 'http://127.0.0.1:5179',
     reuseExistingServer: !process.env.CI,
-  },
+  }, {
+    command: 'pnpm docs:build && pnpm -C docs exec vitepress preview --host 127.0.0.1 --port 5180',
+    url: 'http://127.0.0.1:5180',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  }],
 })
