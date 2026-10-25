@@ -245,6 +245,9 @@ catalogs:
     vitepress:
       specifier: ^1.6.4
       version: 1.6.4
+    vitepress-theme-yunlefun:
+      specifier: 0.4.3
+      version: 0.4.3
     vitest:
       specifier: ^5.0.4
       version: 5.0.4
@@ -295,6 +298,9 @@ importers:
       vitepress:
         specifier: 'catalog:'
         version: 1.6.4(@algolia/client-search@5.53.0)(@types/node@26.6.5)(change-case@5.4.4)(lightningcss@1.33.0)(postcss@8.5.30)(sass@1.105.1)(search-insights@2.17.3)(terser@5.48.0)(typescript@6.0.3)
+      vitepress-theme-yunlefun:
+        specifier: 'catalog:'
+        version: 0.4.3(sass@1.105.1)(vitepress@1.6.4(@algolia/client-search@5.53.0)(@types/node@26.6.5)(change-case@5.4.4)(lightningcss@1.33.0)(postcss@8.5.30)(sass@1.105.1)(search-insights@2.17.3)(terser@5.48.0)(typescript@6.0.3))(vue@3.5.44(typescript@6.0.3))
       vue:
         specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
@@ -2499,6 +2505,17 @@ packages:
 
   '@yuku-toolchain/types@0.19.0':
     resolution: {integrity: sha512-tFkNbsP4WXX9UMUC5syJGdK9dPMLK0PPaIuXCcCYH75sZ8MrebfBZ2XvCILRTw8AgLivSSCfDa4R67iYBDa4Kg==}
+
+  '@yunlefun/icons@0.3.1':
+    resolution: {integrity: sha512-X+Ut79gegUVAK8T48AYxkK6lkOgHuFPbxUTr+CXDZRTqEFEofZuf4fFlDKR0PX67GoYyV2d5HOZbtLONQjzRAw==}
+
+  '@yunlefun/ui@0.0.7':
+    resolution: {integrity: sha512-YWV04EDTA5LS0Tr4ervVBEEgotCZC7n71hiG84zRToc/HL8o35ie2VeR13mP1qjJnqFvgA8QWN8m5/y5Ax1ZEw==}
+    peerDependencies:
+      sass: ^1.101.0
+    peerDependenciesMeta:
+      sass:
+        optional: true
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -4810,6 +4827,12 @@ packages:
         optional: true
       yaml:
         optional: true
+
+  vitepress-theme-yunlefun@0.4.3:
+    resolution: {integrity: sha512-gVhOCo2yLwMq8HQhHfMnNPlQPMNDjr56Ai4Bp88AdIhMJBUOEWpSYZQmvo/DbQwQQw6DBubkTDjlMsKzXNCUfw==}
+    peerDependencies:
+      vitepress: ^1.6.4 || ^2.0.0-alpha.16
+      vue: ^3.5.0
 
   vitepress@1.6.4:
     resolution: {integrity: sha512-+2ym1/+0VVrbhNyRoFFesVvBvHAVMZMK0rw60E3X/5349M1GuVdKeazuksqopEdvkKwKGs21Q729jX81/bkBJg==}
@@ -7173,6 +7196,14 @@ snapshots:
     optional: true
 
   '@yuku-toolchain/types@0.19.0': {}
+
+  '@yunlefun/icons@0.3.1':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@yunlefun/ui@0.0.7(sass@1.105.1)':
+    optionalDependencies:
+      sass: 1.105.1
 
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
@@ -9797,6 +9828,16 @@ snapshots:
       sass: 1.105.1
       terser: 5.48.0
       yaml: 2.9.0
+
+  vitepress-theme-yunlefun@0.4.3(sass@1.105.1)(vitepress@1.6.4(@algolia/client-search@5.53.0)(@types/node@26.6.5)(change-case@5.4.4)(lightningcss@1.33.0)(postcss@8.5.30)(sass@1.105.1)(search-insights@2.17.3)(terser@5.48.0)(typescript@6.0.3))(vue@3.5.44(typescript@6.0.3)):
+    dependencies:
+      '@yunlefun/icons': 0.3.1
+      '@yunlefun/ui': 0.0.7(sass@1.105.1)
+      postcss: 8.5.30
+      vitepress: 1.6.4(@algolia/client-search@5.53.0)(@types/node@26.6.5)(change-case@5.4.4)(lightningcss@1.33.0)(postcss@8.5.30)(sass@1.105.1)(search-insights@2.17.3)(terser@5.48.0)(typescript@6.0.3)
+      vue: 3.5.44(typescript@6.0.3)
+    transitivePeerDependencies:
+      - sass
 
   vitepress@1.6.4(@algolia/client-search@5.53.0)(@types/node@26.6.5)(change-case@5.4.4)(lightningcss@1.33.0)(postcss@8.5.30)(sass@1.105.1)(search-insights@2.17.3)(terser@5.48.0)(typescript@6.0.3):
     dependencies:

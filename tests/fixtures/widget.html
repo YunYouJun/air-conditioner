@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Floating widget test fixture</title>
+    <style>
+      body { min-height: 150vh; margin: 0; font-family: sans-serif; background: #f4f7fb; }
+      #background { position: fixed; top: 180px; }
+      main { max-width: 440px; margin: 280px 24px 0; color: #334155; }
+      h1 { font-size: 24px; }
+      p { line-height: 1.7; }
+      #clicks { position: fixed; top: 216px; left: 24px; }
+    </style>
+  </head>
+  <body>
+    <button id="background" type="button">Page button</button>
+    <output id="clicks">0</output>
+    <main>
+      <h1>云空调 · 悬浮安装演示</h1>
+      <p>空调固定在上角，遥控器收在同侧下角。展开调整温度，收起后继续运行。</p>
+      <p>透明的出风区域不会阻挡页面按钮。此页用于验证组件，不是网站首页。</p>
+    </main>
+    <script type="module">
+      import { mountAirConditioner } from '../../packages/widget/src/index.ts'
+
+      const placement = new URLSearchParams(location.search).get('placement') || 'top-right'
+      const widget = mountAirConditioner(document.body, {
+        placement,
+        storage: null,
+        enableAudio: false,
+        logoUrl: '',
+      })
+      let clicks = 0
+      document.querySelector('#background').onclick = () => {
+        document.querySelector('#clicks').textContent = String(++clicks)
+      }
+      document.querySelector('#background').style[placement === 'top-left' ? 'left' : 'right'] = '100px'
+      widget.addEventListener('ac-change', event => {
+        document.body.dataset.acState = JSON.stringify(event.detail.state)
+      })
+    </script>
+  </body>
+</html>

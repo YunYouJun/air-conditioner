@@ -31,6 +31,7 @@ import {
   observeAcTilt,
   resolveAcAudioAssets,
 } from '@yunlefun-home/air-conditioner-core'
+import { floatingStyleText } from './floating-style'
 import { widgetStyleText } from './style'
 
 export type WidgetAcMode = 'cold' | 'hot'
@@ -40,6 +41,9 @@ export type WidgetAcSoundMode = 'normal' | 'sleep' | 'mute'
 
 /** 风速：自动 / 低 / 中 / 高 */
 export type WidgetAcFanSpeed = 'auto' | 'low' | 'medium' | 'high'
+
+/** 行内显示，或固定在网页左上 / 右上角，遥控器位于同侧下角。 */
+export type WidgetAcPlacement = 'inline' | 'top-left' | 'top-right'
 
 export interface WidgetAcState {
   status: boolean
@@ -74,6 +78,8 @@ export interface WidgetAcStorage {
 
 export interface DefineAirConditionerElementOptions {
   tagName?: string
+  /** 默认行内显示；悬浮时可点击或通过键盘展开遥控器。 */
+  placement?: WidgetAcPlacement
   /** Logo 的替代文字 / 链接标题 */
   title?: string
   initialState?: Partial<WidgetAcState>
@@ -169,7 +175,7 @@ function widgetTemplate(view: WidgetViewOptions) {
     ? `<div class="acw-logo"><a href="${escapeHtml(view.logoHref)}" target="_blank" rel="noreferrer noopener"${view.title ? ` title="${escapeHtml(view.title)}"` : ''} aria-label="${escapeHtml(view.title ?? 'Air Conditioner')}"><img src="${escapeHtml(view.logoUrl)}" alt=""></a></div>`
     : ''
   return `
-  <style>${widgetStyleText}</style>
+  <style>${widgetStyleText}${floatingStyleText}</style>
   <div class="acw-root">
     ${audio}
     <div class="acw-unit">
@@ -195,6 +201,9 @@ function widgetTemplate(view: WidgetViewOptions) {
       </div>
     </div>
     <div class="acw-notification-region" role="status"><span class="acw-sr-only"></span></div>
+    <div class="acw-dock">
+    <button type="button" class="acw-remote-toggle" aria-expanded="false" aria-controls="acw-remote-panel" hidden><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M9 6h6M9 10h6M9 14h2m2 0h2m-6 4h2m2 0h2"/></svg><span class="acw-toggle-label">打开遥控器</span></button>
+    <div class="acw-remote-panel" id="acw-remote-panel">
     <div class="acw-remote" role="group" aria-label="Air conditioner remote control">
       <div class="acw-lcd" role="img">
         <div class="acw-lcd-main">
@@ -221,6 +230,8 @@ function widgetTemplate(view: WidgetViewOptions) {
         <button type="button" class="acw-button acw-button-swing" aria-label="swing" data-action="toggleSwing">${icon('swing', 20)}</button>
         <button type="button" class="acw-button acw-button-sound" aria-label="sound" data-action="cycleSound"></button>
       </div>
+    </div>
+    </div>
     </div>
   </div>
 `
@@ -422,9 +433,10 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private stopObservers: (() => void)[] = []
     private audio?: AcAudioController
     private present = createAcNotificationPresenter()
+    private placement?: WidgetAcPlacement
 
     static get observedAttributes() {
-      return ['mode', 'status', 'temperature', 'sound', 'swing', 'fan']
+      return ['mode', 'status', 'temperature', 'sound', 'swing', 'fan', 'placement']
     }
 
     connectedCallback() {
@@ -466,7 +478,9 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         }))
       })
       this.shadowRoot?.addEventListener('click', this.onClick)
+      this.shadowRoot?.addEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
+      this.updatePlacement()
       this.renderedState = undefined
       this.render()
 
@@ -501,6 +515,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.stopObservers.forEach(stop => stop())
       this.stopObservers = []
       this.shadowRoot?.removeEventListener('click', this.onClick)
+      this.shadowRoot?.removeEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.removeEventListener('animationiteration', this.onDrip)
     }
 
@@ -510,7 +525,11 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         this.audio?.drip()
     }
 
-    attributeChangedCallback() {
+    attributeChangedCallback(name: string) {
+      if (name === 'placement') {
+        this.updatePlacement()
+        return
+      }
       if (!this.store)
         return
 
@@ -521,6 +540,12 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     private onClick = (event: Event) => {
+      if ((event.target as Element | null)?.closest('.acw-remote-toggle')) {
+        const panel = this.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')
+        if (panel)
+          this.setRemoteOpen(Boolean(panel.hidden))
+        return
+      }
       // 按钮内是 SVG 图标，点击目标可能是 path，向上查找带 data-action 的按钮
       const target = (event.target as Element | null)?.closest<HTMLElement>('[data-action]')
       const action = target?.dataset.action
@@ -534,6 +559,52 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         this.store.dispatch({ type: 'toggleStatus' })
       else if (action === 'cycleSound' || action === 'toggleSwing' || action === 'cycleFan')
         this.store.dispatch({ type: action })
+    }
+
+    private updatePlacement() {
+      if (!this.shadowRoot)
+        return
+      const value = this.getAttribute('placement') ?? options.placement
+      const placement = value === 'top-left' || value === 'top-right' ? value : 'inline'
+      const wasFloating = this.placement && this.placement !== 'inline'
+      this.placement = placement
+      this.dataset.acPlacement = placement
+      const toggle = this.shadowRoot.querySelector<HTMLButtonElement>('.acw-remote-toggle')!
+      const focusRemote = placement === 'inline' && this.shadowRoot.activeElement === toggle
+      toggle.hidden = placement === 'inline'
+      // Switching sides retains the disclosure state; entering floating mode starts compact.
+      if (placement === 'inline' || !wasFloating)
+        this.setRemoteOpen(placement === 'inline')
+      // Browsers cannot focus a control while its panel is still hidden.
+      if (focusRemote)
+        this.shadowRoot.querySelector<HTMLButtonElement>('.acw-button-power')?.focus()
+    }
+
+    private setRemoteOpen(open: boolean) {
+      const panel = this.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')
+      const toggle = this.shadowRoot?.querySelector<HTMLButtonElement>('.acw-remote-toggle')
+      if (!panel || !toggle)
+        return
+      if (!open && this.shadowRoot?.activeElement && panel.contains(this.shadowRoot.activeElement))
+        toggle.focus()
+      panel.hidden = !open
+      toggle.setAttribute('aria-expanded', String(open))
+      const label = toggle.querySelector('.acw-toggle-label')
+      if (label)
+        label.textContent = open ? '收起遥控器' : '打开遥控器'
+    }
+
+    private onKeyDown = (event: Event) => {
+      const keyboardEvent = event as KeyboardEvent
+      if (keyboardEvent.key !== 'Escape' || this.placement === 'inline')
+        return
+      const panel = this.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')
+      if (!panel || panel.hidden)
+        return
+      keyboardEvent.preventDefault()
+      keyboardEvent.stopPropagation()
+      this.setRemoteOpen(false)
+      this.shadowRoot?.querySelector<HTMLButtonElement>('.acw-remote-toggle')?.focus()
     }
 
     /**
@@ -570,21 +641,28 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
 }
 
 export function mountAirConditioner(target: string | HTMLElement, options: MountAirConditionerOptions = {}): HTMLElement {
+  // Mount placement is per instance; only explicit registration sets a tag-wide default.
+  const { placement, ...elementOptions } = options
   const tagName = options.tagName ?? defaultTagName
-  defineAirConditionerElement(options)
+  defineAirConditionerElement(elementOptions)
 
   const targetElement = typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target
   if (!targetElement)
     throw new Error(`Unable to find target: ${String(target)}`)
 
-  if (targetElement.localName === tagName)
+  if (targetElement.localName === tagName) {
+    if (placement)
+      targetElement.setAttribute('placement', placement)
     return targetElement
+  }
 
   const element = document.createElement(tagName)
   if (options.storageKey)
     element.setAttribute('storage-key', options.storageKey)
   if (options.title)
     element.setAttribute('title', options.title)
+  if (placement)
+    element.setAttribute('placement', placement)
 
   targetElement.appendChild(element)
   return element
