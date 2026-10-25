@@ -44,6 +44,18 @@ Air Conditioner
 
 ## 安装
 
+### 网页悬浮挂件
+
+把下面的脚本放到博客或网站的全局模板中：
+
+```html
+<script defer src="https://yunyoujun.github.io/air-conditioner/widget/embed.js" data-placement="top-right"></script>
+```
+
+机身固定在右上角，遥控器在右下角点击展开；支持触屏、键盘和 `Esc` 收起。改为 `data-placement="top-left"` 可安装在左侧，加上 `data-audio="true"` 可启用音效。字体与音频随脚本加载，无需 npm 包。
+
+[安装演示与复制代码](https://yunyoujun.github.io/air-conditioner/widget/)随 main 的 GitHub Pages 部署更新；自托管、固定版本和 SPA 接入见[完整安装说明](docs/guide/floating-widget.md)。
+
 ### iframe
 
 ```html

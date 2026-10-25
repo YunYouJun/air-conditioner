@@ -1,2 +1,5 @@
 /manifest.webmanifest
   Content-Type: application/manifest+json
+
+/widget/*
+  Access-Control-Allow-Origin: *

@@ -20,9 +20,48 @@ import FloatingWidgetDemo from '../.vitepress/components/FloatingWidgetDemo.vue'
 
 ## 在自己的页面安装
 
-::: warning 尚未发布到 npm / CDN
-`@air-conditioner/widget` 目前是仓库内的 workspace 包。请使用本仓库源码或自行构建，不要直接复制一个不存在的 CDN 地址。已发布的 Vue 包是另一个集成方式，见 [Vue 安装](/guide/vue)。
-:::
+### 复制一段 script
+
+[打开独立安装演示](https://yunyoujun.github.io/air-conditioner/widget/)，可以试用并复制当前部署的安装地址。这个入口随 main 的 GitHub Pages 部署更新，不依赖 npm 发版。
+
+将下面的代码放入网站的全局页头或页脚，只需安装一次：
+
+```html
+<script
+  defer
+  src="https://yunyoujun.github.io/air-conditioner/widget/embed.js"
+  data-placement="top-right"
+></script>
+```
+
+机身与遥控器会直接挂载到 `body`。字体、Logo 和音频都从脚本旁边加载，不需要复制到博客的 `public`，也不受博客当前路由或部署子路径影响。
+
+| 属性 | 默认值 | 用途 |
+| --- | --- | --- |
+| `data-placement` | `top-right` | 设为 `top-left` 可移到左侧 |
+| `data-audio` | `false` | 设为 `true` 启用音效，用户操作后才播放 |
+| `data-storage-key` | `ac:embed` | 本站的状态存储键；不同博客无需共用状态 |
+
+脚本重复加载不会叠出多个挂件。SPA 网站建议把脚本放在全局模板；如果需要随路由卸载，调用 `document.querySelector('air-conditioner-embed')?.remove()`，之后重新加载脚本即可挂载。需要改变音频等初始化选项时请整页刷新。
+
+遥控器采用点击 / 触屏 / 键盘展开，鼠标经过不会自动弹出，以免阅读文章时误触；这是对 #31 原提案中 hover 交互的取舍。VuePress、VitePress 等静态站点也可使用全局脚本，无需专用插件。
+
+### 自托管与固定版本
+
+如果不希望跟随官方 main 更新，可以检出需要的提交并独立构建：
+
+```bash
+pnpm install --frozen-lockfile
+pnpm -C packages/widget build:embed
+```
+
+将生成的 `packages/widget/dist/embed/` **整个目录**部署到自己站点的 `/widget/`，然后使用 `<script defer src="/widget/embed.js"></script>`。目录包含脚本、安装演示、字体、音频、Logo 与许可证，不能只拷贝 JS。完整网站构建 `pnpm react:build` 也会生成 `packages/react/dist/widget/`，现有网站部署流程会一起发布。
+
+跨站加载时，静态服务器需要为 `/widget/*` 返回 `Access-Control-Allow-Origin: *`，否则字体或 Web Audio 无法跨域读取。GitHub Pages 自带该响应头，仓库也配置了 Cloudflare Pages 与 Vercel 的响应头；其他托管服务请自行配置，或将整个目录放在博客同源。使用 CSP 的网站还需允许该来源的脚本、字体、图片、媒体和音频 fetch，以及组件的内联样式；代码会给页面注入字体样式和 Shadow DOM 样式。
+
+### 在 workspace 中使用 API
+
+`@air-conditioner/widget` 仍是仓库内的 workspace 包，尚未发布到 npm；上面的浏览器脚本可以独立使用。已发布的 Vue 包见 [Vue 安装](/guide/vue)。
 
 在本仓库的 pnpm workspace 中使用：
 
