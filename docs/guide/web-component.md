@@ -2,6 +2,8 @@
 
 Web Component 不依赖 React 或 Vue，适合普通网页、CMS 页面或跨框架嵌入。
 
+想直接装到博客？使用[一段 script 的安装方式](/guide/floating-widget#复制一段-script)，自动提供字体、音效和悬浮遥控器，无需 npm 包。
+
 ::: warning 尚未发布到 npm
 `@air-conditioner/widget` 目前只在本仓库（pnpm workspace）里使用，下面的 npm 用法暂时还装不到；已发布的是 [Vue 组件](/guide/vue)（`@yunlefun-home/air-conditioner`）和 core（`@yunlefun-home/air-conditioner-core`）。
 :::
@@ -76,7 +78,7 @@ widget.setAttribute('placement', 'top-left')
 
 点击「打开遥控器」展开，点击「收起遥控器」或按 `Esc` 收起；键盘可用 `Tab` 聚焦、`Enter` / 空格展开，手机可直接点按。收起只隐藏遥控器，空调继续按原来的温度、声音和风速运行。默认行内布局始终显示遥控器。未知 `placement` 值回退到行内布局。
 
-机身宽度随窄屏收缩，空调和遥控器之间的页面仍可点击、滚动。默认层级为 `1000`，需要避让网站菜单时可设置 `--acw-floating-z-index`。悬浮安装与上面的用法一样，需要自行提供 Logo、字体和音频资源；目前使用仓库内构建的 widget，尚无已发布的 npm / CDN 安装地址。
+机身宽度随窄屏收缩，空调和遥控器之间的页面仍可点击、滚动。默认层级为 `1000`，需要避让网站菜单时可设置 `--acw-floating-z-index`。本页的 workspace API 需要自行提供 Logo、字体和音频资源；[浏览器安装脚本](/guide/floating-widget#复制一段-script)则会从脚本目录自动加载这些资源。
 
 ## Events
 

@@ -3,6 +3,9 @@
   "framework": "vite",
   "buildCommand": "pnpm run react:build",
   "outputDirectory": "packages/react/dist",
+  "headers": [
+    { "source": "/widget/(.*)", "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }] }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

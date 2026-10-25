@@ -32,7 +32,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm run build:lib",
-    "build:app": "vite build",
+    "build:app": "vite build && node ../widget/scripts/build-embed.mjs dist/widget",
     "build:lib": "tsdown && cp src/lib/style.css dist/style.css && mkdir -p dist/assets && cp -r public/assets/fonts dist/assets/fonts && cp public/yun-logo.svg dist/yun-logo.svg",
     "serve": "vite preview",
     "lint": "eslint \"**/*.{tsx,ts,js}\"",

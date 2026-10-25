@@ -73,5 +73,11 @@ export default defineConfig({
     url: 'http://127.0.0.1:5180',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+  }, {
+    // Exercise the installed PWA and the standalone page on a GitHub Pages subpath.
+    command: 'VITE_BASE=/air-conditioner/ pnpm react:build && pnpm -C packages/react exec vite preview --base /air-conditioner/ --host 127.0.0.1 --port 5183 --strictPort',
+    url: 'http://127.0.0.1:5183/air-conditioner/',
+    reuseExistingServer: false,
+    timeout: 120_000,
   }],
 })
