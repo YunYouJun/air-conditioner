@@ -27,7 +27,7 @@ features:
 - `@yunlefun-home/air-conditioner-core`
 - `@air-conditioner/react`
 - `@yunlefun-home/air-conditioner`
-- `@air-conditioner/widget`
+- `@yunlefun-home/air-conditioner-widget`
 
 ## Development
 

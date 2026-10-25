@@ -19,6 +19,7 @@ describe('public package manifests', () => {
   it.each([
     ['core', '../package.json'],
     ['vue', '../../vue/package.json'],
+    ['widget', '../../widget/package.json'],
   ])('publishes %s at the repository version', (_packageName, relativePath) => {
     const manifest = readManifest(relativePath)
     const repository = readManifest('../../../package.json')
@@ -45,6 +46,7 @@ describe('public package manifests', () => {
   it.each([
     ['core', '../LICENSE'],
     ['vue', '../../vue/LICENSE'],
+    ['widget', '../../widget/LICENSE'],
   ])('ships the MIT license with @air-conditioner/%s', (_packageName, relativePath) => {
     expect(existsSync(new URL(relativePath, import.meta.url))).toBe(true)
   })

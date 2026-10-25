@@ -34,6 +34,8 @@ import {
 import { floatingStyleText } from './floating-style'
 import { widgetStyleText } from './style'
 
+export { cdnAssets } from './cdn-assets'
+
 export type WidgetAcMode = 'cold' | 'hot'
 
 /** 声音模式：标准 / 睡眠（音量变小）/ 静音 */

@@ -28,7 +28,7 @@
     "docs:preview": "pnpm -C docs run docs:preview",
     "lint": "eslint .",
     "release": "bumpp",
-    "release:packages": "pnpm --filter @yunlefun-home/air-conditioner-core --filter @yunlefun-home/air-conditioner publish --access public",
+    "release:packages": "pnpm --filter @yunlefun-home/air-conditioner-core --filter @yunlefun-home/air-conditioner --filter @yunlefun-home/air-conditioner-widget publish --access public",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

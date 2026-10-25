@@ -12,7 +12,7 @@
 - storage 可用和不可用两种情况。
 - 通知事件生成。
 
-`@air-conditioner/widget` 覆盖：
+`@yunlefun-home/air-conditioner-widget` 覆盖：
 
 - Custom Element 注册和挂载。
 - `ac-change` 事件。

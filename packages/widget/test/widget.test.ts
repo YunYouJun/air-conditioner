@@ -4,7 +4,7 @@ import { acModeIcons, defaultAcState, getAcRemoteText } from '@yunlefun-home/air
 import { describe, expect, it } from 'vitest'
 import { defineAirConditionerElement, mountAirConditioner } from '../src'
 
-describe('@air-conditioner/widget', () => {
+describe('@yunlefun-home/air-conditioner-widget', () => {
   it('defines and mounts a native custom element', () => {
     defineAirConditionerElement({ tagName: 'test-air-conditioner-widget', enableAudio: false })
     document.body.innerHTML = '<div id="target"></div>'

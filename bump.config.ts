@@ -4,6 +4,7 @@ const packages = [
   'core',
   'home-plugin',
   'vue',
+  'widget',
 ]
 
 export default defineConfig({

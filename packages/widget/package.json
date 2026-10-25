@@ -1,39 +1,52 @@
 {
-  "name": "@air-conditioner/widget",
+  "name": "@yunlefun-home/air-conditioner-widget",
   "type": "module",
-  "version": "0.1.3",
-  "private": true,
+  "version": "0.4.3",
   "description": "Native Web Component widget for Yun Air Conditioner.",
   "author": {
     "url": "https://www.yunyoujun.cn",
     "email": "me@yunyoujun.cn",
     "name": "YunYouJun"
   },
+  "license": "MIT",
   "homepage": "https://ac.yunyoujun.cn/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YunYouJun/air-conditioner"
+    "url": "https://github.com/YunYouJun/air-conditioner",
+    "directory": "packages/widget"
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
-    "./browser": "./dist/index.iife.js"
+    "./browser": "./dist/index.iife.js",
+    "./embed.js": "./dist/embed/embed.js",
+    "./assets/*": "./dist/embed/assets/*",
+    "./yun-logo.svg": "./dist/embed/yun-logo.svg",
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "unpkg": "./dist/embed/embed.js",
+  "jsdelivr": "./dist/embed/embed.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && node scripts/build-embed.mjs",
     "build:embed": "node scripts/build-embed.mjs",
     "sync:style": "node scripts/sync-style.mjs",
     "test": "vitest run --environment happy-dom",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "@yunlefun-home/air-conditioner-core": "workspace:*"
@@ -43,5 +56,8 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

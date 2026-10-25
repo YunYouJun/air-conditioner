@@ -7,7 +7,7 @@ API 文档入口已预留。等 `@yunlefun-home/air-conditioner-core`、React、
 - `@yunlefun-home/air-conditioner-core`
 - `@air-conditioner/react`
 - `@yunlefun-home/air-conditioner`
-- `@air-conditioner/widget`
+- `@yunlefun-home/air-conditioner-widget`
 
 ## 动效 token
 
