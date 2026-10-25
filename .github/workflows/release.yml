@@ -1,6 +1,6 @@
 name: Release
 
-# Publishes @yunlefun-home/air-conditioner-core and @yunlefun-home/air-conditioner
+# Publishes the core, Vue and widget packages under @yunlefun-home
 # with npm trusted publishing (OIDC): no NPM_TOKEN secret, provenance is attached.
 # Each package must list this repository and `release.yml` as a trusted publisher
 # on npmjs.com.
@@ -55,7 +55,7 @@ jobs:
       - name: Verify tag matches package versions
         if: env.RELEASE_TAG != ''
         run: |
-          for pkg in . packages/core packages/vue packages/home-plugin; do
+          for pkg in . packages/core packages/vue packages/widget packages/home-plugin; do
             version=$(node -p "require('./$pkg/package.json').version")
             if [ "v$version" != "$RELEASE_TAG" ]; then
               echo "::error::$pkg is $version but the tag is $RELEASE_TAG"
@@ -63,12 +63,12 @@ jobs:
             fi
           done
 
-      # Core first: the Vue package depends on the same core version.
+      # Core first: the Vue and widget packages depend on the same core version.
       - name: Publish
         run: |
           out="$RUNNER_TEMP/packages"
           mkdir -p "$out"
-          for pkg in packages/core packages/vue; do
+          for pkg in packages/core packages/vue packages/widget; do
             name=$(node -p "require('./$pkg/package.json').name")
             version=$(node -p "require('./$pkg/package.json').version")
             if npm view "$name@$version" version >/dev/null 2>&1; then

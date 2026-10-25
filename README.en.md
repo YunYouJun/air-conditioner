@@ -40,17 +40,38 @@ Cloud air conditioner. Portable air conditioner. Invite a cool breeze into your 
 
 ## Installation
 
-### Floating widget
+### npm (recommended)
+
+For projects with a build tool, install the package to manage versions and the widget lifecycle:
+
+```bash
+npm install @yunlefun-home/air-conditioner-widget
+```
+
+```ts
+import { cdnAssets, mountAirConditioner } from '@yunlefun-home/air-conditioner-widget'
+
+// Run on the client after the DOM is ready; call widget.remove() on unmount.
+const widget = mountAirConditioner(document.body, {
+  ...cdnAssets,
+  placement: 'top-right',
+  enableAudio: false,
+})
+```
+
+`cdnAssets` pins fonts, audio and the logo to your installed package version. You can also self-host the included assets. ESM, CommonJS and TypeScript are supported without React or Vue.
+
+### Script (no build required)
 
 Add this script to your site's shared header or footer:
 
 ```html
-<script defer src="https://yunyoujun.github.io/air-conditioner/widget/embed.js" data-placement="top-right"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js" data-placement="top-right"></script>
 ```
 
 The unit sits in the top corner with a collapsible remote below. Use touch, click, or the keyboard to open it, and Escape to close it. Set `data-placement="top-left"` for the left corner or `data-audio="true"` to enable audio. Fonts and audio load alongside the script; no npm package is required.
 
-The [installation demo](https://yunyoujun.github.io/air-conditioner/widget/) follows GitHub Pages deployments from main. For self-hosting, pinning a version, and SPA integration, see the [installation guide](docs/guide/floating-widget.md).
+The [installation demo](https://yunyoujun.github.io/air-conditioner/widget/) provides a version-pinned jsDelivr snippet. For self-hosting, pinning a version, and SPA integration, see the [installation guide](docs/guide/floating-widget.md).
 
 ### iframe
 

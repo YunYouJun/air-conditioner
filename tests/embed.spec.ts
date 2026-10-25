@@ -7,6 +7,11 @@ import { extname, resolve } from 'node:path'
 import process from 'node:process'
 import { promisify } from 'node:util'
 import { expect, test } from '@playwright/test'
+import widgetPackage from '../packages/widget/package.json' with { type: 'json' }
+
+const { name, version } = widgetPackage
+
+const cdnBase = `https://cdn.jsdelivr.net/npm/${name}@${version}/dist/embed/`
 
 let output: string
 let assets: Server
@@ -127,10 +132,13 @@ for (const mobile of [false, true]) {
   })
 }
 
-test('installation demo supplies its own deploy URL and clipboard fallback', async ({ page }, testInfo) => {
+test('installation demo supplies a pinned CDN URL and clipboard fallback', async ({ page }, testInfo) => {
+  await page.route(`${cdnBase}**`, async (route) => {
+    await route.fulfill({ response: await route.fetch({ url: route.request().url().replace(cdnBase, `${assetOrigin}/air-conditioner/widget/`) }) })
+  })
   await page.goto(`${assetOrigin}/air-conditioner/widget/`)
   await expect(page).toHaveTitle('云空调 · 网页挂件安装')
-  await expect(page.locator('#install')).toHaveText(`<script defer src="${assetOrigin}/air-conditioner/widget/embed.js" data-placement="top-right"></script>`)
+  await expect(page.locator('#install')).toHaveText(`<script defer src="${cdnBase}embed.js" data-placement="top-right"></script>`)
   await expect(page.locator('air-conditioner-embed')).toHaveCount(1)
   // Clipboard denial must still leave selectable installation code.
   await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { value: undefined }))

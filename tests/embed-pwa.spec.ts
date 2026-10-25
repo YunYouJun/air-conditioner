@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test'
+import widgetPackage from '../packages/widget/package.json' with { type: 'json' }
+
+const { name, version } = widgetPackage
 
 test('the installed PWA leaves the standalone widget demo accessible', async ({ page }, testInfo) => {
   const base = 'http://127.0.0.1:5183/air-conditioner/'
+  const cdnBase = `https://cdn.jsdelivr.net/npm/${name}@${version}/dist/embed/`
+  await page.route(`${cdnBase}**`, async (route) => {
+    await route.fulfill({ response: await route.fetch({ url: route.request().url().replace(cdnBase, `${base}widget/`) }) })
+  })
   await page.goto(base)
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready
@@ -20,7 +27,7 @@ test('the installed PWA leaves the standalone widget demo accessible', async ({ 
   await widget.getByRole('button', { name: '打开遥控器', exact: true }).click()
   await widget.getByRole('button', { name: 'power', exact: true }).click()
   await expect(widget.locator('.acw-unit')).toHaveAttribute('data-status', 'on')
-  await expect(page.locator('#install')).toContainText(`${base}widget/embed.js`)
+  await expect(page.locator('#install')).toContainText(`${cdnBase}embed.js`)
   await testInfo.attach('production-installer', { body: await page.screenshot(), contentType: 'image/png' })
   expect(errors).toEqual([])
 })

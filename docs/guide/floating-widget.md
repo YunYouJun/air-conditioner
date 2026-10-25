@@ -20,16 +20,47 @@ import FloatingWidgetDemo from '../.vitepress/components/FloatingWidgetDemo.vue'
 
 ## 在自己的页面安装
 
+### npm 接入（推荐）
+
+有构建工具的项目优先安装 npm 包，使用锁文件控制版本，并通过 API 管理挂载、事件和卸载。
+
+```bash
+npm install @yunlefun-home/air-conditioner-widget
+```
+
+```ts
+import { cdnAssets, mountAirConditioner } from '@yunlefun-home/air-conditioner-widget'
+
+// 仅在客户端、DOM 就绪后执行。SSR 中不要在模块顶层挂载。
+const widget = mountAirConditioner(document.body, {
+  ...cdnAssets,
+  placement: 'top-right', // 'top-left' | 'top-right' | 'inline'
+  storageKey: 'my-blog:ac',
+  enableAudio: false, // 先保持安静；需要声音时再启用
+})
+
+// widget.setAttribute('placement', 'top-left')
+// 恢复行内前，应将组件安排在页面中合适的内容容器内。
+// widget.setAttribute('placement', 'inline')
+
+// SPA 路由退出或页面组件卸载时调用，释放监听和音频。
+// widget.remove()
+```
+
+`cdnAssets` 显式启用 jsDelivr 资源，地址固定到已安装包的完整版本；字体、音频、Logo 无需手动复制。JS 本身仍由项目构建工具打包。需要离线部署时，改用下方自托管方式。
+
+默认行内布局不固定定位；切到悬浮布局时遥控器先收起。悬浮组件默认 `z-index: 1000`，可用 `--acw-floating-z-index` 调整层级。自行挂载到 `body` 可避免祖先的 `transform` / `filter` 改变 fixed 定位。更多选项和事件见 [Web Component 使用说明](/guide/web-component)。
+
 ### 复制一段 script
 
-[打开独立安装演示](https://yunyoujun.github.io/air-conditioner/widget/)，可以试用并复制当前部署的安装地址。这个入口随 main 的 GitHub Pages 部署更新，不依赖 npm 发版。
+[打开独立安装演示](https://yunyoujun.github.io/air-conditioner/widget/)，可以试用并复制固定版本的 jsDelivr 安装代码。升级时显式修改版本号，不使用 `latest`。
 
 将下面的代码放入网站的全局页头或页脚，只需安装一次：
 
 ```html
 <script
   defer
-  src="https://yunyoujun.github.io/air-conditioner/widget/embed.js"
+  src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js"
   data-placement="top-right"
 ></script>
 ```
@@ -48,43 +79,15 @@ import FloatingWidgetDemo from '../.vitepress/components/FloatingWidgetDemo.vue'
 
 ### 自托管与固定版本
 
-如果不希望跟随官方 main 更新，可以检出需要的提交并独立构建：
+npm 包内包含完整资源。安装后，将 `node_modules/@yunlefun-home/air-conditioner-widget/dist/embed/` 复制到站点的 `public/widget/`（或你的静态文件目录）：
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm -C packages/widget build:embed
+mkdir -p public/widget
+cp -R node_modules/@yunlefun-home/air-conditioner-widget/dist/embed/. public/widget/
 ```
 
-将生成的 `packages/widget/dist/embed/` **整个目录**部署到自己站点的 `/widget/`，然后使用 `<script defer src="/widget/embed.js"></script>`。目录包含脚本、安装演示、字体、音频、Logo 与许可证，不能只拷贝 JS。完整网站构建 `pnpm react:build` 也会生成 `packages/react/dist/widget/`，现有网站部署流程会一起发布。
+API 接入时用 `assetsBaseUrl: '/widget/assets'`、`logoUrl: '/widget/yun-logo.svg'` 替代 `...cdnAssets`；子路径部署要加入对应前缀。普通 HTML 可以使用 `<script defer src="/widget/embed.js"></script>`。目录中的 `index.html` 是官方 CDN 安装演示，严格离线站点可不部署此演示页。
+
+也可以从源码运行 `pnpm -C packages/widget build:embed`。生成目录包含脚本、字体、音频、Logo 与许可证，不能只拷贝 JS。完整网站构建 `pnpm react:build` 会将其放入 `packages/react/dist/widget/`。
 
 跨站加载时，静态服务器需要为 `/widget/*` 返回 `Access-Control-Allow-Origin: *`，否则字体或 Web Audio 无法跨域读取。GitHub Pages 自带该响应头，仓库也配置了 Cloudflare Pages 与 Vercel 的响应头；其他托管服务请自行配置，或将整个目录放在博客同源。使用 CSP 的网站还需允许该来源的脚本、字体、图片、媒体和音频 fetch，以及组件的内联样式；代码会给页面注入字体样式和 Shadow DOM 样式。
-
-### 在 workspace 中使用 API
-
-`@air-conditioner/widget` 仍是仓库内的 workspace 包，尚未发布到 npm；上面的浏览器脚本可以独立使用。已发布的 Vue 包见 [Vue 安装](/guide/vue)。
-
-在本仓库的 pnpm workspace 中使用：
-
-```ts
-import { mountAirConditioner } from '@air-conditioner/widget'
-
-// 仅在客户端、DOM 就绪后执行。SSR 中不要在模块顶层挂载。
-const widget = mountAirConditioner(document.body, {
-  placement: 'top-right', // 'top-left' | 'top-right' | 'inline'
-  storageKey: 'my-blog:ac',
-  assetsBaseUrl: '/assets',
-  enableAudio: false, // 先保持安静；需要声音时再启用
-  logoUrl: '', // 不显示 Logo；也可传自己的图片 URL
-})
-
-// widget.setAttribute('placement', 'top-left')
-// 恢复行内前，应将组件安排在页面中合适的内容容器内。
-// widget.setAttribute('placement', 'inline')
-
-// SPA 路由退出或页面组件卸载时调用，释放监听和音频。
-// widget.remove()
-```
-
-`assetsBaseUrl` 下需要提供 `fonts/digital-7-mono.ttf`；开启音频时还需提供 `audio/` 目录中的文件。资源可从本仓库 `packages/vue/public/assets` 获取，本页仅提供演示所需的字体。使用子路径部署时，资源地址也需包含该前缀。
-
-默认行内布局不固定定位；切到悬浮布局时遥控器先收起。悬浮组件默认 `z-index: 1000`，可用 `--acw-floating-z-index` 调整层级。自行挂载到 `body` 可避免祖先的 `transform` / `filter` 改变 fixed 定位。更多选项和事件见 [Web Component 使用说明](/guide/web-component)。

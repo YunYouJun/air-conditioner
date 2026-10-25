@@ -36,7 +36,7 @@ React 与 Vue 适配层只负责：
 
 ## Web Component
 
-`@air-conditioner/widget` 使用原生 Custom Element 和 Shadow DOM：
+`@yunlefun-home/air-conditioner-widget` 使用原生 Custom Element 和 Shadow DOM：
 
 - 自定义元素：`air-conditioner-widget`
 - 属性：`storage-key`、`mode`、`status`、`temperature`、`title`

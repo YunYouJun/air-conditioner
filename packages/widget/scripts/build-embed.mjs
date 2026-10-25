@@ -1,4 +1,4 @@
-import { cp, mkdir } from 'node:fs/promises'
+import { cp, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -33,4 +33,7 @@ for (const name of ['di', 'ac-work', 'air-extractor-fan'])
 await cp(resolve(publicDir, 'yun-logo.svg'), resolve(outDir, 'yun-logo.svg'))
 await cp(resolve(widgetRoot, '../../LICENSE'), resolve(outDir, 'LICENSE'))
 await cp(resolve(widgetRoot, 'README.md'), resolve(outDir, 'README.md'))
-await cp(resolve(widgetRoot, 'embed-demo.html'), resolve(outDir, 'index.html'))
+const { name, version } = JSON.parse(await readFile(resolve(widgetRoot, 'package.json'), 'utf8'))
+const cdnUrl = `https://cdn.jsdelivr.net/npm/${name}@${version}/dist/embed/embed.js`
+const demo = await readFile(resolve(widgetRoot, 'embed-demo.html'), 'utf8')
+await writeFile(resolve(outDir, 'index.html'), demo.replaceAll('__WIDGET_CDN_URL__', cdnUrl).replaceAll('__WIDGET_PACKAGE__', `${name}@${version}`))

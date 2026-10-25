@@ -2,18 +2,20 @@
 
 Web Component 不依赖 React 或 Vue，适合普通网页、CMS 页面或跨框架嵌入。
 
-想直接装到博客？使用[一段 script 的安装方式](/guide/floating-widget#复制一段-script)，自动提供字体、音效和悬浮遥控器，无需 npm 包。
+推荐通过 npm 包接入有构建工具的项目；博客模板也可以使用[固定版本脚本](/guide/floating-widget#复制一段-script)。
 
-::: warning 尚未发布到 npm
-`@air-conditioner/widget` 目前只在本仓库（pnpm workspace）里使用，下面的 npm 用法暂时还装不到；已发布的是 [Vue 组件](/guide/vue)（`@yunlefun-home/air-conditioner`）和 core（`@yunlefun-home/air-conditioner-core`）。
-:::
+## npm（推荐）
 
-## npm
+```bash
+npm install @yunlefun-home/air-conditioner-widget
+```
+
+ESM、CommonJS 与 TypeScript 类型均包含在包内。以下注册和挂载代码只在客户端、DOM 就绪后执行；SSR 可导入模块，但不要在服务端调用挂载函数。
 
 ```ts
-import { defineAirConditionerElement } from '@air-conditioner/widget'
+import { cdnAssets, defineAirConditionerElement } from '@yunlefun-home/air-conditioner-widget'
 
-defineAirConditionerElement()
+defineAirConditionerElement({ ...cdnAssets, enableAudio: false })
 ```
 
 ```html
@@ -23,11 +25,12 @@ defineAirConditionerElement()
 ## mount API
 
 ```ts
-import { mountAirConditioner } from '@air-conditioner/widget'
+import { cdnAssets, mountAirConditioner } from '@yunlefun-home/air-conditioner-widget'
 
 mountAirConditioner('#ac', {
   storageKey: 'ac:state',
-  assetsBaseUrl: '/assets',
+  ...cdnAssets,
+  enableAudio: false,
 })
 ```
 
@@ -54,13 +57,14 @@ mountAirConditioner('#ac', {
 想让访客在文章或博客页面里也能吹空调，可以把机身固定在右上角，遥控器收在右下角，不再需要为 iframe 预留整块页面空间（[#31](https://github.com/YunYouJun/air-conditioner/issues/31)）。
 
 ```ts
-import { mountAirConditioner } from '@air-conditioner/widget'
+import { cdnAssets, mountAirConditioner } from '@yunlefun-home/air-conditioner-widget'
 
 // 在客户端挂载到 body，避免祖先的 transform / filter 改变 fixed 定位。
 const widget = mountAirConditioner(document.body, {
   placement: 'top-right',
   storageKey: 'blog:ac',
-  assetsBaseUrl: '/assets',
+  ...cdnAssets,
+  enableAudio: false,
 })
 
 // 可随时换到左侧，或用 inline 恢复行内布局。
@@ -78,7 +82,7 @@ widget.setAttribute('placement', 'top-left')
 
 点击「打开遥控器」展开，点击「收起遥控器」或按 `Esc` 收起；键盘可用 `Tab` 聚焦、`Enter` / 空格展开，手机可直接点按。收起只隐藏遥控器，空调继续按原来的温度、声音和风速运行。默认行内布局始终显示遥控器。未知 `placement` 值回退到行内布局。
 
-机身宽度随窄屏收缩，空调和遥控器之间的页面仍可点击、滚动。默认层级为 `1000`，需要避让网站菜单时可设置 `--acw-floating-z-index`。本页的 workspace API 需要自行提供 Logo、字体和音频资源；[浏览器安装脚本](/guide/floating-widget#复制一段-script)则会从脚本目录自动加载这些资源。
+机身宽度随窄屏收缩，空调和遥控器之间的页面仍可点击、滚动。默认层级为 `1000`，需要避让网站菜单时可设置 `--acw-floating-z-index`。`cdnAssets` 使用与所安装包相同的固定版本 jsDelivr 资源，也可以[自托管包内资源](/guide/floating-widget#自托管与固定版本)；[浏览器安装脚本](/guide/floating-widget#复制一段-script)则会从脚本目录自动加载这些资源。
 
 ## Events
 

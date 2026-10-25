@@ -44,17 +44,38 @@ Air Conditioner
 
 ## 安装
 
-### 网页悬浮挂件
+### npm 接入（推荐）
+
+有构建工具的项目建议直接安装，便于管理版本和页面生命周期：
+
+```bash
+npm install @yunlefun-home/air-conditioner-widget
+```
+
+```ts
+import { cdnAssets, mountAirConditioner } from '@yunlefun-home/air-conditioner-widget'
+
+// 在客户端、DOM 就绪后执行；组件卸载时调用 widget.remove()。
+const widget = mountAirConditioner(document.body, {
+  ...cdnAssets,
+  placement: 'top-right',
+  enableAudio: false,
+})
+```
+
+`cdnAssets` 将字体、音频和 Logo 固定到所安装 npm 包的同一版本；也可以使用包内资源自托管。支持 ESM、CommonJS 和 TypeScript，无需 React / Vue。
+
+### 脚本接入（无需构建）
 
 把下面的脚本放到博客或网站的全局模板中：
 
 ```html
-<script defer src="https://yunyoujun.github.io/air-conditioner/widget/embed.js" data-placement="top-right"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js" data-placement="top-right"></script>
 ```
 
 机身固定在右上角，遥控器在右下角点击展开；支持触屏、键盘和 `Esc` 收起。改为 `data-placement="top-left"` 可安装在左侧，加上 `data-audio="true"` 可启用音效。字体与音频随脚本加载，无需 npm 包。
 
-[安装演示与复制代码](https://yunyoujun.github.io/air-conditioner/widget/)随 main 的 GitHub Pages 部署更新；自托管、固定版本和 SPA 接入见[完整安装说明](docs/guide/floating-widget.md)。
+[安装演示与复制代码](https://yunyoujun.github.io/air-conditioner/widget/)提供固定版本的 jsDelivr 安装代码；自托管和 SPA 接入见[完整安装说明](docs/guide/floating-widget.md)。
 
 ### iframe
 
@@ -121,17 +142,19 @@ VITE_DISABLE_ADSENSE=true
 
 ## 发布
 
-`@yunlefun-home/air-conditioner-core` 与 `@yunlefun-home/air-conditioner` 通过 GitHub Actions 的 npm 可信发布（OIDC）发版，无需 npm Token 或一次性密码，并自动附带来源证明（provenance）。
+`@yunlefun-home/air-conditioner-core`、`@yunlefun-home/air-conditioner` 与 `@yunlefun-home/air-conditioner-widget` 通过 GitHub Actions 的 npm 可信发布（OIDC）发版，无需 npm Token 或一次性密码，并自动附带来源证明（provenance）。
 
 ```bash
 pnpm release
 ```
 
-`bumpp` 同步更新版本、提交并推送 `v*` Tag，[Release 工作流](.github/workflows/release.yml) 随即检查、构建并按 core → vue 的顺序发布。预发布版本（如 `0.4.0-beta.1`）发布到同名 dist-tag，已存在的版本会被跳过。也可在 Actions 中手动运行该工作流，发布当前分支上的版本。
+`bumpp` 同步更新版本、提交并推送 `v*` Tag，[Release 工作流](.github/workflows/release.yml) 随即检查、构建并按 core → vue → widget 的顺序发布。预发布版本（如 `0.4.0-beta.1`）发布到同名 dist-tag，已存在的版本会被跳过。也可在 Actions 中手动运行该工作流，发布当前分支上的版本。
 
-补齐已有 Release 的 npm 包与 Home 插件时，可在修复后的分支手动运行 Release，并填写 `release_tag`（例如 `v0.4.0`）。工作流会核对四个包的版本与标签一致，再向已有 Release 上传插件；不会改写标签或重新上传 CuteAC App。普通推送与 PR 的 CI 同时运行单元测试，提前检查包版本一致性。
+补齐已有 Release 的 npm 包与 Home 插件时，可在修复后的分支手动运行 Release，并填写 `release_tag`（例如 `v0.4.0`）。工作流会核对根目录和四个包的版本与标签一致，再向已有 Release 上传插件；不会改写标签或重新上传 CuteAC App。普通推送与 PR 的 CI 同时运行单元测试，提前检查包版本一致性。
 
-首次使用前，需要在 npmjs.com 两个包的 Settings → Trusted publishing 中添加 GitHub Actions：仓库 `YunYouJun/air-conditioner`，工作流 `release.yml`。
+新包首次发布需先完成 npm 登录并发布，再配置可信发布。可运行 `npm trust github @yunlefun-home/air-conditioner-widget --repository YunYouJun/air-conditioner --file release.yml --allow-publish`。
+
+首次使用前，需要在 npmjs.com 三个包的 Settings → Trusted publishing 中添加 GitHub Actions：仓库 `YunYouJun/air-conditioner`，工作流 `release.yml`。
 
 `v*` Tag 的 Release 还会把 Yun Home 设备插件 `air-conditioner.yunplugin` 及其 SHA-256 上传到 GitHub Release。插件由 [`packages/home-plugin`](packages/home-plugin) 构建：`state.js` 直接打包 core 的 reducer，在 Yun Home 的沙箱中运行，控件以 `controls.json` 声明，由宿主原生渲染。本地构建：
 
