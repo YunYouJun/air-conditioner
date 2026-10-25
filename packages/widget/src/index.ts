@@ -641,16 +641,18 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
 }
 
 export function mountAirConditioner(target: string | HTMLElement, options: MountAirConditionerOptions = {}): HTMLElement {
+  // Mount placement is per instance; only explicit registration sets a tag-wide default.
+  const { placement, ...elementOptions } = options
   const tagName = options.tagName ?? defaultTagName
-  defineAirConditionerElement(options)
+  defineAirConditionerElement(elementOptions)
 
   const targetElement = typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target
   if (!targetElement)
     throw new Error(`Unable to find target: ${String(target)}`)
 
   if (targetElement.localName === tagName) {
-    if (options.placement)
-      targetElement.setAttribute('placement', options.placement)
+    if (placement)
+      targetElement.setAttribute('placement', placement)
     return targetElement
   }
 
@@ -659,8 +661,8 @@ export function mountAirConditioner(target: string | HTMLElement, options: Mount
     element.setAttribute('storage-key', options.storageKey)
   if (options.title)
     element.setAttribute('title', options.title)
-  if (options.placement)
-    element.setAttribute('placement', options.placement)
+  if (placement)
+    element.setAttribute('placement', placement)
 
   targetElement.appendChild(element)
   return element

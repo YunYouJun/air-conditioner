@@ -116,6 +116,42 @@ describe('@air-conditioner/widget', () => {
     right.remove()
   })
 
+  it.each(['top-left', 'top-right'] as const)('keeps later mounts inline after a first %s mount', (placement) => {
+    const tagName = `test-ac-mount-default-${placement}`
+    const floating = mountAirConditioner(document.body, { tagName, placement, enableAudio: false, storage: null })
+    const container = document.body.appendChild(document.createElement('div'))
+    const inline = mountAirConditioner(container, { tagName })
+
+    try {
+      expect(floating.dataset.acPlacement).toBe(placement)
+      expect(inline.dataset.acPlacement).toBe('inline')
+      expect(inline.shadowRoot?.querySelector<HTMLButtonElement>('.acw-remote-toggle')?.hidden).toBe(true)
+      expect(inline.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')?.hidden).toBe(false)
+    }
+    finally {
+      floating.remove()
+      container.remove()
+    }
+  })
+
+  it('preserves explicitly registered placement defaults when a mount overrides them', () => {
+    const tagName = 'test-ac-registered-placement'
+    defineAirConditionerElement({ tagName, placement: 'top-left', enableAudio: false, storage: null })
+    const override = mountAirConditioner(document.body, { tagName, placement: 'top-right' })
+    const inherited = mountAirConditioner(document.body, { tagName })
+
+    try {
+      expect(override.dataset.acPlacement).toBe('top-right')
+      expect(inherited.dataset.acPlacement).toBe('top-left')
+      expect(mountAirConditioner(override, { tagName })).toBe(override)
+      expect(override.dataset.acPlacement).toBe('top-right')
+    }
+    finally {
+      override.remove()
+      inherited.remove()
+    }
+  })
+
   it('keeps the persisted mode when no mode attribute is given', () => {
     const storage = new Map<string, string>([['test:mode', JSON.stringify({ mode: 'hot', status: false, temperature: 22 })]])
     defineAirConditionerElement({
