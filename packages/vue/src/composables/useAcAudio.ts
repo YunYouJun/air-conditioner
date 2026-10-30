@@ -5,8 +5,8 @@ import { onUnmounted } from 'vue'
 /**
  * 将 core 的音频控制器接入 Vue 组件。
  *
- * 音频元素通常在交互后才挂载完成，因此采用惰性创建：首次收到
- * 状态变更事件时再读取 DOM 引用并初始化控制器。
+ * 音频元素挂载后调用 `prepare()` 开始解码（不会出声）。若还没准备好，
+ * 第一次状态变更时再创建控制器。
  *
  * @param getElements 返回当前音频元素引用的函数
  */
@@ -16,6 +16,20 @@ export function useAcAudio(getElements: () => AcAudioElements) {
   function ensureController(soundMode: AcSoundMode, fanSpeed: AcFanSpeed) {
     controller ||= createAcAudioController(getElements(), { soundMode, fanSpeed })
     return controller
+  }
+
+  /**
+   * 提前创建控制器并开始解码。元素还没挂上时什么都不做，避免把空引用缓存下来。
+   */
+  function prepare(soundMode: AcSoundMode = 'normal', fanSpeed: AcFanSpeed = 'auto') {
+    if (controller)
+      return controller
+
+    const elements = getElements()
+    if (!elements.beep && !elements.start && !elements.work)
+      return undefined
+
+    return ensureController(soundMode, fanSpeed)
   }
 
   /**
@@ -35,7 +49,7 @@ export function useAcAudio(getElements: () => AcAudioElements) {
   }
 
   /**
-   * 冷凝水落下时「嗒」一声。控制器在第一次操作后才创建（浏览器要求先有用户手势）。
+   * 冷凝水落下时「嗒」一声。上下文还被自动播放策略挂起时不会发声。
    */
   function drip() {
     controller?.drip()
@@ -48,5 +62,6 @@ export function useAcAudio(getElements: () => AcAudioElements) {
   return {
     handleChange,
     drip,
+    prepare,
   }
 }

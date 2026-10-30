@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { AcChangeEvent, AcNotification, AcState } from '@yunlefun-home/air-conditioner-core'
+import type { AcChangeEvent, AcFanSpeed, AcNotification, AcSoundMode, AcState } from '@yunlefun-home/air-conditioner-core'
 import { acIconPaths, createAcNotificationPresenter, resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
-import { computed, onUnmounted, ref, shallowRef } from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref, shallowRef } from 'vue'
 import { useAcAudio } from '../composables/useAcAudio'
 import AirConditioner from './AirConditioner.vue'
 import AirConditionerProvider from './AirConditionerProvider.vue'
@@ -40,11 +40,34 @@ const beepEl = ref<HTMLAudioElement | null>(null)
 const startEl = ref<HTMLAudioElement | null>(null)
 const workEl = ref<HTMLAudioElement | null>(null)
 
-const { handleChange: handleAudio, drip } = useAcAudio(() => ({
+const { handleChange: handleAudio, drip, prepare } = useAcAudio(() => ({
   beep: beepEl.value,
   start: startEl.value,
   work: workEl.value,
 }))
+
+/** 插槽里才能读到当前声音模式；父组件 onMounted 时 ref 已经挂上，再开始解码 */
+let playback: { sound: AcSoundMode, fan: AcFanSpeed } | undefined
+const PrepareAudio = defineComponent({
+  name: 'PrepareAudio',
+  props: {
+    sound: { type: String, required: true },
+    fan: { type: String, required: true },
+  },
+  setup(props) {
+    playback = {
+      sound: props.sound as AcSoundMode,
+      fan: props.fan as AcFanSpeed,
+    }
+    return () => null
+  },
+})
+
+onMounted(() => {
+  if (!props.enableAudio || !playback)
+    return
+  prepare(playback.sound, playback.fan)
+})
 
 /** 节能建议以「出风口吹出的小纸条」显示，其余提示只给读屏播报 */
 const present = createAcNotificationPresenter()
@@ -101,6 +124,7 @@ function onNotify(value: AcNotification, event: AcChangeEvent) {
         <audio v-if="enableAudio" ref="beepEl" :src="audioSrc.beep" preload="auto" />
         <audio v-if="enableAudio" ref="startEl" :src="audioSrc.start" preload="auto" />
         <audio v-if="enableAudio" ref="workEl" :src="audioSrc.work" preload="auto" />
+        <PrepareAudio v-if="enableAudio" :sound="state.sound" :fan="state.fan ?? 'auto'" />
 
         <AirConditioner :logo-url="logoUrl" :show-energy-label="showEnergyLabel" @drip="enableAudio && drip()" />
 

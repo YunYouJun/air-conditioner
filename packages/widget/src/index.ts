@@ -482,6 +482,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.shadowRoot?.addEventListener('click', this.onClick)
       this.shadowRoot?.addEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
+      const initial = this.store.getState()
+      this.ensureAudio(initial.sound, initial.fan ?? 'auto')
       this.updatePlacement()
       this.renderedState = undefined
       this.render()
@@ -610,24 +612,35 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     /**
-     * 同步声音模式后播放按键「嘀」声；开关状态翻转时播放启动 / 关闭音效（与 Vue 版 useAcAudio 一致）。
+     * 有 `<audio>` 时创建控制器并开始解码。重复调用沿用已创建的那一个。
      */
-    private playAudio(event: { previousState: AcState, state: AcState }) {
+    private ensureAudio(soundMode?: AcSoundMode, fanSpeed?: AcFanSpeed) {
       const root = this.shadowRoot
       if (!root?.querySelector('audio'))
-        return
+        return undefined
+
       this.audio ||= createAcAudioController({
         beep: root.querySelector<HTMLAudioElement>('[data-audio="beep"]'),
         start: root.querySelector<HTMLAudioElement>('[data-audio="start"]'),
         work: root.querySelector<HTMLAudioElement>('[data-audio="work"]'),
-      }, { soundMode: event.state.sound, fanSpeed: event.state.fan ?? 'auto' })
+      }, { soundMode, fanSpeed })
+      return this.audio
+    }
+
+    /**
+     * 同步声音模式后播放按键「嘀」声；开关状态翻转时播放启动 / 关闭音效（与 Vue 版 useAcAudio 一致）。
+     */
+    private playAudio(event: { previousState: AcState, state: AcState }) {
+      const audio = this.ensureAudio(event.state.sound, event.state.fan ?? 'auto')
+      if (!audio)
+        return
       if (event.previousState.sound !== event.state.sound)
-        this.audio.setSoundMode(event.state.sound)
+        audio.setSoundMode(event.state.sound)
       if (event.previousState.fan !== event.state.fan)
-        this.audio.setFanSpeed(event.state.fan ?? 'auto')
-      this.audio.beep()
+        audio.setFanSpeed(event.state.fan ?? 'auto')
+      audio.beep()
       if (event.previousState.status !== event.state.status)
-        this.audio.toggleStatusAudio(event.previousState.status)
+        audio.toggleStatusAudio(event.previousState.status)
     }
 
     private render() {

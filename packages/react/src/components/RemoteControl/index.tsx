@@ -1,7 +1,7 @@
 import type { AcRemoteCommand } from '@yunlefun-home/air-conditioner-core'
 import { nextAcSoundMode } from '@yunlefun-home/air-conditioner-core'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useAc, useAcCtx } from '~/context'
 import { useToastCtx } from '~/context/toast'
@@ -42,6 +42,11 @@ const RemoteControl: React.FC<{
   const fan = ac.fan ?? 'auto'
 
   const { increase, decrease } = useAcTemperature()
+
+  // 绘制完成后立刻解码。useLayoutEffect 赶在用户能按下之前，click 里就可以直接播 buffer。
+  useLayoutEffect(() => {
+    getAudioController(sound, fan)
+  }, [sound, fan])
 
   // 同步声音模式：包括页面加载时恢复的状态，以及独立遥控器在其他标签页的修改
   useEffect(() => {

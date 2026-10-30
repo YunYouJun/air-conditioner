@@ -49,7 +49,16 @@ async function fetchAudioData(url: string): Promise<ArrayBuffer> {
 function createDefaultAudioContext(): AudioContext | null {
   const scope = globalThis as typeof globalThis & { webkitAudioContext?: typeof AudioContext }
   const AudioContextConstructor = scope.AudioContext ?? scope.webkitAudioContext
-  return AudioContextConstructor ? new AudioContextConstructor() : null
+  if (!AudioContextConstructor)
+    return null
+
+  // `interactive` asks for a short output buffer so button sounds aren't sitting behind a playback queue.
+  try {
+    return new AudioContextConstructor({ latencyHint: 'interactive' })
+  }
+  catch {
+    return new AudioContextConstructor()
+  }
 }
 
 /**
@@ -97,6 +106,27 @@ function playElement(element: AcAudioElement | null | undefined) {
   Promise.resolve(element.play()).catch(() => {})
 }
 
+/**
+ * 重播一段已经挂在元素上的短音效。
+ * `load()` 会丢掉预加载的数据并重新选资源，按键「嘀」声因此会晚一拍。
+ */
+function replayElement(element: AcAudioElement | null | undefined) {
+  if (!element)
+    return
+
+  try {
+    // 还在响时先停再拉回开头，否则 play() 不会重头播
+    if (element.currentTime > 0) {
+      element.pause?.()
+      element.currentTime = 0
+    }
+  }
+  catch {
+    // 元数据还没到；play() 会从头开始
+  }
+  Promise.resolve(element.play()).catch(() => {})
+}
+
 function stopElement(element: AcAudioElement | null | undefined) {
   if (!element)
     return
@@ -114,7 +144,8 @@ function stopElement(element: AcAudioElement | null | undefined) {
  * 风声变小、并不定时随压缩机发力起伏。环境不支持或音频无法获取时退回
  * `<audio>` 元素。
  *
- * 需在用户交互（点击遥控器）里首次调用，浏览器才允许发声。
+ * 创建控制器时就会开始下载并解码，此时不会出声。浏览器要等用户手势里
+ * `resume()` 之后才允许播放，因此第一次 `beep()` / 开关机仍需发生在点击回调中。
  *
  * @param elements 三个音频元素；Web Audio 会从它们的 `src` 获取音频
  * @param options 声音模式与可替换的环境依赖
@@ -136,6 +167,10 @@ export function createAcAudioController(
   /** 每次开关机自增，丢弃过期的异步回调 */
   let session = 0
   const timers = new Set<Timer>()
+  /** 同一地址只拉取一次；decodeAudioData 会拆掉传入的 buffer，所以每次给它一份拷贝 */
+  const audioCache = new Map<string, Promise<ArrayBuffer>>()
+  /** 第一次按下时提前 resume，等 click 里真正 beep 时设备已经醒了 */
+  let stopUnlock: (() => void) | undefined
 
   /** `<audio>` 播放时的风声相对音量 */
   let fallbackFanLevel = 1
@@ -197,49 +232,94 @@ export function createAcAudioController(
       return engine
 
     engine = createEngine()
+    if (engine)
+      stopUnlock = armGestureUnlock(engine)
     return engine
+  }
+
+  function loadCached(url: string): Promise<ArrayBuffer> {
+    let pending = audioCache.get(url)
+    if (!pending) {
+      const load = options.loadAudioData ?? fetchAudioData
+      // 立刻发起请求，不要再等一个微任务；同一次点击里的 beep 至少已经在拉文件了
+      pending = new Promise<ArrayBuffer>((resolve, reject) => {
+        try {
+          resolve(load(url))
+        }
+        catch (error) {
+          reject(error)
+        }
+      }).catch((error: unknown) => {
+        audioCache.delete(url)
+        throw error
+      })
+      audioCache.set(url, pending)
+    }
+    return pending.then(data => data.slice(0))
   }
 
   function createEngine(): WebEngine | null {
     if (options.webAudio === false)
       return null
 
-    let context: AudioContext | null
     try {
-      context = (options.createAudioContext ?? createDefaultAudioContext)()
+      const context = (options.createAudioContext ?? createDefaultAudioContext)()
+      if (!context)
+        return null
+
+      const master = context.createGain()
+      master.gain.value = volume()
+      master.connect(context.destination)
+
+      const buffers: WebEngine['buffers'] = {}
+      const decode = async (name: SoundName) => {
+        const url = sourceUrl(elements[name])
+        if (!url || buffers[name])
+          return
+        try {
+          buffers[name] = await context.decodeAudioData(await loadCached(url))
+        }
+        catch {
+          // 跨域无 CORS、格式不支持等：该音效改用 <audio> 播放
+        }
+      }
+      // 三份一起下。beep() 只看 buffers.beep，不等风声解码结束。
+      const ready = Promise.all((['beep', 'start', 'work'] as const).map(decode))
+        .then(() => Boolean(buffers.start && buffers.work))
+
+      return { context, master, buffers, ready }
     }
     catch {
       return null
     }
-    if (!context)
-      return null
-
-    const master = context.createGain()
-    master.gain.value = volume()
-    master.connect(context.destination)
-
-    const buffers: WebEngine['buffers'] = {}
-    const load = options.loadAudioData ?? fetchAudioData
-    const decode = async (name: SoundName) => {
-      const url = sourceUrl(elements[name])
-      if (!url)
-        return
-      try {
-        buffers[name] = await context.decodeAudioData(await load(url))
-      }
-      catch {
-        // 跨域无 CORS、格式不支持等：该音效改用 <audio> 播放
-      }
-    }
-    const ready = Promise.all((['beep', 'start', 'work'] as const).map(decode))
-      .then(() => Boolean(buffers.start && buffers.work))
-
-    return { context, master, buffers, ready }
   }
 
   function resume(web: WebEngine) {
     if (web.context.state === 'suspended')
       Promise.resolve(web.context.resume()).catch(() => {})
+  }
+
+  /**
+   * pointerdown / keydown 比 click 更早。在这一拍 resume，
+   * 等点击回调里 beep 时上下文多半已经在跑。
+   */
+  function armGestureUnlock(web: WebEngine): () => void {
+    if (typeof document === 'undefined')
+      return () => {}
+
+    const gate = {
+      detach() {
+        document.removeEventListener('pointerdown', gate.unlock, true)
+        document.removeEventListener('keydown', gate.unlock, true)
+      },
+      unlock() {
+        resume(web)
+        gate.detach()
+      },
+    }
+    document.addEventListener('pointerdown', gate.unlock, true)
+    document.addEventListener('keydown', gate.unlock, true)
+    return gate.detach
   }
 
   function waitReady(web: WebEngine): Promise<boolean> {
@@ -440,6 +520,10 @@ export function createAcAudioController(
     stopFallback(soundTimings.stopFadeMs)
   }
 
+  // 提前解码。上下文若被自动播放策略挂起，要等手势里的 resume 才会出声。
+  if (options.webAudio !== false)
+    ensureEngine()
+
   return {
     beep() {
       if (soundMode === 'mute')
@@ -449,22 +533,31 @@ export function createAcAudioController(
       if (web) {
         resume(web)
         if (web.buffers.beep) {
-          playBuffer(web, web.buffers.beep, web.master, web.context.currentTime)
+          const source = playBuffer(web, web.buffers.beep, web.master, web.context.currentTime)
+          source.onended = () => {
+            try {
+              source.disconnect()
+            }
+            catch {
+              // 已经断开
+            }
+          }
           return
         }
       }
 
+      // buffer 还没好：用元素里已经预加载的数据，不要 load() 重新拉文件
       applyElementVolume(elements.beep)
-      playElement(elements.beep)
+      replayElement(elements.beep)
     },
     drip() {
       // 只在标准声音下响；睡眠和静音时安安静静
       if (soundMode !== 'normal')
         return
       const web = ensureEngine()
-      if (!web || typeof web.context.createOscillator !== 'function')
+      // 挂起时不要把水滴排进时间线，否则第一次 resume 会把积攒的滴水一次放出来
+      if (!web || web.context.state !== 'running' || typeof web.context.createOscillator !== 'function')
         return
-      resume(web)
       playDrip(web.context, web.master)
     },
     toggleStatusAudio(previousStatus: boolean) {
@@ -508,6 +601,8 @@ export function createAcAudioController(
       cancelFallbackTween()
       stopWeb(0)
       stopFallback(0)
+      stopUnlock?.()
+      stopUnlock = undefined
       if (engine && !options.createAudioContext)
         Promise.resolve(engine.context.close()).catch(() => {})
       engine = null
