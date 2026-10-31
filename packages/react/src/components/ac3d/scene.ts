@@ -4,6 +4,7 @@ import type { GLTF } from 'three/addons/loaders/GLTFLoader.js'
 import {
   acAirflowAnchors,
   acEnergyLabel,
+  acForms,
   acIconPaths,
   acLouverMotion,
   acModelColors,
@@ -413,15 +414,24 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     return { form, root, louver, movers, vanes, led, origin, lip, center: box.getCenter(new Vector3()), size, fit }
   }
 
+  /**
+   * 按当前画布把相机对准机型。返回是否取了景。
+   * `setSize` 会给 canvas 的 width / height 赋值，浏览器因此清空位图——数值没变也清。
+   * 缓冲尺寸没变就别调用。
+   */
   function fitCamera() {
     if (!current)
-      return
+      return false
     // 用布局尺寸：转身时外层带着 rotateY / scale，getBoundingClientRect 量到的是投影
     const { clientWidth: width, clientHeight: height } = canvas
     const frameHeight = surface.clientHeight || height
     if (!width || !height)
-      return
-    renderer.setSize(width, height, false)
+      return false
+    const pixelRatio = renderer.getPixelRatio()
+    const bufferWidth = Math.floor(width * pixelRatio)
+    const bufferHeight = Math.floor(height * pixelRatio)
+    if (canvas.width !== bufferWidth || canvas.height !== bufferHeight)
+      renderer.setSize(width, height, false)
     // 按取景框取景；画布上下多出来的部分只是把视野等比例往外扩
     const tanHalf = Math.tan(MathUtils.degToRad(fov) / 2)
     camera.fov = MathUtils.radToDeg(2 * Math.atan(tanHalf * height / frameHeight))
@@ -434,21 +444,61 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
     camera.position.copy(current.center).add(new Vector3(distance * 0.16, -distance * 0.08, distance))
     camera.lookAt(current.center)
     camera.updateProjectionMatrix()
+    return true
+  }
+
+  /** 画布清空之后必须在同一次回调里画上，不能等下一帧 rAF */
+  function present() {
+    if (!disposed && current)
+      renderer.render(scene, camera)
+  }
+
+  function fetchModel(form: AcForm) {
+    const cached = cache.get(form)
+    if (cached)
+      return cached
+    const pending = loader.loadAsync(options.modelUrl(form)).catch((error: unknown) => {
+      if (cache.get(form) === pending)
+        cache.delete(form)
+      throw error
+    })
+    cache.set(form, pending)
+    return pending
+  }
+
+  /** 卸下旧机型。几何和缓存的 GLB 共用，只释放换上去时新建的材质和能效标签 */
+  function release(root: Object3D) {
+    root.traverse((object) => {
+      const mesh = object as Mesh
+      if (!mesh.isMesh)
+        return
+      if (object.name === 'EnergyLabel')
+        mesh.geometry?.dispose()
+      const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : []
+      materials.forEach(material => material.dispose())
+    })
   }
 
   async function load(form: AcForm) {
     wantedForm = form
-    if (!cache.has(form))
-      cache.set(form, loader.loadAsync(options.modelUrl(form)))
     try {
-      const gltf = await cache.get(form)!
+      const gltf = await fetchModel(form)
       if (disposed || wantedForm !== form)
         return
-      if (current)
-        scene.remove(current.root)
-      current = prepare(form, gltf)
-      current.root.rotation.set(pitch, yaw, 0)
-      scene.add(current.root)
+      const next = prepare(form, gltf)
+      if (disposed || wantedForm !== form) {
+        release(next.root)
+        return
+      }
+      next.root.rotation.set(pitch, yaw, 0)
+      const previous = current
+      // 新机型进场景后再卸下旧的，中间不会空一帧
+      current = next
+      scene.add(next.root)
+      if (previous) {
+        scene.remove(previous.root)
+        release(previous.root)
+      }
       // 粒子从新机型的出风口重新开始，错开各自的寿命
       airflowParticles.forEach((particle, i) => {
         respawn(particle, 1)
@@ -460,17 +510,20 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       })
       louverAngle = state.status ? MathUtils.degToRad(acLouverMotion[form].openAngle) : 0
       fitCamera()
-      options.onForm?.(form)
       apply()
+      // 先画上新机型，再让外面开始高度过渡
+      present()
+      options.onForm?.(form)
       if (!ready) {
         ready = true
-        // 先画好第一帧，再通知外面开始「转过来」
-        renderer.render(scene, camera)
         options.onReady?.()
+      }
+      for (const other of acForms) {
+        if (other !== form)
+          void fetchModel(other).catch(() => {})
       }
     }
     catch (error) {
-      cache.delete(form)
       options.onError?.(error)
     }
   }
@@ -677,9 +730,11 @@ export function createAcScene(canvas: HTMLCanvasElement, options: AcSceneOptions
       wake()
   }
   document.addEventListener('visibilitychange', onVisibility)
+  // 这个回调在本帧 rAF 之后、浏览器绘制之前。挂机/柜机互换时容器高度要过渡大约 420ms，
+  // 每一帧都会改画布尺寸；setSize 会清空 rAF 刚画好的位图，不在这里补画就会整段闪成空白。
   const resize = new ResizeObserver(() => {
-    fitCamera()
-    wake()
+    if (fitCamera())
+      present()
   })
   resize.observe(canvas)
   // 数码管字体加载好后重画显示窗

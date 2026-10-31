@@ -99,6 +99,66 @@ test('cycles the sound mode and keeps it after a reload', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'sound' })).toHaveAttribute('title', '声音：静音')
 })
 
+/**
+ * Resizing the canvas clears its bitmap, and that happens after the frame's
+ * animation callback. The frame is blank unless something draws after the clear.
+ */
+function blankCanvasFrames(events: string[]) {
+  const frames: string[][] = []
+  let current: string[] | undefined
+  for (const event of events) {
+    if (event === 'frame') {
+      current = []
+      frames.push(current)
+    }
+    else if (current) {
+      current.push(event)
+    }
+  }
+  return frames.filter((frame) => {
+    const clearAt = frame.lastIndexOf('clear')
+    return clearAt !== -1 && !frame.slice(clearAt + 1).includes('draw')
+  })
+}
+
+async function watchCanvasFrames(page: import('@playwright/test').Page) {
+  await page.evaluate(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('.ac-3d__canvas')!
+    const gl = canvas.getContext('webgl2') ?? canvas.getContext('webgl')!
+    const events: string[] = []
+    const markFrame = () => {
+      events.push('frame')
+      requestAnimationFrame(markFrame)
+    }
+    requestAnimationFrame(markFrame)
+    for (const prop of ['width', 'height'] as const) {
+      const desc = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, prop)!
+      Object.defineProperty(canvas, prop, {
+        configurable: true,
+        get() {
+          return desc.get!.call(this)
+        },
+        set(value: number) {
+          const previous = desc.get!.call(this)
+          desc.set!.call(this, value)
+          if (desc.get!.call(this) !== previous)
+            events.push('clear')
+        },
+      })
+    }
+    const proto = Object.getPrototypeOf(gl) as Record<string, (this: WebGLRenderingContext, ...args: never[]) => void>
+    for (const name of ['drawElements', 'drawArrays']) {
+      const original = proto[name]!
+      proto[name] = function (this: WebGLRenderingContext, ...args: never[]) {
+        if (this.canvas === canvas)
+          events.push('draw')
+        return original.apply(this, args)
+      }
+    }
+    ;(window as unknown as { __acFrames: string[] }).__acFrames = events
+  })
+}
+
 // #184: the optional 3D mode shares the native app's model and falls back to the CSS unit.
 test('switches to the 3D model and back', async ({ page }) => {
   await gotoFresh(page)
@@ -121,6 +181,41 @@ test('switches to the 3D model and back', async ({ page }) => {
   await expect(toggle).toHaveAttribute('aria-pressed', 'true')
   await toggle.click()
   await expect(page.locator('.acw-unit')).toBeVisible()
+  await expect(page.locator('.ac-3d')).toHaveCount(0)
+})
+
+// Switching 挂机/柜机 resizes the canvas for ~420ms. The bitmap must be redrawn
+// in that same frame, or the height transition flashes empty.
+test('keeps the 3D model painted while switching forms', async ({ page }) => {
+  await gotoFresh(page, '/', { mode: 'hot', status: true, temperature: 23, swing: true })
+  await page.evaluate(() => localStorage.removeItem('ac-view'))
+  await page.reload()
+
+  const toggle = page.getByRole('button', { name: '3D' })
+  test.skip(await toggle.isDisabled(), 'WebGL is not available in this browser')
+
+  await toggle.click()
+  await expect(page.locator('.ac-3d__canvas')).toBeVisible()
+  await expect(page.locator('.ac-3d')).toHaveAttribute('data-form', 'wall')
+  await watchCanvasFrames(page)
+
+  const forms = page.getByRole('group', { name: '机型' })
+  await forms.getByRole('button', { name: '柜机' }).click()
+  await expect(page.locator('.ac-3d')).toHaveAttribute('data-form', 'tower')
+  await page.waitForTimeout(500)
+  await forms.getByRole('button', { name: '挂机' }).click()
+  await expect(page.locator('.ac-3d')).toHaveAttribute('data-form', 'wall')
+  await page.waitForTimeout(500)
+
+  const events = await page.evaluate(() => (window as unknown as { __acFrames: string[] }).__acFrames)
+  const blank = blankCanvasFrames(events)
+  expect(events.filter(event => event === 'clear').length, 'the form switch should resize the canvas').toBeGreaterThan(0)
+  expect(blank, `blank frames after a canvas clear: ${blank.length}`).toEqual([])
+
+  await expect.poll(() => readAcState(page)).toMatchObject({ status: true, mode: 'hot', temperature: 23, swing: true })
+  await toggle.click()
+  await expect(page.locator('.acw-unit')).toBeVisible()
+  await expect(page.locator('.acw-temperature')).toHaveText('23')
   await expect(page.locator('.ac-3d')).toHaveCount(0)
 })
 
