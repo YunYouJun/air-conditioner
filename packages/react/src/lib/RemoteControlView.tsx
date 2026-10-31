@@ -5,6 +5,10 @@ import { useEffect, useRef } from 'react'
 export interface RemoteControlViewProps {
   state: AcState
   onCommand: (command: AcRemoteCommand) => void
+  /**
+   * pointerdown / keydown：比 click 和温度键的按下回调更早，用来 resume 音频。
+   */
+  onWarm?: () => void
   /** 温度到上下限时为 true，小屏抖一下 */
   alert?: boolean
 }
@@ -25,7 +29,7 @@ function Icon(props: { name: AcIconName, size: number, className?: string, sound
 /**
  * 遥控器的纯展示部分：组件库的 `RemoteControl` 与主站遥控器共用，保证两者外观一致。
  */
-export function RemoteControlView({ state, onCommand, alert }: RemoteControlViewProps) {
+export function RemoteControlView({ state, onCommand, onWarm, alert }: RemoteControlViewProps) {
   const text = getAcRemoteText(state)
 
   // 温度键：长按连续调温，到上下限就停。长按期间会多次渲染，用 ref 读最新的状态和回调
@@ -42,7 +46,13 @@ export function RemoteControlView({ state, onCommand, alert }: RemoteControlView
   }, [])
 
   return (
-    <div className="acw-remote" role="group" aria-label="Air conditioner remote control">
+    <div
+      className="acw-remote"
+      role="group"
+      aria-label="Air conditioner remote control"
+      onPointerDownCapture={onWarm}
+      onKeyDownCapture={onWarm}
+    >
       <div
         className="acw-lcd"
         role="img"

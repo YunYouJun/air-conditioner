@@ -82,6 +82,36 @@ function playDrip(context: AudioContext, output: AudioNode) {
 }
 
 /**
+ * 样本还没解码出来时的按键声：很短的一声「嘀」，不依赖文件。
+ * 每次调用都是新的振荡器，连按不会互相等待。
+ */
+function playClick(context: AudioContext, output: AudioNode): boolean {
+  if (typeof context.createOscillator !== 'function')
+    return false
+
+  try {
+    const start = context.currentTime
+    const oscillator = context.createOscillator()
+    const gain = context.createGain()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(2400, start)
+    oscillator.frequency.exponentialRampToValueAtTime(1400, start + 0.02)
+    gain.gain.setValueAtTime(0.0001, start)
+    gain.gain.exponentialRampToValueAtTime(0.15, start + 0.002)
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.045)
+    oscillator.connect(gain)
+    gain.connect(output)
+    oscillator.start(start)
+    oscillator.stop(start + 0.05)
+    oscillator.onended = () => gain.disconnect()
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
+/**
  * 等功率淡入 / 淡出曲线，噪声类声音交叉淡化时中段不会变小。
  */
 function fadeCurve(direction: 'in' | 'out'): Float32Array {
@@ -233,8 +263,15 @@ export function createAcAudioController(
 
     engine = createEngine()
     if (engine)
-      stopUnlock = armGestureUnlock(engine)
+      stopUnlock = armGestureUnlock()
     return engine
+  }
+
+  /** 手势里唤醒音频设备。已经在跑时什么都不做。 */
+  function unlockPlayback() {
+    const web = ensureEngine()
+    if (web)
+      resume(web)
   }
 
   function loadCached(url: string): Promise<ArrayBuffer> {
@@ -300,26 +337,22 @@ export function createAcAudioController(
   }
 
   /**
-   * pointerdown / keydown 比 click 更早。在这一拍 resume，
-   * 等点击回调里 beep 时上下文多半已经在跑。
+   * pointerdown / keydown 比 click 更早，也比温度键的按下回调更早（捕获阶段）。
+   * 监听一直留着：手机切走再回来时上下文会重新被挂起。
    */
-  function armGestureUnlock(web: WebEngine): () => void {
+  function armGestureUnlock(): () => void {
     if (typeof document === 'undefined')
       return () => {}
 
-    const gate = {
-      detach() {
-        document.removeEventListener('pointerdown', gate.unlock, true)
-        document.removeEventListener('keydown', gate.unlock, true)
-      },
-      unlock() {
-        resume(web)
-        gate.detach()
-      },
+    const onGesture = () => {
+      unlockPlayback()
     }
-    document.addEventListener('pointerdown', gate.unlock, true)
-    document.addEventListener('keydown', gate.unlock, true)
-    return gate.detach
+    document.addEventListener('pointerdown', onGesture, true)
+    document.addEventListener('keydown', onGesture, true)
+    return () => {
+      document.removeEventListener('pointerdown', onGesture, true)
+      document.removeEventListener('keydown', onGesture, true)
+    }
   }
 
   function waitReady(web: WebEngine): Promise<boolean> {
@@ -525,6 +558,9 @@ export function createAcAudioController(
     ensureEngine()
 
   return {
+    unlock() {
+      unlockPlayback()
+    },
     beep() {
       if (soundMode === 'mute')
         return
@@ -532,6 +568,7 @@ export function createAcAudioController(
       const web = ensureEngine()
       if (web) {
         resume(web)
+        // 每个按键一个新的 BufferSource，共用同一份解码结果，连按互不等待
         if (web.buffers.beep) {
           const source = playBuffer(web, web.buffers.beep, web.master, web.context.currentTime)
           source.onended = () => {
@@ -544,9 +581,12 @@ export function createAcAudioController(
           }
           return
         }
+        // 样本还在解码，或解码失败：合成一声，不走 <audio>
+        if (playClick(web.context, web.master))
+          return
       }
 
-      // buffer 还没好：用元素里已经预加载的数据，不要 load() 重新拉文件
+      // 没有 Web Audio 时才用元素里已经预加载的数据，不要 load() 重新拉文件
       applyElementVolume(elements.beep)
       replayElement(elements.beep)
     },

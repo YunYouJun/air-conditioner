@@ -322,8 +322,21 @@ describe('createAcAudioController with Web Audio', () => {
     controller.dispose()
   })
 
-  it('plays the preloaded element while the beep buffer is still decoding', async () => {
+  function withOscillators(fake: ReturnType<typeof fakeAudioContext>) {
+    const oscillators: { frequency: ReturnType<typeof fakeParam>, start: ReturnType<typeof vi.fn>, stop: ReturnType<typeof vi.fn> }[] = []
+    Object.assign(fake.context, {
+      createOscillator() {
+        const node = { type: 'sine', frequency: fakeParam(), connect: vi.fn(), start: vi.fn(), stop: vi.fn(), onended: null }
+        oscillators.push(node)
+        return node
+      },
+    })
+    return oscillators
+  }
+
+  it('synthesizes a click while the beep buffer is decoding, then uses a fresh source per press', async () => {
     const fake = fakeAudioContext()
+    const oscillators = withOscillators(fake)
     const elements = fakeElements()
     let release: (data: ArrayBuffer) => void = () => {}
     const gate = new Promise<ArrayBuffer>((resolve) => {
@@ -333,26 +346,65 @@ describe('createAcAudioController with Web Audio', () => {
     const controller = createAcAudioController(elements, { ...webOptions(fake), loadAudioData: load })
 
     controller.beep()
-    expect(elements.beep.play).toHaveBeenCalledTimes(1)
+    controller.beep()
+    expect(oscillators).toHaveLength(2)
+    expect(oscillators[0].frequency.setValueAtTime).toHaveBeenCalledWith(2400, expect.any(Number))
+    expect(elements.beep.play).not.toHaveBeenCalled()
     expect(elements.beep.load).not.toHaveBeenCalled()
     expect(fake.sources).toHaveLength(0)
-    expect(load).toHaveBeenCalledTimes(3)
 
     release(new TextEncoder().encode('di').buffer)
     await drain()
-    // Decoding must not play a beep by itself.
     expect(fake.sources).toHaveLength(0)
 
     controller.beep()
-    expect(fake.sources).toHaveLength(1)
+    controller.beep()
+    expect(fake.sources).toHaveLength(2)
     expect(fake.sources[0].buffer?.name).toContain('di')
-    expect(elements.beep.play).toHaveBeenCalledTimes(1)
+    expect(fake.sources[1].buffer?.name).toContain('di')
+    expect(fake.sources[0]).not.toBe(fake.sources[1])
+    expect(oscillators).toHaveLength(2)
+    expect(elements.beep.play).not.toHaveBeenCalled()
     expect(elements.beep.load).not.toHaveBeenCalled()
-    expect(load).toHaveBeenCalledTimes(3)
     controller.dispose()
   })
 
-  it('resumes a suspended context on pointerdown, before the click plays the beep', () => {
+  it('synthesizes the beep when the sample cannot be decoded', async () => {
+    const fake = fakeAudioContext()
+    const oscillators = withOscillators(fake)
+    fake.context.decodeAudioData.mockRejectedValue(new Error('unsupported'))
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, webOptions(fake))
+
+    await drain()
+    controller.beep()
+    expect(oscillators).toHaveLength(1)
+    expect(elements.beep.play).not.toHaveBeenCalled()
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    controller.dispose()
+  })
+
+  it('uses the audio element only when Web Audio cannot make a sound', async () => {
+    const fake = fakeAudioContext()
+    const elements = fakeElements()
+    let release: (data: ArrayBuffer) => void = () => {}
+    const gate = new Promise<ArrayBuffer>((resolve) => {
+      release = resolve
+    })
+    const controller = createAcAudioController(elements, {
+      ...webOptions(fake),
+      loadAudioData: () => gate,
+    })
+
+    controller.beep()
+    expect(elements.beep.play).toHaveBeenCalledTimes(1)
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    expect(fake.sources).toHaveLength(0)
+    release(new ArrayBuffer(0))
+    controller.dispose()
+  })
+
+  it('resumes a suspended context on pointerdown, and again if it is suspended later', () => {
     const fake = fakeAudioContext()
     fake.context.state = 'suspended'
     const listeners = new Map<string, EventListener>()
@@ -371,8 +423,19 @@ describe('createAcAudioController with Web Audio', () => {
       expect(fake.context.resume).not.toHaveBeenCalled()
       listeners.get('pointerdown')?.({} as Event)
       expect(fake.context.resume).toHaveBeenCalledTimes(1)
-      expect(listeners.has('pointerdown')).toBe(false)
+      expect(listeners.has('pointerdown')).toBe(true)
+
+      fake.context.state = 'running'
+      listeners.get('keydown')?.({} as Event)
+      expect(fake.context.resume).toHaveBeenCalledTimes(1)
+
+      fake.context.state = 'suspended'
+      controller.unlock()
+      expect(fake.context.resume).toHaveBeenCalledTimes(2)
+
       controller.dispose()
+      expect(listeners.has('pointerdown')).toBe(false)
+      expect(listeners.has('keydown')).toBe(false)
     }
     finally {
       if (previous === undefined)

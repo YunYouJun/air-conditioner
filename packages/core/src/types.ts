@@ -155,6 +155,11 @@ export interface AcAudioElements {
 
 export interface AcAudioController {
   beep: () => void
+  /**
+   * Resume audio during a user gesture (`pointerdown` / `keydown`), before
+   * the click handler plays the beep. Safe to call more than once.
+   */
+  unlock: () => void
   toggleStatusAudio: (previousStatus: boolean) => void
   /**
    * Change the volume of everything, including sounds already playing.

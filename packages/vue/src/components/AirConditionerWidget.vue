@@ -91,6 +91,12 @@ function showNote(value: AcNotification, mode: AcState['mode']) {
 
 onUnmounted(() => clearTimeout(hideTimer))
 
+function unlockAudio(sound: AcSoundMode, fan: AcFanSpeed) {
+  if (!props.enableAudio)
+    return
+  prepare(sound, fan)?.unlock()
+}
+
 function onChange(event: AcChangeEvent) {
   if (props.enableAudio)
     handleAudio(event)
@@ -120,6 +126,8 @@ function onNotify(value: AcNotification, event: AcChangeEvent) {
         class="acw-root"
         :data-mode="state.mode"
         :data-status="state.status ? 'on' : 'off'"
+        @pointerdown.capture="unlockAudio(state.sound, state.fan ?? 'auto')"
+        @keydown.capture="unlockAudio(state.sound, state.fan ?? 'auto')"
       >
         <audio v-if="enableAudio" ref="beepEl" :src="audioSrc.beep" preload="auto" />
         <audio v-if="enableAudio" ref="startEl" :src="audioSrc.start" preload="auto" />

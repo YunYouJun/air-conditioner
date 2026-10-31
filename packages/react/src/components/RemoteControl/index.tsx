@@ -100,8 +100,11 @@ const RemoteControl: React.FC<{
       >
       </audio>
       {floating
-        ? createPortal(<RemoteControlView state={ac} onCommand={onCommand} alert={alert} />, floating.document.body)
-        : <RemoteControlView state={ac} onCommand={onCommand} alert={alert} />}
+        ? createPortal(
+            <RemoteControlView state={ac} onCommand={onCommand} onWarm={() => getAudioController(sound, fan).unlock()} alert={alert} />,
+            floating.document.body,
+          )
+        : <RemoteControlView state={ac} onCommand={onCommand} onWarm={() => getAudioController(sound, fan).unlock()} alert={alert} />}
     </div>
   )
 }

@@ -110,11 +110,17 @@ function WidgetContent(props: Omit<AirConditionerWidgetProps, keyof AirCondition
 
   // 结构与 Vue 版 AirConditionerWidget.vue 一致
   return (
-    <div className="acw-root" data-mode={state.mode} data-status={state.status ? 'on' : 'off'}>
+    <div
+      className="acw-root"
+      data-mode={state.mode}
+      data-status={state.status ? 'on' : 'off'}
+      onPointerDownCapture={() => audio.current?.unlock()}
+      onKeyDownCapture={() => audio.current?.unlock()}
+    >
       {enableAudio && <AudioEffects assetsBaseUrl={assetsBaseUrl} audioExt={audioExt} controllerRef={audio} />}
       <AirConditioner title={props.title} logoUrl={props.logoUrl} showEnergyLabel={showEnergyLabel} onDrip={() => audio.current?.drip()} />
       <Notification />
-      <RemoteControl />
+      <RemoteControl onWarm={() => audio.current?.unlock()} />
     </div>
   )
 }

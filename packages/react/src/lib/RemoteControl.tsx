@@ -5,6 +5,8 @@ import { RemoteControlView } from './RemoteControlView'
 
 export interface RemoteControlProps {
   onCommand?: (command: string) => void
+  /** pointerdown / keydown 时唤醒音频，赶在按键声之前 */
+  onWarm?: () => void
 }
 
 export function RemoteControl(props: RemoteControlProps = {}) {
@@ -27,6 +29,7 @@ export function RemoteControl(props: RemoteControlProps = {}) {
     <RemoteControlView
       state={airConditioner.state}
       alert={alert}
+      onWarm={props.onWarm}
       onCommand={(command) => {
         props.onCommand?.(command)
         actions[command]()

@@ -479,6 +479,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
           composed: true,
         }))
       })
+      this.shadowRoot?.addEventListener('pointerdown', this.onWarm, true)
+      this.shadowRoot?.addEventListener('keydown', this.onWarm, true)
       this.shadowRoot?.addEventListener('click', this.onClick)
       this.shadowRoot?.addEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
@@ -518,6 +520,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.audio = undefined
       this.stopObservers.forEach(stop => stop())
       this.stopObservers = []
+      this.shadowRoot?.removeEventListener('pointerdown', this.onWarm, true)
+      this.shadowRoot?.removeEventListener('keydown', this.onWarm, true)
       this.shadowRoot?.removeEventListener('click', this.onClick)
       this.shadowRoot?.removeEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.removeEventListener('animationiteration', this.onDrip)
@@ -541,6 +545,12 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         type: 'update',
         payload: getInitialState(this, this.store.getState()),
       })
+    }
+
+    /** 捕获阶段唤醒音频，赶在 click 和温度键的 pointerdown 发声之前。 */
+    private onWarm = () => {
+      const state = this.store?.getState()
+      this.ensureAudio(state?.sound, state?.fan ?? 'auto')?.unlock()
     }
 
     private onClick = (event: Event) => {
