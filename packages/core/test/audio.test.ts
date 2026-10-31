@@ -173,6 +173,24 @@ describe('createAcAudioController with <audio> elements', () => {
     expect(elements.work.volume).toBeCloseTo(0)
   })
 
+  it('replays the beep without reloading the file', () => {
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, { webAudio: false })
+
+    controller.beep()
+    expect(elements.beep.pause).not.toHaveBeenCalled()
+    expect(elements.beep.play).toHaveBeenCalledTimes(1)
+    expect(elements.beep.load).not.toHaveBeenCalled()
+
+    elements.beep.currentTime = 0.4
+    controller.beep()
+    expect(elements.beep.pause).toHaveBeenCalledTimes(1)
+    expect(elements.beep.currentTime).toBe(0)
+    expect(elements.beep.play).toHaveBeenCalledTimes(2)
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    controller.dispose()
+  })
+
   it('follows the sound mode', () => {
     const elements = fakeElements()
     const controller = createAcAudioController(elements, { webAudio: false, soundMode: 'sleep' })
@@ -271,6 +289,162 @@ describe('createAcAudioController with Web Audio', () => {
     controller.dispose()
   })
 
+  async function drain() {
+    for (let i = 0; i < 20; i++)
+      await Promise.resolve()
+  }
+
+  it('decodes the beep ahead of the first press and does not fetch it again', async () => {
+    const fake = fakeAudioContext()
+    const elements = fakeElements()
+    const load = vi.fn(async (url: string) => new TextEncoder().encode(url).buffer as ArrayBuffer)
+    const controller = createAcAudioController(elements, { ...webOptions(fake), loadAudioData: load })
+
+    // Fetch starts when the controller is created, before any press.
+    expect(load.mock.calls.map(call => call[0])).toEqual([
+      elements.beep.src,
+      elements.start.src,
+      elements.work.src,
+    ])
+    await drain()
+
+    elements.beep.load.mockClear()
+    elements.beep.play.mockClear()
+    controller.beep()
+    controller.beep()
+
+    const beeps = fake.sources.filter(source => source.buffer?.name.includes('di'))
+    expect(beeps).toHaveLength(2)
+    expect(beeps[0].start).toHaveBeenCalledWith(0)
+    expect(elements.beep.play).not.toHaveBeenCalled()
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    expect(load).toHaveBeenCalledTimes(3)
+    controller.dispose()
+  })
+
+  function withOscillators(fake: ReturnType<typeof fakeAudioContext>) {
+    const oscillators: { frequency: ReturnType<typeof fakeParam>, start: ReturnType<typeof vi.fn>, stop: ReturnType<typeof vi.fn> }[] = []
+    Object.assign(fake.context, {
+      createOscillator() {
+        const node = { type: 'sine', frequency: fakeParam(), connect: vi.fn(), start: vi.fn(), stop: vi.fn(), onended: null }
+        oscillators.push(node)
+        return node
+      },
+    })
+    return oscillators
+  }
+
+  it('synthesizes a click while the beep buffer is decoding, then uses a fresh source per press', async () => {
+    const fake = fakeAudioContext()
+    const oscillators = withOscillators(fake)
+    const elements = fakeElements()
+    let release: (data: ArrayBuffer) => void = () => {}
+    const gate = new Promise<ArrayBuffer>((resolve) => {
+      release = resolve
+    })
+    const load = vi.fn(() => gate)
+    const controller = createAcAudioController(elements, { ...webOptions(fake), loadAudioData: load })
+
+    controller.beep()
+    controller.beep()
+    expect(oscillators).toHaveLength(2)
+    expect(oscillators[0].frequency.setValueAtTime).toHaveBeenCalledWith(2400, expect.any(Number))
+    expect(elements.beep.play).not.toHaveBeenCalled()
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    expect(fake.sources).toHaveLength(0)
+
+    release(new TextEncoder().encode('di').buffer)
+    await drain()
+    expect(fake.sources).toHaveLength(0)
+
+    controller.beep()
+    controller.beep()
+    expect(fake.sources).toHaveLength(2)
+    expect(fake.sources[0].buffer?.name).toContain('di')
+    expect(fake.sources[1].buffer?.name).toContain('di')
+    expect(fake.sources[0]).not.toBe(fake.sources[1])
+    expect(oscillators).toHaveLength(2)
+    expect(elements.beep.play).not.toHaveBeenCalled()
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    controller.dispose()
+  })
+
+  it('synthesizes the beep when the sample cannot be decoded', async () => {
+    const fake = fakeAudioContext()
+    const oscillators = withOscillators(fake)
+    fake.context.decodeAudioData.mockRejectedValue(new Error('unsupported'))
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, webOptions(fake))
+
+    await drain()
+    controller.beep()
+    expect(oscillators).toHaveLength(1)
+    expect(elements.beep.play).not.toHaveBeenCalled()
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    controller.dispose()
+  })
+
+  it('uses the audio element only when Web Audio cannot make a sound', async () => {
+    const fake = fakeAudioContext()
+    const elements = fakeElements()
+    let release: (data: ArrayBuffer) => void = () => {}
+    const gate = new Promise<ArrayBuffer>((resolve) => {
+      release = resolve
+    })
+    const controller = createAcAudioController(elements, {
+      ...webOptions(fake),
+      loadAudioData: () => gate,
+    })
+
+    controller.beep()
+    expect(elements.beep.play).toHaveBeenCalledTimes(1)
+    expect(elements.beep.load).not.toHaveBeenCalled()
+    expect(fake.sources).toHaveLength(0)
+    release(new ArrayBuffer(0))
+    controller.dispose()
+  })
+
+  it('resumes a suspended context on pointerdown, and again if it is suspended later', () => {
+    const fake = fakeAudioContext()
+    fake.context.state = 'suspended'
+    const listeners = new Map<string, EventListener>()
+    const previous = globalThis.document
+    vi.stubGlobal('document', {
+      addEventListener(type: string, listener: EventListener) {
+        listeners.set(type, listener)
+      },
+      removeEventListener(type: string) {
+        listeners.delete(type)
+      },
+    })
+
+    try {
+      const controller = createAcAudioController(fakeElements(), webOptions(fake))
+      expect(fake.context.resume).not.toHaveBeenCalled()
+      listeners.get('pointerdown')?.({} as Event)
+      expect(fake.context.resume).toHaveBeenCalledTimes(1)
+      expect(listeners.has('pointerdown')).toBe(true)
+
+      fake.context.state = 'running'
+      listeners.get('keydown')?.({} as Event)
+      expect(fake.context.resume).toHaveBeenCalledTimes(1)
+
+      fake.context.state = 'suspended'
+      controller.unlock()
+      expect(fake.context.resume).toHaveBeenCalledTimes(2)
+
+      controller.dispose()
+      expect(listeners.has('pointerdown')).toBe(false)
+      expect(listeners.has('keydown')).toBe(false)
+    }
+    finally {
+      if (previous === undefined)
+        vi.unstubAllGlobals()
+      else
+        vi.stubGlobal('document', previous)
+    }
+  })
+
   it('falls back to <audio> when the files cannot be decoded', async () => {
     vi.useFakeTimers()
     const fake = fakeAudioContext()
@@ -315,6 +489,21 @@ describe('drip', () => {
     controller.setSoundMode('sleep')
     controller.drip()
     controller.setSoundMode('mute')
+    controller.drip()
+    expect(oscillators).toHaveLength(1)
+    controller.dispose()
+  })
+
+  it('does not queue drips before the context is running', () => {
+    const fake = fakeAudioContext()
+    fake.context.state = 'suspended'
+    const oscillators = withOscillators(fake)
+    const controller = createAcAudioController(fakeElements(), webOptions(fake))
+
+    controller.drip()
+    expect(oscillators).toHaveLength(0)
+
+    fake.context.state = 'running'
     controller.drip()
     expect(oscillators).toHaveLength(1)
     controller.dispose()

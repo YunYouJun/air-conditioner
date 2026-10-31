@@ -2,7 +2,7 @@ import type { AcAudioController } from '@yunlefun-home/air-conditioner-core'
 import type { RefObject } from 'react'
 import type { AirConditionerProviderProps } from './context'
 import { createAcAudioController, createAcNotificationPresenter, resolveAcAudioAssets } from '@yunlefun-home/air-conditioner-core'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AirConditioner } from './AirConditioner'
 import { BreezeNote, useBreezeNote } from './BreezeNote'
 import { AirConditionerProvider, useAirConditioner } from './context'
@@ -65,14 +65,14 @@ function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBas
   const work = useRef<HTMLAudioElement>(null)
 
   const { controllerRef } = props
-  useEffect(() => {
-    let controller: AcAudioController | undefined
+  useLayoutEffect(() => {
+    const initial = store.getState()
+    const controller = createAcAudioController(
+      { beep: beep.current, start: start.current, work: work.current },
+      { soundMode: initial.sound, fanSpeed: initial.fan ?? 'auto' },
+    )
+    controllerRef.current = controller
     const unsubscribe = store.subscribe((event) => {
-      controller ||= createAcAudioController(
-        { beep: beep.current, start: start.current, work: work.current },
-        { soundMode: event.state.sound, fanSpeed: event.state.fan ?? 'auto' },
-      )
-      controllerRef.current = controller
       if (event.previousState.sound !== event.state.sound)
         controller.setSoundMode(event.state.sound)
       if (event.previousState.fan !== event.state.fan)
@@ -83,7 +83,7 @@ function AudioEffects(props: Required<Pick<AirConditionerWidgetProps, 'assetsBas
     })
     return () => {
       unsubscribe()
-      controller?.dispose()
+      controller.dispose()
       controllerRef.current = undefined
     }
   }, [controllerRef, store])
@@ -110,11 +110,17 @@ function WidgetContent(props: Omit<AirConditionerWidgetProps, keyof AirCondition
 
   // 结构与 Vue 版 AirConditionerWidget.vue 一致
   return (
-    <div className="acw-root" data-mode={state.mode} data-status={state.status ? 'on' : 'off'}>
+    <div
+      className="acw-root"
+      data-mode={state.mode}
+      data-status={state.status ? 'on' : 'off'}
+      onPointerDownCapture={() => audio.current?.unlock()}
+      onKeyDownCapture={() => audio.current?.unlock()}
+    >
       {enableAudio && <AudioEffects assetsBaseUrl={assetsBaseUrl} audioExt={audioExt} controllerRef={audio} />}
       <AirConditioner title={props.title} logoUrl={props.logoUrl} showEnergyLabel={showEnergyLabel} onDrip={() => audio.current?.drip()} />
       <Notification />
-      <RemoteControl />
+      <RemoteControl onWarm={() => audio.current?.unlock()} />
     </div>
   )
 }

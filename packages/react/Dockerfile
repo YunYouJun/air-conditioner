@@ -1,8 +1,11 @@
 FROM node:lts-alpine AS builder
 
-RUN corepack enable
-
 WORKDIR /app
+# Node.js no longer ships Corepack (removed in v25). Install the pnpm
+# version pinned by package.json so the image build does not depend on it.
+COPY package.json ./
+RUN npm install -g "pnpm@$(node -p 'require("./package.json").packageManager.split("@")[1]')"
+
 COPY . .
 
 RUN pnpm install --frozen-lockfile && pnpm run react:build
