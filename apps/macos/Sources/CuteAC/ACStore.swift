@@ -30,10 +30,24 @@ final class ACStore: ObservableObject {
   var minimum: Double { isReal ? snapshot?.minimum ?? 16 : 16 }
   var maximum: Double { isReal ? snapshot?.maximum ?? 31 : 31 }
   var step: Double { isReal ? snapshot?.step ?? 1 : 1 }
-  var supportsTemperature: Bool { !isReal || snapshot?.supportsTemperature == true }
+  var isConnected: Bool { connectionStatus == HAConnectionState.online.name }
+  var targetTemperature: Double? {
+    guard !isReal || (canControl && snapshot?.targetTemperature != nil) else { return nil }
+    return state.temperature
+  }
+  var supportsTemperature: Bool { !isReal || (snapshot?.supportsTemperature == true && targetTemperature != nil) }
+  var selectedMode: ACMode? {
+    guard isReal else { return state.mode }
+    guard canControl else { return nil }
+    switch fleet.connection?.displayMode {
+    case "cool": return .cold
+    case "heat": return .hot
+    default: return nil
+    }
+  }
   var status: String {
     guard isReal else { return state.status ? (state.mode == .cold ? "制冷中" : "制热中") : "待机" }
-    guard connectionStatus == HAConnectionState.online.name else { return connectionStatus }
+    guard isConnected else { return connectionStatus }
     return snapshot.map { haModeName($0.mode) } ?? "等待设备状态"
   }
 

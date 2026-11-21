@@ -22,7 +22,8 @@ import HomeDeviceKit
   func controller() -> HomeAssistantClimate {
     HomeAssistantClimate(client: HomeAssistantClient(factory: { [unowned self] _ in
       let socket = FleetSocket(server: self); sockets.append(socket); return socket
-    }), credentials: credentials, confirmationTimeout: .milliseconds(100), debounce: .milliseconds(30))
+    }), credentials: credentials, confirmationTimeout: .milliseconds(100), debounce: .milliseconds(30),
+        reconnectDelay: .milliseconds(250))
   }
   func report(_ entity: HAEntity) throws {
     entities[entity.entity_id] = entity

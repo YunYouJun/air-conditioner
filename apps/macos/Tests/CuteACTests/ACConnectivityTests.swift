@@ -86,6 +86,51 @@ import HomeDeviceKit
   #expect(defaults.string(forKey: "cute-ac:ha-selected:v1") == "remembered-real-device")
 }
 
+@MainActor @Test func nativeStoreMirrorsPeerAndReadsFreshStateAfterDisconnect() async throws {
+  let suite = "cute-ac.reconnect-test.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let fixture = FleetFixture()
+  fixture.credentials.token = "fixture"
+  let catalog = TestCatalog()
+  let endpoint = try HAEndpoint("http://localhost:8123")
+  let binding = try HABinding(endpoint: endpoint, entityID: "climate.bedroom")
+  let initialEntity = try #require(fixture.entities[binding.entityID])
+  try fixture.report(HAEntity(entityID: binding.entityID, state: "off", attributes: initialEntity.attributes,
+                             lastUpdated: initialEntity.last_updated))
+  let room = HASharedDevice(binding: binding, name: "空调", roomID: "bedroom", roomName: "次卧")
+  catalog.devices = [room]
+
+  let store = ACStore(defaults: defaults, catalog: catalog, fleet: HADeviceCollection(factory: fixture.controller), watchCatalog: false)
+  defer { store.shutdown() }
+  store.selectDevice(room.id)
+  #expect(await eventually { store.canControl && store.targetTemperature == 24 && !store.state.status })
+  let cuteACSocket = try #require(fixture.sockets.first)
+  let peer = fixture.controller()
+  defer { peer.disconnect() }
+  await peer.restore(binding)
+  #expect(peer.canControl && peer.snapshot?.mode == "off")
+
+  store.togglePower()
+  #expect(await eventually { !store.pending && store.state.status && peer.snapshot?.isOn == true })
+  peer.request(.temperature(25.5))
+  #expect(await eventually { !peer.pending && store.targetTemperature == 25.5 && store.selectedMode == .cold })
+
+  store.changeTemperature(by: store.step)
+  cuteACSocket.close()
+  #expect(await eventually { store.connectionStatus == HAConnectionState.offline.name })
+  #expect(store.targetTemperature == nil && store.selectedMode == nil && !store.canControl && !store.pending)
+  let commandsBeforePeerUpdate = fixture.commands.count
+  peer.request(.temperature(28.5))
+  #expect(await eventually { !peer.pending && peer.snapshot?.targetTemperature == 28.5 })
+  #expect(await eventually { fixture.sockets.count == 3 && store.canControl && store.targetTemperature == 28.5 })
+  #expect(store.selectedID == room.id && store.state.status && !store.pending)
+  #expect(fixture.commands.count == commandsBeforePeerUpdate + 1)
+
+  peer.request(.power(false))
+  #expect(await eventually { !peer.pending && !store.state.status })
+}
+
 @MainActor @Test func missingCredentialAndCorruptCatalogCannotControlARealDevice() async throws {
   let suite = "cute-ac.error-test.\(UUID().uuidString)"
   let defaults = try #require(UserDefaults(suiteName: suite))
@@ -97,7 +142,7 @@ import HomeDeviceKit
   defer { store.shutdown() }
   store.selectDevice(catalog.devices[0].id)
   #expect(await eventually { store.connectionStatus == "需要令牌" })
-  #expect(!store.canControl)
+  #expect(!store.canControl && store.targetTemperature == nil && store.selectedMode == nil)
   store.togglePower(); store.changeTemperature(by: 1)
   #expect(fixture.commands.isEmpty)
   catalog.fails = true; store.reloadBindings()

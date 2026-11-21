@@ -2,12 +2,13 @@ import CuteACKit
 import SwiftUI
 
 struct TemperatureReadout: View {
-  let value: Double
+  let value: Double?
 
   private static let digitFont = ACFonts.digital(size: 56)
   private static let unitFont = NSFont.systemFont(ofSize: 15, weight: .bold)
 
   private var digits: AttributedString {
+    guard let value else { return AttributedString("--") }
     var text = value.formatted(.number.precision(.fractionLength(0...2)).grouping(.never).attributed)
     for run in text.runs {
       let fractional = run.numberPart == .fraction || run.numberSymbol == .decimalSeparator
@@ -23,14 +24,16 @@ struct TemperatureReadout: View {
         .font(Font(ACFonts.digital(size: 56)))
         .contentTransition(.numericText())
         .alignmentGuide(.capTop) { $0[.firstTextBaseline] - Self.digitFont.capHeight }
-      Text("°C")
-        .font(Font(Self.unitFont))
-        .foregroundStyle(.secondary)
-        .alignmentGuide(.capTop) { $0[.firstTextBaseline] - Self.unitFont.capHeight }
+      if value != nil {
+        Text("°C")
+          .font(Font(Self.unitFont))
+          .foregroundStyle(.secondary)
+          .alignmentGuide(.capTop) { $0[.firstTextBaseline] - Self.unitFont.capHeight }
+      }
     }
     .fixedSize()
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("\(value.formatted()) 摄氏度")
+    .accessibilityLabel(value.map { "\($0.formatted()) 摄氏度" } ?? "设定温度未知")
   }
 }
 

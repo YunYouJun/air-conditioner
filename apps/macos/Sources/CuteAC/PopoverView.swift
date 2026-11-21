@@ -38,7 +38,7 @@ struct PopoverView: View {
           Text(store.status)
             .font(.caption.weight(.semibold))
             .foregroundStyle(.secondary)
-          TemperatureReadout(value: state.temperature)
+          TemperatureReadout(value: store.targetTemperature)
             .foregroundStyle(state.status ? accent : Color.secondary)
         }
         Spacer()
@@ -52,31 +52,34 @@ struct PopoverView: View {
             .background(Circle().fill(state.status ? accent : Color.primary.opacity(0.08)))
         }
         .buttonStyle(.plain)
-        .help(state.status ? "关闭" : "开启")
-        .accessibilityLabel(state.status ? "关闭当前空调" : "开启当前空调")
+        .help(store.canControl ? (state.status ? "关闭" : "开启") : "当前空调不可控制")
+        .accessibilityLabel(store.canControl ? (state.status ? "关闭当前空调" : "开启当前空调") : "当前空调不可控制")
         .disabled(!store.canControl)
       }
 
       if store.isReal {
-        HStack {
-          if store.connectionStatus == "已连接", store.snapshot?.available == true,
-             let temperature = store.snapshot?.currentTemperature {
-            Label("室温 \(temperature.formatted())°C", systemImage: "thermometer.medium")
-              .help("空调传感器回报")
-          }
-          Spacer()
-          Text(store.pending ? "等待设备确认…" : store.connectionStatus)
-        }.font(.caption).foregroundStyle(.secondary)
+        if store.isConnected {
+          HStack {
+            if store.snapshot?.available == true, let temperature = store.snapshot?.currentTemperature {
+              Label("室温 \(temperature.formatted())°C", systemImage: "thermometer.medium")
+                .help("空调传感器回报")
+            }
+            Spacer()
+            Text(store.pending ? "等待设备确认…" : store.connectionStatus)
+          }.font(.caption).foregroundStyle(.secondary)
+        }
         if let error = store.connectionError { Text(error).font(.caption).foregroundStyle(.orange) }
       } else { roomRow }
 
       HStack(spacing: 10) {
         stepButton("minus", delta: -store.step, disabled: state.temperature <= store.minimum || !store.supportsTemperature)
         IconSegmentedPicker(
-          selection: Binding(get: { state.mode }, set: { mode in withAnimation(.snappy) { store.setMode(mode) } }),
+          selection: Binding(get: { store.selectedMode }, set: { mode in
+            if let mode { withAnimation(.snappy) { store.setMode(mode) } }
+          }),
           options: [
-            .init(value: .cold, title: "制冷", symbol: "snowflake", tint: Color(nsColor: ACPalette.accent(for: .cold)), disabled: !store.supports(.cold)),
-            .init(value: .hot, title: "制热", symbol: "sun.max.fill", tint: Color(nsColor: ACPalette.accent(for: .hot)), disabled: !store.supports(.hot)),
+            .init(value: .some(.cold), title: "制冷", symbol: "snowflake", tint: Color(nsColor: ACPalette.accent(for: .cold)), disabled: !store.supports(.cold)),
+            .init(value: .some(.hot), title: "制热", symbol: "sun.max.fill", tint: Color(nsColor: ACPalette.accent(for: .hot)), disabled: !store.supports(.hot)),
           ]
         )
         .help("模式")
