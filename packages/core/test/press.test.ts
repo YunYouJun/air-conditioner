@@ -60,3 +60,96 @@ describe('bindAcPressRepeat', () => {
     expect(fire).toHaveBeenCalledTimes(3)
   })
 })
+
+describe('reentrant press cleanup', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
+  for (const phase of ['initial', 'repeat'] as const) {
+    for (const stopEvent of ['dispose', 'pointerup', 'pointerleave', 'pointercancel']) {
+      it(`honors ${stopEvent} during ${phase} fire and permits only live bindings to restart`, () => {
+        const button = document.createElement('button')
+        let calls = 0
+        const stopAt = phase === 'initial' ? 1 : 2
+        const cleanup = bindAcPressRepeat(button, () => {
+          calls++
+          if (calls === stopAt) {
+            if (stopEvent === 'dispose')
+              cleanup()
+            else
+              pointer(button, stopEvent)
+          }
+        })
+        pointer(button, 'pointerdown')
+        if (phase === 'repeat')
+          vi.advanceTimersByTime(500)
+        expect(calls).toBe(stopAt)
+        expect(vi.getTimerCount()).toBe(0)
+        vi.advanceTimersByTime(2000)
+        expect(calls).toBe(stopAt)
+        pointer(button, 'pointerdown')
+        if (stopEvent === 'dispose') {
+          button.click()
+          expect(calls).toBe(stopAt)
+          expect(vi.getTimerCount()).toBe(0)
+        }
+        else {
+          expect(calls).toBe(stopAt + 1)
+          vi.advanceTimersByTime(500)
+          expect(calls).toBe(stopAt + 2)
+          pointer(button, 'pointerup')
+          expect(vi.getTimerCount()).toBe(0)
+          button.click()
+          expect(calls).toBe(stopAt + 3)
+        }
+        cleanup()
+        cleanup()
+        expect(vi.getTimerCount()).toBe(0)
+      })
+    }
+  }
+
+  it('keeps a nested new press without reviving the previous repeat', () => {
+    const button = document.createElement('button')
+    let calls = 0
+    const cleanup = bindAcPressRepeat(button, () => {
+      calls++
+      if (calls === 2)
+        pointer(button, 'pointerdown')
+    })
+    pointer(button, 'pointerdown')
+    vi.advanceTimersByTime(500)
+    expect(calls).toBe(3)
+    expect(vi.getTimerCount()).toBe(1)
+    vi.advanceTimersByTime(499)
+    expect(calls).toBe(3)
+    vi.advanceTimersByTime(1)
+    expect(calls).toBe(4)
+    cleanup()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('allows a fresh binding after disposal inside a keyboard click', () => {
+    const button = document.createElement('button')
+    let calls = 0
+    const cleanup = bindAcPressRepeat(button, () => {
+      calls++
+      cleanup()
+    })
+    button.click()
+    button.click()
+    pointer(button, 'pointerdown')
+    expect(calls).toBe(1)
+    expect(vi.getTimerCount()).toBe(0)
+    const fresh = bindAcPressRepeat(button, () => calls++)
+    button.click()
+    pointer(button, 'pointerdown')
+    vi.advanceTimersByTime(500)
+    expect(calls).toBe(4)
+    fresh()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+})

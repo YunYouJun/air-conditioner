@@ -27,34 +27,45 @@ export function bindAcPressRepeat(element: HTMLElement, fire: () => void, option
   let timer: ReturnType<typeof setTimeout> | undefined
   let wait = interval
   let last: unknown
+  let disposed = false
+  let generation = 0
 
   const stop = () => {
+    generation++
     clearTimeout(timer)
     timer = undefined
   }
 
-  const tick = () => {
+  const tick = (press: number) => {
+    if (disposed || press !== generation)
+      return
     if (value && value() === last)
       return stop()
     last = value?.()
     fire()
+    // A callback may synchronously stop this press or dispose the binding.
+    if (disposed || press !== generation)
+      return
     wait = Math.max(minInterval, wait * 0.85)
-    timer = setTimeout(tick, wait)
+    timer = setTimeout(tick, wait, press)
   }
 
   const onPointerDown = (event: PointerEvent) => {
-    if (event.button !== 0)
+    if (disposed || event.button !== 0)
       return
     stop()
+    const press = generation
     last = value?.()
     fire()
+    if (disposed || press !== generation)
+      return
     wait = interval
-    timer = setTimeout(tick, delay)
+    timer = setTimeout(tick, delay, press)
   }
 
   // 指针按下时已经触发过；只有键盘触发的 click（detail 为 0）才需要在这里处理
   const onClick = (event: MouseEvent) => {
-    if (event.detail === 0)
+    if (!disposed && event.detail === 0)
       fire()
   }
 
@@ -68,6 +79,7 @@ export function bindAcPressRepeat(element: HTMLElement, fire: () => void, option
   element.addEventListener('click', onClick)
   element.addEventListener('contextmenu', onContextMenu)
   return () => {
+    disposed = true
     stop()
     element.removeEventListener('pointerdown', onPointerDown)
     element.removeEventListener('pointerup', stop)
