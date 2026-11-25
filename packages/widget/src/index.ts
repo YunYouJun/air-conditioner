@@ -455,7 +455,9 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         })
       }
 
-      this.store = createAirConditionerStore({
+      // The model belongs to this element; only connection resources are recreated.
+      const reconnecting = Boolean(this.store)
+      this.store ||= createAirConditionerStore({
         ...options,
         storageKey: this.getAttribute('storage-key') ?? options.storageKey,
         initialState: getInitialState(this, options.initialState),
@@ -485,7 +487,9 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.shadowRoot?.addEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
       const initial = this.store.getState()
-      this.ensureAudio(initial.sound, initial.fan ?? 'auto')
+      const audio = this.ensureAudio(initial.sound, initial.fan ?? 'auto')
+      if (reconnecting && initial.status)
+        audio?.toggleStatusAudio(false)
       this.updatePlacement()
       this.renderedState = undefined
       this.render()

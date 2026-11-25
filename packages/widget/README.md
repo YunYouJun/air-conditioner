@@ -23,6 +23,8 @@ const widget = mountAirConditioner(document.body, {
 // widget.remove()
 ```
 
+Moving the same widget to another container, or removing and reinserting it, preserves its current settings. Removal releases listeners, observers and audio; reinsertion restores them. A newly created widget still initializes from its options and storage.
+
 `cdnAssets` explicitly loads fonts, audio and the logo from jsDelivr, pinned to the exact version of the installed npm package. Your application bundles the JavaScript itself. Omit it and provide `assetsBaseUrl` and `logoUrl` to self-host assets. Importing the package does not automatically mount or fetch anything.
 
 You can also call `defineAirConditionerElement({ ...cdnAssets, enableAudio: false })`, then render `<air-conditioner-widget placement="top-right"></air-conditioner-widget>`.
