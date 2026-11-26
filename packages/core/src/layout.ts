@@ -78,26 +78,43 @@ export function observeAcTilt(target: HTMLElement, onTilt: (rotateX: number, rot
   }
 
   let frame = 0
-  const schedule = (rotateX: number, rotateY: number) => {
-    cancelAnimationFrame(frame)
-    frame = requestAnimationFrame(() => onTilt(rotateX, rotateY))
+  let pendingX = 0
+  let pendingY = 0
+  let tilted = false
+  const apply = (rotateX: number, rotateY: number) => {
+    tilted = rotateX !== 0 || rotateY !== 0
+    onTilt(rotateX, rotateY)
   }
   const onMove = (event: PointerEvent) => {
-    const rect = target.getBoundingClientRect()
-    if (!rect.width || !rect.height)
+    pendingX = event.clientX
+    pendingY = event.clientY
+    if (frame)
       return
-    // -0.5 ~ 0.5：指针相对元素中心的位置
-    const x = (event.clientX - rect.left) / rect.width - 0.5
-    const y = (event.clientY - rect.top) / rect.height - 0.5
-    const round = (value: number) => Math.round(value * 100) / 100
-    schedule(round(-y * 2 * maxTilt), round(x * 2 * maxTilt))
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      const rect = target.getBoundingClientRect()
+      if (!rect.width || !rect.height)
+        return
+      // -0.5 ~ 0.5：指针相对元素中心的位置
+      const x = (pendingX - rect.left) / rect.width - 0.5
+      const y = (pendingY - rect.top) / rect.height - 0.5
+      const round = (value: number) => Math.round(value * 100) / 100
+      apply(round(-y * 2 * maxTilt), round(x * 2 * maxTilt))
+    })
   }
-  const onLeave = () => schedule(0, 0)
+  const onLeave = () => {
+    if (frame) {
+      cancelAnimationFrame(frame)
+      frame = 0
+    }
+    if (tilted)
+      apply(0, 0)
+  }
 
-  target.addEventListener('pointermove', onMove)
-  target.addEventListener('pointerleave', onLeave)
+  target.addEventListener('pointermove', onMove, { passive: true })
+  target.addEventListener('pointerleave', onLeave, { passive: true })
   return () => {
-    cancelAnimationFrame(frame)
+    onLeave()
     target.removeEventListener('pointermove', onMove)
     target.removeEventListener('pointerleave', onLeave)
   }
