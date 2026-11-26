@@ -1,11 +1,11 @@
 import type {
   AcAudioController,
+  AcChangeEvent,
   AcDotRow,
   AcFanSpeed,
   AcIconName,
   AcMode,
   AcNotification,
-  AcNotificationPresentation,
   AcSoundMode,
   AcState,
   AirConditionerStore,
@@ -340,40 +340,76 @@ const noteAwayMs = 460
  * 按 core 的呈现方式显示一条提示：节能建议是「出风口吹出的小纸条」，温度到上下限时
  * 小屏抖一下，设置变化只给读屏播报（结构与 Vue / React 一致）。
  */
-function presentNotification(root: ShadowRoot, notification: AcNotification, how: AcNotificationPresentation, state: AcState) {
-  if (how === 'skip')
-    return
-  if (how === 'shake')
-    shakeLcd(root)
-  if (how !== 'note') {
-    root.querySelector('.acw-notification-region .acw-sr-only')!.textContent = notification.message
-    return
-  }
-
+function createNotificationView(root: ShadowRoot) {
   const region = root.querySelector('.acw-notification-region')!
-  region.querySelector('.acw-note')?.remove()
-  const note = document.createElement('div')
-  note.className = 'acw-note'
-  note.dataset.severity = notification.severity
-  note.dataset.mode = state.mode
-  note.innerHTML = `<span class="acw-note-icon" aria-hidden="true">${icon('leaf', 14)}</span><span class="acw-note-text"><strong></strong>${notification.detail ? '<small></small>' : ''}</span>`
-  note.querySelector('strong')!.textContent = notification.message
-  if (notification.detail)
-    note.querySelector('small')!.textContent = notification.detail
-  region.prepend(note)
-  setTimeout(() => {
-    note.dataset.leaving = ''
-    setTimeout(() => note.remove(), noteAwayMs)
-  }, noteStayMs)
-}
-
-function shakeLcd(root: ShadowRoot) {
   const lcd = root.querySelector<HTMLElement>('.acw-lcd')!
-  lcd.removeAttribute('data-alert')
-  // 重新触发动画
-  void lcd.offsetWidth
-  lcd.setAttribute('data-alert', '')
-  setTimeout(() => lcd.removeAttribute('data-alert'), 400)
+  const announce = region.querySelector('.acw-sr-only')!
+  const present = createAcNotificationPresenter()
+  let disposed = false
+  let note: HTMLElement | undefined
+  let noteTimer: ReturnType<typeof setTimeout> | undefined
+  let shakeTimer: ReturnType<typeof setTimeout> | undefined
+
+  return {
+    present(notification: AcNotification, state: AcState) {
+      if (disposed)
+        return
+      const how = present(notification, state)
+      if (how === 'skip')
+        return
+      if (how === 'shake') {
+        clearTimeout(shakeTimer)
+        lcd.removeAttribute('data-alert')
+        // 重新触发动画
+        void lcd.offsetWidth
+        lcd.setAttribute('data-alert', '')
+        shakeTimer = setTimeout(() => {
+          shakeTimer = undefined
+          if (!disposed)
+            lcd.removeAttribute('data-alert')
+        }, 400)
+      }
+      if (how !== 'note') {
+        announce.textContent = notification.message
+        return
+      }
+
+      clearTimeout(noteTimer)
+      note?.remove()
+      const next = document.createElement('div')
+      note = next
+      next.className = 'acw-note'
+      next.dataset.severity = notification.severity
+      next.dataset.mode = state.mode
+      next.innerHTML = `<span class="acw-note-icon" aria-hidden="true">${icon('leaf', 14)}</span><span class="acw-note-text"><strong></strong>${notification.detail ? '<small></small>' : ''}</span>`
+      next.querySelector('strong')!.textContent = notification.message
+      if (notification.detail)
+        next.querySelector('small')!.textContent = notification.detail
+      region.prepend(next)
+      noteTimer = setTimeout(() => {
+        if (disposed || note !== next)
+          return
+        next.dataset.leaving = ''
+        noteTimer = setTimeout(() => {
+          if (disposed || note !== next)
+            return
+          next.remove()
+          note = undefined
+          noteTimer = undefined
+        }, noteAwayMs)
+      }, noteStayMs)
+    },
+    dispose() {
+      disposed = true
+      clearTimeout(noteTimer)
+      clearTimeout(shakeTimer)
+      noteTimer = shakeTimer = undefined
+      note?.remove()
+      note = undefined
+      lcd.removeAttribute('data-alert')
+      announce.textContent = ''
+    },
+  }
 }
 
 function boolAttribute(value: string | null, fallback?: boolean): boolean | undefined {
@@ -434,7 +470,9 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private renderedState?: AcState
     private stopObservers: (() => void)[] = []
     private audio?: AcAudioController
-    private present = createAcNotificationPresenter()
+    private audioRunning = false
+    private notificationView?: ReturnType<typeof createNotificationView>
+    private notificationOwners = new WeakMap<AcChangeEvent, ReturnType<typeof createNotificationView>>()
     private placement?: WidgetAcPlacement
 
     static get observedAttributes() {
@@ -442,6 +480,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     connectedCallback() {
+      this.teardownConnection()
+
       const assetsBaseUrl = options.assetsBaseUrl ?? '/assets'
       const enableAudio = options.enableAudio ?? true
       ensureDigitFont(assetsBaseUrl)
@@ -455,13 +495,20 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         })
       }
 
-      this.store = createAirConditionerStore({
+      const notificationView = createNotificationView(this.shadowRoot!)
+      this.notificationView = notificationView
+      // The model belongs to this element; only connection resources are recreated.
+      const reconnecting = Boolean(this.store)
+      this.store ||= createAirConditionerStore({
         ...options,
         storageKey: this.getAttribute('storage-key') ?? options.storageKey,
         initialState: getInitialState(this, options.initialState),
         onNotify: (notification, event) => {
-          if (this.shadowRoot)
-            presentNotification(this.shadowRoot, notification, this.present(notification, event.state), event.state)
+          // ac-change can remove/reconnect this element and dispatch a nested action.
+          // Present only in the connection that observed this particular event.
+          const owner = this.notificationOwners.get(event)
+          this.notificationOwners.delete(event)
+          owner?.present(notification, event.state)
           this.dispatchEvent(new CustomEvent('ac-notify', {
             detail: { notification, event },
             bubbles: true,
@@ -471,6 +518,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         },
       })
       this.unsubscribe = this.store.subscribe((event) => {
+        if (event.notification)
+          this.notificationOwners.set(event, notificationView)
         this.render()
         this.playAudio(event)
         this.dispatchEvent(new CustomEvent<WidgetAcChangeEvent>('ac-change', {
@@ -485,14 +534,16 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.shadowRoot?.addEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
       const initial = this.store.getState()
-      this.ensureAudio(initial.sound, initial.fan ?? 'auto')
+      if (!initial.status)
+        this.audioRunning = false
+      const audio = this.ensureAudio(initial.sound, initial.fan ?? 'auto')
+      if (reconnecting && this.audioRunning && initial.status)
+        audio?.resumeFan()
       this.updatePlacement()
       this.renderedState = undefined
       this.render()
 
       // 窄容器下机身等比缩小，保持长款比例；精细指针下轻微 3D 倾斜
-      this.stopObservers.forEach(stop => stop())
-      this.stopObservers = []
       const unit = this.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
       if (unit) {
         this.stopObservers.push(
@@ -515,7 +566,14 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     disconnectedCallback() {
+      this.teardownConnection()
+    }
+
+    private teardownConnection() {
+      this.notificationView?.dispose()
+      this.notificationView = undefined
       this.unsubscribe?.()
+      this.unsubscribe = undefined
       this.audio?.dispose()
       this.audio = undefined
       this.stopObservers.forEach(stop => stop())
@@ -649,8 +707,10 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       if (event.previousState.fan !== event.state.fan)
         audio.setFanSpeed(event.state.fan ?? 'auto')
       audio.beep()
-      if (event.previousState.status !== event.state.status)
+      if (event.previousState.status !== event.state.status) {
+        this.audioRunning = event.state.status
         audio.toggleStatusAudio(event.previousState.status)
+      }
     }
 
     private render() {

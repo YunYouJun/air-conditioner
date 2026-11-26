@@ -208,6 +208,20 @@ describe('createAcAudioController with <audio> elements', () => {
     expect(elements.work.muted).toBe(false)
   })
 
+  it('resumes the fan loop immediately without playing the start sound (<audio> fallback)', () => {
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, { webAudio: false })
+
+    controller.resumeFan()
+    expect(elements.start.play).not.toHaveBeenCalled()
+    expect(elements.work.play).toHaveBeenCalledTimes(1)
+    expect(elements.work.loop).toBe(true)
+
+    vi.advanceTimersByTime(soundTimings.loopCrossfadeMs)
+    expect(elements.work.volume).toBeCloseTo(1)
+    controller.dispose()
+  })
+
   it('keeps working with elements that only implement the original API', () => {
     const work = { currentTime: 0, load: vi.fn(), play: vi.fn() }
     const controller = createAcAudioController({ start: null, work }, { webAudio: false })
@@ -457,6 +471,24 @@ describe('createAcAudioController with Web Audio', () => {
 
     expect(fake.sources).toHaveLength(0)
     expect(elements.start.play).toHaveBeenCalledTimes(1)
+    controller.dispose()
+    vi.useRealTimers()
+  })
+
+  it('resumes the fan loop at currentTime without playing the start buffer (Web Audio)', async () => {
+    vi.useFakeTimers()
+    const fake = fakeAudioContext()
+    fake.context.currentTime = 3.5
+    const elements = fakeElements()
+    const controller = createAcAudioController(elements, webOptions(fake))
+
+    controller.resumeFan()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(fake.sources).toHaveLength(1)
+    expect(fake.sources[0].buffer?.name).toContain('fan')
+    expect(fake.sources[0].start).toHaveBeenCalledWith(3.5)
+    expect(elements.start.play).not.toHaveBeenCalled()
     controller.dispose()
     vi.useRealTimers()
   })

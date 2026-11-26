@@ -19,7 +19,7 @@ export function createAirConditionerStore(options: CreateAirConditionerStoreOpti
     ...persistedState,
     ...options.initialState,
   }, limits)
-  const listeners = new Set<AcStoreListener>()
+  const listeners = new Map<AcStoreListener, symbol>()
 
   return {
     getState() {
@@ -38,7 +38,12 @@ export function createAirConditionerStore(options: CreateAirConditionerStoreOpti
 
       state = nextState
       writeAcState(storage, storageKey, nextState)
-      listeners.forEach(listener => listener(event))
+      // New subscriptions wait for the next dispatch, including re-subscriptions
+      // of the same callback. Still honor removals before a listener's turn.
+      for (const [listener, subscription] of [...listeners]) {
+        if (listeners.get(listener) === subscription)
+          listener(event)
+      }
 
       if (notification)
         options.onNotify?.(notification, event)
@@ -46,9 +51,14 @@ export function createAirConditionerStore(options: CreateAirConditionerStoreOpti
       return event
     },
     subscribe(listener: AcStoreListener) {
-      listeners.add(listener)
+      let subscription = listeners.get(listener)
+      if (!subscription) {
+        subscription = Symbol('subscription')
+        listeners.set(listener, subscription)
+      }
       return () => {
-        listeners.delete(listener)
+        if (listeners.get(listener) === subscription)
+          listeners.delete(listener)
       }
     },
   }
