@@ -452,7 +452,7 @@ export function createAcAudioController(
     }, soundTimings.settleAfterMs)
   }
 
-  function startWeb(web: WebEngine) {
+  function startWeb(web: WebEngine, withStart = true) {
     const output = web.context.createGain()
     output.connect(web.master)
     const fan = web.context.createGain()
@@ -462,9 +462,15 @@ export function createAcAudioController(
     run = target
 
     const now = web.context.currentTime
-    track(target, playBuffer(web, web.buffers.start!, output, now))
-    loopFan(web, target, now + soundTimings.startDelayMs / 1000)
-    later(startFanCycle, soundTimings.startDelayMs)
+    if (withStart) {
+      track(target, playBuffer(web, web.buffers.start!, output, now))
+      loopFan(web, target, now + soundTimings.startDelayMs / 1000)
+      later(startFanCycle, soundTimings.startDelayMs)
+    }
+    else {
+      loopFan(web, target, now)
+      startFanCycle()
+    }
   }
 
   function stopWeb(fadeMs: number) {
@@ -490,13 +496,11 @@ export function createAcAudioController(
     setTimeout(() => target.output.disconnect(), fadeMs + 100)
   }
 
-  function startFallback() {
+  function startFallback(withStart = true) {
     const { start, work } = elements
     stopElement(work)
-    applyElementVolume(start)
-    playElement(start)
 
-    later(() => {
+    const beginWork = () => {
       if (!work)
         return
       fallbackFanLevel = 0
@@ -506,7 +510,16 @@ export function createAcAudioController(
       playElement(work)
       tweenFallbackFan(initialFanLevel(), soundTimings.loopCrossfadeMs)
       startFanCycle()
-    }, soundTimings.startDelayMs)
+    }
+
+    if (!withStart) {
+      beginWork()
+      return
+    }
+
+    applyElementVolume(start)
+    playElement(start)
+    later(beginWork, soundTimings.startDelayMs)
   }
 
   function stopFallback(fadeMs: number) {
@@ -517,7 +530,7 @@ export function createAcAudioController(
       stopElement(elements.work)
   }
 
-  function powerOn() {
+  function powerOn(withStart = true) {
     const id = ++session
     fanRunning = false
     fanCycle++
@@ -529,7 +542,7 @@ export function createAcAudioController(
 
     const web = ensureEngine()
     if (!web) {
-      startFallback()
+      startFallback(withStart)
       return
     }
 
@@ -538,9 +551,9 @@ export function createAcAudioController(
       if (id !== session)
         return
       if (ok)
-        startWeb(web)
+        startWeb(web, withStart)
       else
-        startFallback()
+        startFallback(withStart)
     })
   }
 
@@ -605,6 +618,9 @@ export function createAcAudioController(
         powerOff()
       else
         powerOn()
+    },
+    resumeFan() {
+      powerOn(false)
     },
     setSoundMode(mode: AcSoundMode) {
       soundMode = mode

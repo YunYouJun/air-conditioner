@@ -51,10 +51,14 @@ export function createAirConditionerStore(options: CreateAirConditionerStoreOpti
       return event
     },
     subscribe(listener: AcStoreListener) {
-      if (!listeners.has(listener))
-        listeners.set(listener, Symbol('subscription'))
+      let subscription = listeners.get(listener)
+      if (!subscription) {
+        subscription = Symbol('subscription')
+        listeners.set(listener, subscription)
+      }
       return () => {
-        listeners.delete(listener)
+        if (listeners.get(listener) === subscription)
+          listeners.delete(listener)
       }
     },
   }

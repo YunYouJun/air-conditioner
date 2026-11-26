@@ -83,4 +83,20 @@ describe('store subscriptions during dispatch', () => {
     store.dispatch({ type: 'increment' })
     expect(received).toEqual([event])
   })
+
+  it('ignores a stale unsubscribe after the same callback has re-subscribed', () => {
+    const store = createAirConditionerStore({ storage: null })
+    const received: AcChangeEvent[] = []
+    const listener = (event: AcChangeEvent) => received.push(event)
+
+    const staleUnsubscribe = store.subscribe(listener)
+    staleUnsubscribe()
+    const activeUnsubscribe = store.subscribe(listener)
+    // Calling the old cleanup again must not drop the new subscription.
+    staleUnsubscribe()
+
+    const event = store.dispatch({ type: 'toggleStatus' })
+    expect(received).toEqual([event])
+    activeUnsubscribe()
+  })
 })

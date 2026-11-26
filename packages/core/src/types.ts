@@ -162,6 +162,11 @@ export interface AcAudioController {
   unlock: () => void
   toggleStatusAudio: (previousStatus: boolean) => void
   /**
+   * Resume the running fan loop without replaying the power-on startup chime
+   * (e.g. when reconnecting a powered-on widget).
+   */
+  resumeFan: () => void
+  /**
    * Change the volume of everything, including sounds already playing.
    */
   setSoundMode: (mode: AcSoundMode) => void
