@@ -470,6 +470,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private renderedState?: AcState
     private stopObservers: (() => void)[] = []
     private audio?: AcAudioController
+    private audioRunning = false
     private notificationView?: ReturnType<typeof createNotificationView>
     private notificationOwners = new WeakMap<AcChangeEvent, ReturnType<typeof createNotificationView>>()
     private placement?: WidgetAcPlacement
@@ -479,6 +480,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     connectedCallback() {
+      this.teardownConnection()
+
       const assetsBaseUrl = options.assetsBaseUrl ?? '/assets'
       const enableAudio = options.enableAudio ?? true
       ensureDigitFont(assetsBaseUrl)
@@ -531,16 +534,16 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       this.shadowRoot?.addEventListener('keydown', this.onKeyDown)
       this.shadowRoot?.addEventListener('animationiteration', this.onDrip)
       const initial = this.store.getState()
+      if (!initial.status)
+        this.audioRunning = false
       const audio = this.ensureAudio(initial.sound, initial.fan ?? 'auto')
-      if (reconnecting && initial.status)
-        audio?.toggleStatusAudio(false)
+      if (reconnecting && this.audioRunning && initial.status)
+        audio?.resumeFan()
       this.updatePlacement()
       this.renderedState = undefined
       this.render()
 
       // 窄容器下机身等比缩小，保持长款比例；精细指针下轻微 3D 倾斜
-      this.stopObservers.forEach(stop => stop())
-      this.stopObservers = []
       const unit = this.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
       if (unit) {
         this.stopObservers.push(
@@ -563,9 +566,14 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     disconnectedCallback() {
+      this.teardownConnection()
+    }
+
+    private teardownConnection() {
       this.notificationView?.dispose()
       this.notificationView = undefined
       this.unsubscribe?.()
+      this.unsubscribe = undefined
       this.audio?.dispose()
       this.audio = undefined
       this.stopObservers.forEach(stop => stop())
@@ -699,8 +707,10 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       if (event.previousState.fan !== event.state.fan)
         audio.setFanSpeed(event.state.fan ?? 'auto')
       audio.beep()
-      if (event.previousState.status !== event.state.status)
+      if (event.previousState.status !== event.state.status) {
+        this.audioRunning = event.state.status
         audio.toggleStatusAudio(event.previousState.status)
+      }
     }
 
     private render() {
