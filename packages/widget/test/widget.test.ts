@@ -343,12 +343,25 @@ describe('@yunlefun-home/air-conditioner-widget', () => {
     expect(root.querySelectorAll('.acw-mist i')).toHaveLength(5)
     expect(root.querySelector('.acw-drip')).not.toBeNull()
     expect(unit.dataset.drip).toBe('on')
+    expect(unit.dataset.mist).toBe('on')
     expect(Number(unit.style.getPropertyValue('--acw-mist'))).toBeGreaterThan(0)
     expect(unit.style.getPropertyValue('--acw-drip-cycle')).toMatch(/ms$/)
 
     root.querySelector<HTMLElement>('[data-action="hot"]')!.click()
     expect(unit.dataset.drip).toBe('off')
+    expect(unit.dataset.mist).toBe('off')
     expect(unit.style.getPropertyValue('--acw-mist')).toBe('0')
     expect(unit.style.getPropertyValue('--acw-drip-cycle')).toBe('')
+  })
+
+  it('uses preload="none" on fallback audio elements', () => {
+    defineAirConditionerElement({ tagName: 'test-air-conditioner-audio-preload', enableAudio: true, storage: null })
+    const element = document.createElement('test-air-conditioner-audio-preload')
+    document.body.appendChild(element)
+    const audios = [...element.shadowRoot!.querySelectorAll('audio')]
+
+    expect(audios).toHaveLength(3)
+    expect(audios.every(audio => audio.getAttribute('preload') === 'none')).toBe(true)
+    element.remove()
   })
 })

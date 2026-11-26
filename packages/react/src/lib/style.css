@@ -375,7 +375,7 @@ html.dark .acw-note[data-mode="hot"],
   animation-play-state: paused;
 }
 
-.acw-unit[data-status="on"][data-mode="cold"] .acw-mist i {
+.acw-unit[data-status="on"][data-mode="cold"][data-mist="on"] .acw-mist i {
   animation-play-state: running;
 }
 
@@ -539,11 +539,11 @@ html.dark .acw-note[data-mode="hot"],
   pointer-events: none;
 }
 
-.acw-unit[data-status="on"] .acw-selftest {
+.acw-unit[data-status="on"]:not([data-skip-selftest]) .acw-selftest {
   animation: acw-selftest 560ms steps(1, end) both;
 }
 
-.acw-unit[data-status="on"] .acw-readout {
+.acw-unit[data-status="on"]:not([data-skip-selftest]) .acw-readout {
   animation: acw-selftest-reveal 560ms steps(1, end) both;
 }
 
@@ -807,8 +807,8 @@ html.dark .acw-note[data-mode="hot"],
   opacity: 1;
 }
 
-.acw-unit[data-status="on"] .acw-wind-line::before,
-.acw-unit[data-status="on"] .acw-wind-line::after {
+.acw-unit[data-status="on"][data-mode="cold"] .acw-wind-line::before,
+.acw-unit[data-status="on"][data-mode="hot"] .acw-wind-line::after {
   animation-play-state: running;
 }
 

@@ -44,12 +44,12 @@ export const widgetStyleText = `:host {
 }
 /* @ac-motion-tokens:end */
 
-html.dark .acw-root,
+:host-context(html.dark) .acw-root,
 .acw-root.dark {
   --acw-text-color: #fafafa;
 }
 
-html.dark .acw-mist,
+:host-context(html.dark) .acw-mist,
 .acw-root.dark .acw-mist {
   --acw-mist-color: rgba(214, 234, 252, 0.5);
 }
@@ -67,14 +67,14 @@ html.dark .acw-mist,
 }
 
 /* 暗色下换成深色纸，仍按模式着色 */
-html.dark .acw-note,
+:host-context(html.dark) .acw-note,
 .acw-root.dark .acw-note {
   --acw-note-bg: #1d2733;
   --acw-note-text: #e3ecf5;
   --acw-note-accent: #64b5f6;
 }
 
-html.dark .acw-note[data-mode="hot"],
+:host-context(html.dark) .acw-note[data-mode="hot"],
 .acw-root.dark .acw-note[data-mode="hot"] {
   --acw-note-bg: #2d241d;
   --acw-note-text: #f5e9de;
@@ -375,7 +375,7 @@ html.dark .acw-note[data-mode="hot"],
   animation-play-state: paused;
 }
 
-.acw-unit[data-status="on"][data-mode="cold"] .acw-mist i {
+.acw-unit[data-status="on"][data-mode="cold"][data-mist="on"] .acw-mist i {
   animation-play-state: running;
 }
 
@@ -539,11 +539,11 @@ html.dark .acw-note[data-mode="hot"],
   pointer-events: none;
 }
 
-.acw-unit[data-status="on"] .acw-selftest {
+.acw-unit[data-status="on"]:not([data-skip-selftest]) .acw-selftest {
   animation: acw-selftest 560ms steps(1, end) both;
 }
 
-.acw-unit[data-status="on"] .acw-readout {
+.acw-unit[data-status="on"]:not([data-skip-selftest]) .acw-readout {
   animation: acw-selftest-reveal 560ms steps(1, end) both;
 }
 
@@ -807,8 +807,8 @@ html.dark .acw-note[data-mode="hot"],
   opacity: 1;
 }
 
-.acw-unit[data-status="on"] .acw-wind-line::before,
-.acw-unit[data-status="on"] .acw-wind-line::after {
+.acw-unit[data-status="on"][data-mode="cold"] .acw-wind-line::before,
+.acw-unit[data-status="on"][data-mode="hot"] .acw-wind-line::after {
   animation-play-state: running;
 }
 

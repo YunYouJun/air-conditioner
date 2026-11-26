@@ -16,7 +16,9 @@ export function toShadowStyle(css) {
 }
 
 `
-  return host + withoutFontFace.replaceAll(':root', ':host')
+  return host + withoutFontFace
+    .replaceAll(':root', ':host')
+    .replaceAll('html.dark ', ':host-context(html.dark) ')
 }
 
 /**
