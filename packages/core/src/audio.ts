@@ -34,6 +34,7 @@ interface WebRun {
 const readyTimeoutMs = 1500
 const fallbackTweenStepMs = 100
 const curveLength = 64
+const defaultAudioCache = new Map<string, Promise<ArrayBuffer>>()
 
 function sourceUrl(element: AcAudioElement | null | undefined): string {
   return element?.currentSrc || element?.src || ''
@@ -198,7 +199,7 @@ export function createAcAudioController(
   let session = 0
   const timers = new Set<Timer>()
   /** 同一地址只拉取一次；decodeAudioData 会拆掉传入的 buffer，所以每次给它一份拷贝 */
-  const audioCache = new Map<string, Promise<ArrayBuffer>>()
+  const audioCache = options.loadAudioData ? new Map<string, Promise<ArrayBuffer>>() : defaultAudioCache
   /** 第一次按下时提前 resume，等 click 里真正 beep 时设备已经醒了 */
   let stopUnlock: (() => void) | undefined
 

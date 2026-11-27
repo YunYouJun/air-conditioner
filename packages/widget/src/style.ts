@@ -44,19 +44,21 @@ export const widgetStyleText = `:host {
 }
 /* @ac-motion-tokens:end */
 
-html.dark .acw-root,
+:host-context(html.dark) .acw-root,
 .acw-root.dark {
   --acw-text-color: #fafafa;
 }
 
-html.dark .acw-mist,
+:host-context(html.dark) .acw-mist,
 .acw-root.dark .acw-mist {
-  --acw-mist-color: rgba(214, 234, 252, 0.5);
+  --acw-mist-color: rgba(196, 228, 255, 0.58);
+  mix-blend-mode: screen;
 }
 
 @media (prefers-color-scheme: dark) {
   .acw-root:not(.light) .acw-mist {
-    --acw-mist-color: rgba(214, 234, 252, 0.5);
+    --acw-mist-color: rgba(196, 228, 255, 0.58);
+    mix-blend-mode: screen;
   }
 }
 
@@ -66,32 +68,42 @@ html.dark .acw-mist,
   }
 }
 
-/* 暗色下换成深色纸，仍按模式着色 */
-html.dark .acw-note,
+/* 暗色下保持白色家电一体的柔光浅纸，仅略微压暗底色并加深阴影 */
+:host-context(html.dark) .acw-note,
 .acw-root.dark .acw-note {
-  --acw-note-bg: #1d2733;
-  --acw-note-text: #e3ecf5;
-  --acw-note-accent: #64b5f6;
+  --acw-note-bg: #ecf2f9;
+  --acw-note-bg-bottom: #e0e9f3;
+  --acw-note-text: #1e293b;
+  --acw-note-accent: #2f7fd6;
+  --acw-note-shadow:
+    0 10px 24px -8px rgba(0, 0, 0, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
-html.dark .acw-note[data-mode="hot"],
+:host-context(html.dark) .acw-note[data-mode="hot"],
 .acw-root.dark .acw-note[data-mode="hot"] {
-  --acw-note-bg: #2d241d;
-  --acw-note-text: #f5e9de;
-  --acw-note-accent: #ffb74d;
+  --acw-note-bg: #f6ede3;
+  --acw-note-bg-bottom: #ede0d2;
+  --acw-note-text: #3b2a1e;
+  --acw-note-accent: #d9772b;
 }
 
 @media (prefers-color-scheme: dark) {
   .acw-root:not(.light) .acw-note {
-    --acw-note-bg: #1d2733;
-    --acw-note-text: #e3ecf5;
-    --acw-note-accent: #64b5f6;
+    --acw-note-bg: #ecf2f9;
+    --acw-note-bg-bottom: #e0e9f3;
+    --acw-note-text: #1e293b;
+    --acw-note-accent: #2f7fd6;
+    --acw-note-shadow:
+      0 10px 24px -8px rgba(0, 0, 0, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.35);
   }
 
   .acw-root:not(.light) .acw-note[data-mode="hot"] {
-    --acw-note-bg: #2d241d;
-    --acw-note-text: #f5e9de;
-    --acw-note-accent: #ffb74d;
+    --acw-note-bg: #f6ede3;
+    --acw-note-bg-bottom: #ede0d2;
+    --acw-note-text: #3b2a1e;
+    --acw-note-accent: #d9772b;
   }
 }
 
@@ -375,7 +387,7 @@ html.dark .acw-note[data-mode="hot"],
   animation-play-state: paused;
 }
 
-.acw-unit[data-status="on"][data-mode="cold"] .acw-mist i {
+.acw-unit[data-status="on"][data-mode="cold"][data-mist="on"] .acw-mist i {
   animation-play-state: running;
 }
 
@@ -539,11 +551,11 @@ html.dark .acw-note[data-mode="hot"],
   pointer-events: none;
 }
 
-.acw-unit[data-status="on"] .acw-selftest {
+.acw-unit[data-status="on"]:not([data-skip-selftest]) .acw-selftest {
   animation: acw-selftest 560ms steps(1, end) both;
 }
 
-.acw-unit[data-status="on"] .acw-readout {
+.acw-unit[data-status="on"]:not([data-skip-selftest]) .acw-readout {
   animation: acw-selftest-reveal 560ms steps(1, end) both;
 }
 
@@ -807,8 +819,8 @@ html.dark .acw-note[data-mode="hot"],
   opacity: 1;
 }
 
-.acw-unit[data-status="on"] .acw-wind-line::before,
-.acw-unit[data-status="on"] .acw-wind-line::after {
+.acw-unit[data-status="on"][data-mode="cold"] .acw-wind-line::before,
+.acw-unit[data-status="on"][data-mode="hot"] .acw-wind-line::after {
   animation-play-state: running;
 }
 
@@ -1191,6 +1203,9 @@ html.dark .acw-note[data-mode="hot"],
   --acw-note-bg: #f4f9ff;
   --acw-note-text: #22313f;
   --acw-note-accent: #1e88e5;
+  --acw-note-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.04),
+    0 10px 18px -10px rgba(0, 0, 0, 0.45);
   /* 顶边落在出风线的下半截：风线仍在纸条上方，看起来是被风推出来的 */
   position: absolute;
   top: calc(-1 * var(--acw-note-lift, 42px));
@@ -1205,11 +1220,9 @@ html.dark .acw-note[data-mode="hot"],
   max-width: min(300px, 92%);
   padding: 9px 14px 8px 9px;
   border-radius: 3px 3px 10px 10px;
-  background: var(--acw-note-bg);
+  background: linear-gradient(to bottom, var(--acw-note-bg), var(--acw-note-bg-bottom, var(--acw-note-bg)));
   color: var(--acw-note-text);
-  box-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.04),
-    0 10px 18px -10px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--acw-note-shadow);
   font-size: 13px;
   line-height: 1.35;
   translate: -50% 0;

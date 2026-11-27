@@ -12,6 +12,8 @@ describe('widget styles', () => {
     expect(generated).toBe(renderStyleModule(vueCss))
     expect(generated).not.toContain('@font-face')
     expect(generated).not.toContain(':root')
+    expect(generated).not.toContain('html.dark ')
+    expect(generated).toContain(':host-context(html.dark) ')
   })
 
   it('shares one stylesheet with the React component library', () => {

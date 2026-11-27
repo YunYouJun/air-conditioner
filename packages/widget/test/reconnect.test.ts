@@ -433,6 +433,80 @@ describe('widget DOM reconnection', () => {
       element.remove()
     }
   })
+
+  it('skips the power-on self-test and clears stale transition attributes on reconnect', () => {
+    const element = mountAirConditioner(document.body, {
+      tagName: 'test-ac-reconnect-skip-selftest',
+      storage: null,
+      enableAudio: false,
+      initialState: { status: true, mode: 'cold', temperature: 24 },
+    })
+    const root = element.shadowRoot!
+    const unit = root.querySelector<HTMLElement>('.acw-unit')!
+
+    try {
+      expect(unit.hasAttribute('data-skip-selftest')).toBe(false)
+      key(root, 'increment').click()
+      key(root, 'hot').click()
+      expect(root.querySelector('.acw-temperature')!.getAttribute('data-dir')).toBe('up')
+      expect(root.querySelector('.acw-mode-icon')!.hasAttribute('data-animate')).toBe(true)
+
+      // Moving a powered-on unit suppresses re-playing the 88 self-test and clears stale animation hooks.
+      element.remove()
+      document.body.appendChild(element)
+      expect(unit.hasAttribute('data-skip-selftest')).toBe(true)
+      expect(root.querySelector('.acw-temperature')!.hasAttribute('data-dir')).toBe(false)
+      expect(root.querySelector('.acw-mode-icon')!.hasAttribute('data-animate')).toBe(false)
+
+      // Real off -> on transition clears the skip flag so the self-test plays again.
+      key(root, 'toggleStatus').click()
+      expect(unit.hasAttribute('data-skip-selftest')).toBe(false)
+      key(root, 'toggleStatus').click()
+      expect(unit.hasAttribute('data-skip-selftest')).toBe(false)
+    }
+    finally {
+      element.remove()
+    }
+  })
+
+  it('defers AudioContext creation until user interaction', () => {
+    const createGain = vi.fn(() => ({
+      gain: { value: 1, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), setTargetAtTime: vi.fn(), cancelScheduledValues: vi.fn(), setValueCurveAtTime: vi.fn() },
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    }))
+    const audioContextCreated = vi.fn()
+    vi.stubGlobal('AudioContext', class {
+      currentTime = 0
+      state = 'suspended'
+      destination = {}
+      createGain = createGain
+      createBufferSource = vi.fn()
+      decodeAudioData = vi.fn()
+      resume = vi.fn().mockResolvedValue(undefined)
+      close = vi.fn().mockResolvedValue(undefined)
+      constructor() {
+        audioContextCreated()
+      }
+    })
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }))
+    const element = mountAirConditioner(document.body, {
+      tagName: 'test-ac-lazy-audio',
+      storage: null,
+      enableAudio: true,
+      assetsBaseUrl: '/lazy-audio-test',
+    })
+
+    try {
+      expect(audioContextCreated).not.toHaveBeenCalled()
+      key(element.shadowRoot!, 'toggleStatus').dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }))
+      expect(audioContextCreated).toHaveBeenCalledTimes(1)
+    }
+    finally {
+      element.remove()
+    }
+  })
 })
 
 describe('reentrant widget reconnection', () => {

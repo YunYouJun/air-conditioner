@@ -161,6 +161,27 @@ interface WidgetViewOptions {
   logoHref: string
   showEnergyLabel: boolean
   audio?: ReturnType<typeof resolveAcAudioAssets>
+  inlineStyle: boolean
+}
+
+let sharedStyleSheet: CSSStyleSheet | null | undefined
+
+function getSharedStyleSheet(): CSSStyleSheet | null {
+  if (sharedStyleSheet !== undefined)
+    return sharedStyleSheet
+  try {
+    if (typeof CSSStyleSheet === 'function' && 'replaceSync' in CSSStyleSheet.prototype) {
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(`${widgetStyleText}${floatingStyleText}`)
+      sharedStyleSheet = sheet
+      return sheet
+    }
+  }
+  catch {
+    // Fall back to an inline <style> tag when Constructable Stylesheets are unavailable.
+  }
+  sharedStyleSheet = null
+  return null
 }
 
 /**
@@ -169,15 +190,15 @@ interface WidgetViewOptions {
  */
 function widgetTemplate(view: WidgetViewOptions) {
   const audio = view.audio
-    ? `<audio data-audio="beep" src="${escapeHtml(view.audio.beep)}" preload="auto"></audio>
-      <audio data-audio="start" src="${escapeHtml(view.audio.start)}" preload="auto"></audio>
-      <audio data-audio="work" src="${escapeHtml(view.audio.work)}" preload="auto"></audio>`
+    ? `<audio data-audio="beep" src="${escapeHtml(view.audio.beep)}" preload="none"></audio>
+      <audio data-audio="start" src="${escapeHtml(view.audio.start)}" preload="none"></audio>
+      <audio data-audio="work" src="${escapeHtml(view.audio.work)}" preload="none"></audio>`
     : ''
   const logo = view.logoUrl
     ? `<div class="acw-logo"><a href="${escapeHtml(view.logoHref)}" target="_blank" rel="noreferrer noopener"${view.title ? ` title="${escapeHtml(view.title)}"` : ''} aria-label="${escapeHtml(view.title ?? 'Air Conditioner')}"><img src="${escapeHtml(view.logoUrl)}" alt=""></a></div>`
     : ''
   return `
-  <style>${widgetStyleText}${floatingStyleText}</style>
+  ${view.inlineStyle ? `<style>${widgetStyleText}${floatingStyleText}</style>` : ''}
   <div class="acw-root">
     ${audio}
     <div class="acw-unit">
@@ -210,7 +231,7 @@ function widgetTemplate(view: WidgetViewOptions) {
       <div class="acw-lcd" role="img">
         <div class="acw-lcd-main">
           <span class="acw-lcd-mode-slot"></span>
-          <span class="acw-lcd-temp acw-digit"></span>
+          <span class="acw-lcd-temp acw-digit"><span class="acw-lcd-temp-value"></span><small>°C</small></span>
         </div>
         <div class="acw-lcd-status" aria-hidden="true">
           <span class="acw-lcd-wind"><i></i><i></i><i></i><b>自动</b></span>
@@ -239,96 +260,147 @@ function widgetTemplate(view: WidgetViewOptions) {
 `
 }
 
+interface WidgetRefs {
+  root: HTMLElement
+  unit: HTMLElement
+  modeIcon: Element
+  temperature: Element
+  led: Element
+  wind: Element
+  lcd: HTMLElement
+  lcdTempValue: Element
+  lcdModeSlot: Element
+  lcdSoundSlot: Element
+  powerButton: HTMLButtonElement
+  coldButton: Element
+  hotButton: Element
+  fanButton: HTMLElement
+  swingButton: HTMLElement
+  soundButton: HTMLElement
+  remoteToggle: HTMLButtonElement
+  remoteToggleLabel: Element | null
+  remotePanel: HTMLElement
+}
+
+function collectWidgetRefs(shadowRoot: ShadowRoot): WidgetRefs {
+  return {
+    root: shadowRoot.querySelector<HTMLElement>('.acw-root')!,
+    unit: shadowRoot.querySelector<HTMLElement>('.acw-unit')!,
+    modeIcon: shadowRoot.querySelector('.acw-mode-icon')!,
+    temperature: shadowRoot.querySelector('.acw-temperature')!,
+    led: shadowRoot.querySelector('.acw-led')!,
+    wind: shadowRoot.querySelector('.acw-wind')!,
+    lcd: shadowRoot.querySelector<HTMLElement>('.acw-lcd')!,
+    lcdTempValue: shadowRoot.querySelector('.acw-lcd-temp-value')!,
+    lcdModeSlot: shadowRoot.querySelector('.acw-lcd-mode-slot')!,
+    lcdSoundSlot: shadowRoot.querySelector('.acw-lcd-sound-slot')!,
+    powerButton: shadowRoot.querySelector<HTMLButtonElement>('.acw-button-power')!,
+    coldButton: shadowRoot.querySelector('.acw-button-cold')!,
+    hotButton: shadowRoot.querySelector('.acw-button-hot')!,
+    fanButton: shadowRoot.querySelector<HTMLElement>('.acw-button-fan')!,
+    swingButton: shadowRoot.querySelector<HTMLElement>('.acw-button-swing')!,
+    soundButton: shadowRoot.querySelector<HTMLElement>('.acw-button-sound')!,
+    remoteToggle: shadowRoot.querySelector<HTMLButtonElement>('.acw-remote-toggle')!,
+    remoteToggleLabel: shadowRoot.querySelector('.acw-toggle-label'),
+    remotePanel: shadowRoot.querySelector<HTMLElement>('.acw-remote-panel')!,
+  }
+}
+
 /**
  * 用新节点替换旧节点，以便重新播放进入动画。
  */
-function replaceAnimated(current: Element, text: string, attribute: [string, string]) {
+function replaceAnimated(current: Element, text: string, attribute: [string, string]): HTMLElement {
   const next = current.cloneNode(false) as HTMLElement
   next.textContent = text
   next.setAttribute(...attribute)
+  next.addEventListener('animationend', () => next.removeAttribute(attribute[0]), { once: true })
   current.replaceWith(next)
+  return next
 }
 
-function updateWidget(root: ShadowRoot, state: AcState, previous: AcState | undefined) {
+function updateWidget(refs: WidgetRefs, state: AcState, previous: AcState | undefined) {
   const status = state.status ? 'on' : 'off'
-  for (const element of root.querySelectorAll<HTMLElement>('.acw-root, .acw-unit')) {
+  const fan = state.fan ?? 'auto'
+  for (const element of [refs.root, refs.unit]) {
     element.dataset.mode = state.mode
     element.dataset.status = status
     element.dataset.swing = state.swing ? 'on' : 'off'
-    element.dataset.fan = state.fan ?? 'auto'
+    element.dataset.fan = fan
   }
 
-  const mode = root.querySelector('.acw-mode-icon')!
-  if (!previous)
-    mode.textContent = acModeIcons[state.mode]
-  else if (previous.mode !== state.mode)
-    replaceAnimated(mode, acModeIcons[state.mode], ['data-animate', ''])
+  if (!state.status || (previous && previous.status !== state.status))
+    refs.unit.removeAttribute('data-skip-selftest')
 
-  const temperature = root.querySelector('.acw-temperature')!
-  if (!previous)
-    temperature.textContent = String(state.temperature)
-  else if (previous.temperature !== state.temperature)
-    replaceAnimated(temperature, String(state.temperature), ['data-dir', state.temperature > previous.temperature ? 'up' : 'down'])
+  if (!previous) {
+    refs.modeIcon.textContent = acModeIcons[state.mode]
+    refs.modeIcon.removeAttribute('data-animate')
+  }
+  else if (previous.mode !== state.mode) {
+    refs.modeIcon = replaceAnimated(refs.modeIcon, acModeIcons[state.mode], ['data-animate', ''])
+  }
+
+  if (!previous) {
+    refs.temperature.textContent = String(state.temperature)
+    refs.temperature.removeAttribute('data-dir')
+  }
+  else if (previous.temperature !== state.temperature) {
+    refs.temperature = replaceAnimated(refs.temperature, String(state.temperature), ['data-dir', state.temperature > previous.temperature ? 'up' : 'down'])
+  }
 
   // 雾气浓度与冷凝水滴落间隔（#70 / #21）
-  const unit = root.querySelector<HTMLElement>('.acw-unit')!
   const condensation = getAcCondensationStyle(state)
-  unit.dataset.drip = condensation.drip
-  unit.style.setProperty('--acw-mist', String(condensation.mist))
+  refs.unit.dataset.drip = condensation.drip
+  refs.unit.dataset.mist = condensation.mist > 0 ? 'on' : 'off'
+  refs.unit.style.setProperty('--acw-mist', String(condensation.mist))
   if (condensation.dripCycle)
-    unit.style.setProperty('--acw-drip-cycle', condensation.dripCycle)
+    refs.unit.style.setProperty('--acw-drip-cycle', condensation.dripCycle)
   else
-    unit.style.removeProperty('--acw-drip-cycle')
+    refs.unit.style.removeProperty('--acw-drip-cycle')
 
-  root.querySelector('.acw-led')!.setAttribute('aria-label', status)
-  root.querySelector('.acw-wind')!.setAttribute('aria-hidden', state.status ? 'false' : 'true')
-  updateRemote(root, state, previous)
+  refs.led.setAttribute('aria-label', status)
+  refs.wind.setAttribute('aria-hidden', state.status ? 'false' : 'true')
+  updateRemote(refs, state, previous)
 }
 
 /**
  * 遥控器：小屏与按键状态，结构与 Vue / React 的 RemoteControl 一致。
  */
-function updateRemote(root: ShadowRoot, state: AcState, previous: AcState | undefined) {
+function updateRemote(refs: WidgetRefs, state: AcState, previous: AcState | undefined) {
   const text = getAcRemoteText(state)
 
-  const lcd = root.querySelector<HTMLElement>('.acw-lcd')!
-  lcd.setAttribute('aria-label', text.display)
-  lcd.dataset.status = state.status ? 'on' : 'off'
-  lcd.dataset.mode = state.mode
-  lcd.dataset.swing = state.swing ? 'on' : 'off'
-  lcd.dataset.fan = state.fan ?? 'auto'
-  root.querySelector('.acw-lcd-temp')!.innerHTML = `${state.temperature}<small>°C</small>`
+  refs.lcd.setAttribute('aria-label', text.display)
+  refs.lcd.dataset.status = state.status ? 'on' : 'off'
+  refs.lcd.dataset.mode = state.mode
+  refs.lcd.dataset.swing = state.swing ? 'on' : 'off'
+  refs.lcd.dataset.fan = state.fan ?? 'auto'
+  refs.lcdTempValue.textContent = String(state.temperature)
 
-  const power = root.querySelector<HTMLElement>('.acw-button-power')!
-  power.classList.toggle('acw-button-on', state.status)
-  power.setAttribute('aria-pressed', String(state.status))
-  power.title = text.power
+  refs.powerButton.classList.toggle('acw-button-on', state.status)
+  refs.powerButton.setAttribute('aria-pressed', String(state.status))
+  refs.powerButton.title = text.power
 
   if (previous?.mode !== state.mode) {
-    root.querySelector('.acw-lcd-mode-slot')!.innerHTML = icon(state.mode, 22, 'acw-lcd-mode')
-    for (const mode of ['cold', 'hot'] as const)
-      root.querySelector(`.acw-button-${mode}`)!.setAttribute('aria-pressed', String(state.mode === mode))
+    refs.lcdModeSlot.innerHTML = icon(state.mode, 22, 'acw-lcd-mode')
+    refs.coldButton.setAttribute('aria-pressed', String(state.mode === 'cold'))
+    refs.hotButton.setAttribute('aria-pressed', String(state.mode === 'hot'))
   }
 
   if (previous?.fan !== state.fan) {
-    const fan = root.querySelector<HTMLElement>('.acw-button-fan')!
-    fan.dataset.fan = state.fan ?? 'auto'
-    fan.title = text.fan
+    refs.fanButton.dataset.fan = state.fan ?? 'auto'
+    refs.fanButton.title = text.fan
   }
 
   if (previous?.swing !== state.swing) {
-    const swing = root.querySelector<HTMLElement>('.acw-button-swing')!
-    swing.setAttribute('aria-pressed', String(state.swing))
-    swing.title = text.swing
+    refs.swingButton.setAttribute('aria-pressed', String(state.swing))
+    refs.swingButton.title = text.swing
   }
 
   if (previous?.sound !== state.sound) {
-    const sound = root.querySelector<HTMLElement>('.acw-button-sound')!
-    sound.dataset.sound = state.sound
-    sound.title = text.sound
-    sound.innerHTML = icon(acSoundIcons[state.sound], 20)
-    root.querySelector('.acw-lcd-sound-slot')!.innerHTML = icon(acSoundIcons[state.sound], 14, 'acw-lcd-sound')
-    root.querySelector('.acw-lcd-sound')!.setAttribute('data-sound', state.sound)
+    refs.soundButton.dataset.sound = state.sound
+    refs.soundButton.title = text.sound
+    refs.soundButton.innerHTML = icon(acSoundIcons[state.sound], 20)
+    refs.lcdSoundSlot.innerHTML = icon(acSoundIcons[state.sound], 14, 'acw-lcd-sound')
+    refs.lcdSoundSlot.querySelector('.acw-lcd-sound')!.setAttribute('data-sound', state.sound)
   }
 }
 
@@ -468,6 +540,7 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     private store?: AirConditionerStore
     private unsubscribe?: () => void
     private renderedState?: AcState
+    private refs?: WidgetRefs
     private stopObservers: (() => void)[] = []
     private audio?: AcAudioController
     private audioRunning = false
@@ -486,15 +559,22 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       const enableAudio = options.enableAudio ?? true
       ensureDigitFont(assetsBaseUrl)
       if (!this.shadowRoot) {
-        this.attachShadow({ mode: 'open' }).innerHTML = widgetTemplate({
+        const root = this.attachShadow({ mode: 'open' })
+        const sheet = getSharedStyleSheet()
+        const supportsAdopted = Boolean(sheet && 'adoptedStyleSheets' in root)
+        root.innerHTML = widgetTemplate({
           title: this.getAttribute('title') ?? options.title,
           logoUrl: options.logoUrl ?? '/yun-logo.svg',
           logoHref: options.logoHref ?? 'https://github.com/YunYouJun/air-conditioner',
           showEnergyLabel: options.showEnergyLabel ?? true,
           audio: enableAudio ? resolveAcAudioAssets(`${assetsBaseUrl}/audio`, options.audioExt ?? 'm4a') : undefined,
+          inlineStyle: !supportsAdopted,
         })
+        if (supportsAdopted && sheet)
+          root.adoptedStyleSheets = [sheet]
       }
 
+      this.refs ||= collectWidgetRefs(this.shadowRoot!)
       const notificationView = createNotificationView(this.shadowRoot!)
       this.notificationView = notificationView
       // The model belongs to this element; only connection resources are recreated.
@@ -536,26 +616,25 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       const initial = this.store.getState()
       if (!initial.status)
         this.audioRunning = false
-      const audio = this.ensureAudio(initial.sound, initial.fan ?? 'auto')
+      if (reconnecting && initial.status)
+        this.refs.unit.setAttribute('data-skip-selftest', '')
       if (reconnecting && this.audioRunning && initial.status)
-        audio?.resumeFan()
+        this.ensureAudio(initial.sound, initial.fan ?? 'auto')?.resumeFan()
       this.updatePlacement()
       this.renderedState = undefined
       this.render()
 
       // 窄容器下机身等比缩小，保持长款比例；精细指针下轻微 3D 倾斜
-      const unit = this.shadowRoot?.querySelector<HTMLElement>('.acw-unit')
-      if (unit) {
-        this.stopObservers.push(
-          observeAcScale(unit, acShellSize.compact.width, (scale) => {
-            unit.style.setProperty('--acw-scale', String(scale))
-          }),
-          observeAcTilt(unit, (x, y) => {
-            unit.style.setProperty('--acw-tilt-x', `${x}deg`)
-            unit.style.setProperty('--acw-tilt-y', `${y}deg`)
-          }),
-        )
-      }
+      const unit = this.refs.unit
+      this.stopObservers.push(
+        observeAcScale(unit, acShellSize.compact.width, (scale) => {
+          unit.style.setProperty('--acw-scale', String(scale))
+        }),
+        observeAcTilt(unit, (x, y) => {
+          unit.style.setProperty('--acw-tilt-x', `${x}deg`)
+          unit.style.setProperty('--acw-tilt-y', `${y}deg`)
+        }),
+      )
 
       // 温度键：长按连续调温，到上下限就停
       const value = () => this.store?.getState().temperature
@@ -613,9 +692,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
 
     private onClick = (event: Event) => {
       if ((event.target as Element | null)?.closest('.acw-remote-toggle')) {
-        const panel = this.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')
-        if (panel)
-          this.setRemoteOpen(Boolean(panel.hidden))
+        if (this.refs)
+          this.setRemoteOpen(Boolean(this.refs.remotePanel.hidden))
         return
       }
       // 按钮内是 SVG 图标，点击目标可能是 path，向上查找带 data-action 的按钮
@@ -634,14 +712,14 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
     }
 
     private updatePlacement() {
-      if (!this.shadowRoot)
+      if (!this.shadowRoot || !this.refs)
         return
       const value = this.getAttribute('placement') ?? options.placement
       const placement = value === 'top-left' || value === 'top-right' ? value : 'inline'
       const wasFloating = this.placement && this.placement !== 'inline'
       this.placement = placement
       this.dataset.acPlacement = placement
-      const toggle = this.shadowRoot.querySelector<HTMLButtonElement>('.acw-remote-toggle')!
+      const toggle = this.refs.remoteToggle
       const focusRemote = placement === 'inline' && this.shadowRoot.activeElement === toggle
       toggle.hidden = placement === 'inline'
       // Switching sides retains the disclosure state; entering floating mode starts compact.
@@ -649,19 +727,17 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
         this.setRemoteOpen(placement === 'inline')
       // Browsers cannot focus a control while its panel is still hidden.
       if (focusRemote)
-        this.shadowRoot.querySelector<HTMLButtonElement>('.acw-button-power')?.focus()
+        this.refs.powerButton.focus()
     }
 
     private setRemoteOpen(open: boolean) {
-      const panel = this.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')
-      const toggle = this.shadowRoot?.querySelector<HTMLButtonElement>('.acw-remote-toggle')
-      if (!panel || !toggle)
+      if (!this.refs)
         return
+      const { remotePanel: panel, remoteToggle: toggle, remoteToggleLabel: label } = this.refs
       if (!open && this.shadowRoot?.activeElement && panel.contains(this.shadowRoot.activeElement))
         toggle.focus()
       panel.hidden = !open
       toggle.setAttribute('aria-expanded', String(open))
-      const label = toggle.querySelector('.acw-toggle-label')
       if (label)
         label.textContent = open ? '收起遥控器' : '打开遥控器'
     }
@@ -670,13 +746,13 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
       const keyboardEvent = event as KeyboardEvent
       if (keyboardEvent.key !== 'Escape' || this.placement === 'inline')
         return
-      const panel = this.shadowRoot?.querySelector<HTMLElement>('.acw-remote-panel')
+      const panel = this.refs?.remotePanel
       if (!panel || panel.hidden)
         return
       keyboardEvent.preventDefault()
       keyboardEvent.stopPropagation()
       this.setRemoteOpen(false)
-      this.shadowRoot?.querySelector<HTMLButtonElement>('.acw-remote-toggle')?.focus()
+      this.refs?.remoteToggle.focus()
     }
 
     /**
@@ -715,8 +791,8 @@ export function defineAirConditionerElement(options: DefineAirConditionerElement
 
     private render() {
       const state = this.store?.getState() ?? defaultAcState
-      if (this.shadowRoot)
-        updateWidget(this.shadowRoot, state, this.renderedState)
+      if (this.refs)
+        updateWidget(this.refs, state, this.renderedState)
       this.renderedState = state
     }
   }

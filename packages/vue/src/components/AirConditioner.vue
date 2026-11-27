@@ -83,6 +83,7 @@ watch(() => state.value.mode, () => {
     :data-swing="state.swing ? 'on' : 'off'"
     :data-fan="state.fan ?? 'auto'"
     :data-drip="condensation.drip"
+    :data-mist="condensation.mist > 0 ? 'on' : 'off'"
     :data-size="size === 'compact' ? undefined : size"
     :style="{ '--acw-scale': scale, '--acw-tilt-x': `${tilt[0]}deg`, '--acw-tilt-y': `${tilt[1]}deg`, '--acw-mist': condensation.mist, '--acw-drip-cycle': condensation.dripCycle }"
   >

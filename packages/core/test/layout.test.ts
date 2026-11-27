@@ -99,4 +99,36 @@ describe('shell layout', () => {
     stop()
     expect(target.removeEventListener).toHaveBeenCalledTimes(2)
   })
+
+  it('coalesces pointermove measurements to one animation frame and resets tilt on cleanup', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('pointer: fine') }))
+    const queued: FrameRequestCallback[] = []
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      queued.push(cb)
+      return queued.length
+    })
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    const listeners: Record<string, (event: any) => void> = {}
+    const getBoundingClientRect = vi.fn(() => ({ left: 0, top: 0, width: 200, height: 100 }))
+    const target = {
+      getBoundingClientRect,
+      addEventListener: (type: string, listener: (event: any) => void) => listeners[type] = listener,
+      removeEventListener: vi.fn(),
+    } as unknown as HTMLElement
+    const onTilt = vi.fn()
+    const stop = observeAcTilt(target, onTilt, 4)
+
+    listeners.pointermove({ clientX: 50, clientY: 50 })
+    listeners.pointermove({ clientX: 200, clientY: 0 })
+    expect(getBoundingClientRect).not.toHaveBeenCalled()
+    expect(queued).toHaveLength(1)
+
+    queued[0](0)
+    expect(getBoundingClientRect).toHaveBeenCalledTimes(1)
+    expect(onTilt.mock.calls).toEqual([[4, 4]])
+
+    // Detaching while hovered must reset tilt to 0 even without pointerleave.
+    stop()
+    expect(onTilt.mock.calls).toEqual([[4, 4], [0, 0]])
+  })
 })

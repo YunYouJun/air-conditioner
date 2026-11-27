@@ -492,6 +492,35 @@ describe('createAcAudioController with Web Audio', () => {
     controller.dispose()
     vi.useRealTimers()
   })
+
+  it('reuses default fetch cache across controller instances', async () => {
+    const fetchMock = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => new TextEncoder().encode(url).buffer as ArrayBuffer,
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    try {
+      const urls = {
+        beep: fakeElement('/audio/shared-cache-di.m4a'),
+        start: fakeElement('/audio/shared-cache-work.m4a'),
+        work: fakeElement('/audio/shared-cache-fan.m4a'),
+      }
+      const first = createAcAudioController(urls, { createAudioContext: () => fakeAudioContext().context as unknown as AudioContext })
+      await drain()
+      first.dispose()
+
+      const second = createAcAudioController(urls, { createAudioContext: () => fakeAudioContext().context as unknown as AudioContext })
+      await drain()
+      second.dispose()
+
+      expect(fetchMock).toHaveBeenCalledTimes(3)
+    }
+    finally {
+      vi.unstubAllGlobals()
+    }
+  })
 })
 
 // #21

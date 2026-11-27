@@ -83,6 +83,7 @@ export function AirConditioner(props: AirConditionerProps = {}) {
       data-swing={swing ? 'on' : 'off'}
       data-fan={fan}
       data-drip={condensation.drip}
+      data-mist={condensation.mist > 0 ? 'on' : 'off'}
       data-size={size === 'compact' ? undefined : size}
       style={{
         '--acw-scale': scale,
