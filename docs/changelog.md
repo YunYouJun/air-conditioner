@@ -4,6 +4,31 @@
 
 ## 未发布
 
+### 网页挂件与部署
+
+- **角落悬浮小挂件**：新增独立挂件包 `@yunlefun-home/air-conditioner-widget`，支持右下角可收起遥控器、独立浏览器安装演示页，以及无需构建的固定版本 CDN `<script>` / npm 安装方式。（[#186](https://github.com/YunYouJun/air-conditioner/pull/186)、[#187](https://github.com/YunYouJun/air-conditioner/pull/187)、[#188](https://github.com/YunYouJun/air-conditioner/pull/188)）
+- **网站构建**：修复 Vercel 上的 monorepo 网站构建配置。（[#185](https://github.com/YunYouJun/air-conditioner/pull/185)）
+
+### macOS 菜单栏小空调（CuteAC）
+
+- **不可用状态提示**：当已绑定的 Home Assistant 空调暂时不可用时，弹窗与读数区域会清晰显示不可用状态。
+- **签名与公证流程**：Developer ID 构建开启 Hardened Runtime，Release 工作流接入 Apple 自动公证与票据装订（配置公证密钥后随下次发版生效）。
+
+## v0.4.3（2026-10-18）
+
+- **macOS 菜单栏小空调（CuteAC）**：修复多屏菜单栏弹窗首次打开时的位置偏移、跳动和裁切；优化 `25.5°C` 等小数温度的字号排版与电源按钮对齐。
+- **网页版**：切换 2D / 3D 与挂机 / 柜机时保持页面位置不动；为 3D 挂机右侧补上能效标识。
+
+## v0.4.2（2026-10-18）
+
+- **macOS 菜单栏小空调（CuteAC）**：升级 `HomeDeviceKit`，同一 Home Assistant 地址的多台空调在会话内复用一次钥匙串读取，减少切换与重连时的重复授权弹窗；发布包启用 Developer ID 签名（团队 `QT792GAY4C`）。
+
+## v0.4.1（2026-10-18）
+
+- **macOS 菜单栏小空调（CuteAC）**：改用 Xcode 构建后端打包 SwiftPM 资源，修复独立解压启动因找不到字体和 3D 模型闪退的问题，并在 CI 增加独立目录启动与离屏截图校验。
+
+## v0.4.0（2026-10-18）
+
 ### 网页版
 
 - **3D 模式**：点「3D」，空调变成和桌面版同一个立体模型，可以拖动转一转（双击回正），还能在挂机和柜机之间切换；导风板、显示窗、指示灯、扫风、雾气和冷凝水都和平面版一致。只在打开时才下载 3D 部分，平时页面不变重；浏览器不支持时按钮会变灰。（[#184](https://github.com/YunYouJun/air-conditioner/issues/184)）
@@ -30,6 +55,7 @@
 
 ### macOS 菜单栏小空调（CuteAC）
 
+- **Home Assistant 接入与跨 App 同步**：复用 Home 0.2.0 的 `HomeDeviceKit` 与钥匙串令牌，支持多台真实空调切换，并与「云之彼端」Home App 自动同步状态。
 - **室温**：把这台 Mac 当作空调所在的房间，显示 CPU 温度、风扇转速和散热状态；风扇转得越快，雪花和暖风吹得越猛。只读取，不需要管理员权限。
 - **柜机**：可以在挂机和柜机之间一键切换外观；柜机的出风口是一排会倾斜的百叶，桌面挂件也会变成竖长的样子。
 - **风速**：自动时跟随 Mac 的风扇，也可以固定在低、中、高档；制冷和制热各自记住温度。
