@@ -109,18 +109,23 @@ Developed and deployed based on Tencent's open source project [CloudBase Framewo
 ## Dev
 
 ```bash
-# yarn dev
-yarn start
-# http://localhost:3000/
+# Install dependencies
+pnpm install --frozen-lockfile
 
-yarn build
-# ./build
+# Start React web app
+pnpm react:dev
+
+# Build React web app (outputs to packages/react/dist)
+pnpm react:build
+
+# Run full checks (lint / typecheck / test / build)
+pnpm run check
 ```
 
 ### Environment Variables
 
 ```bash
-cp .env.example .env
+cp .env.example packages/react/.env
 ```
 
 ```bash

@@ -62,7 +62,7 @@ Home 是绑定目录的维护方：`~/Library/Application Support/YunHome/ha-bin
 
 CuteAC 和 npm 包共用仓库版本号（bumpp 同步各个 `package.json`），`scripts/bundle.sh` 把它写进 `CFBundleShortVersionString`。推送 `v*` 标签后，[Release 工作流](../../.github/workflows/release.yml)会在 macOS 上测试共享包、打包 `CuteAC.app`，压缩成 `CuteAC-<版本>.zip` 上传到同名 GitHub Release，应用的检查更新读的就是这里。
 
-0.4.2–0.4.3 的发布包使用 Developer ID 签名但尚未进行 Apple 公证；0.4.3 之后的版本启用 Hardened Runtime（`--options runtime`），并在 [Release 工作流](../../.github/workflows/release.yml) 中通过 `scripts/notarize.sh` 完成 Apple 公证与票据装订，下载后可直接打开而不会触发 Gatekeeper 拦截。若使用 0.4.3 及更早的未经公证版本，按 macOS 的“隐私与安全性”界面确认来源后打开。
+0.4.2–0.4.3 的发布包使用 Developer ID 签名但尚未进行 Apple 公证；0.4.3 之后的版本启用 Hardened Runtime（`--options runtime`），并在 [Release 工作流](../../.github/workflows/release.yml) 中通过 `scripts/notarize.sh` 完成 Apple 公证、票据装订及压缩包 `spctl` 校验（待仓库配置 `MACOS_NOTARY_*` Secrets 后随下一版生效），且在全部构建与公证产物就绪后才公开发布 GitHub Release。若使用 0.4.3 及更早的未经公证版本，按 macOS 的“隐私与安全性”界面确认来源后打开。
 
 减少升级钥匙串提示需要持续使用同一 Developer ID 身份和 Bundle ID。打包支持 `CODE_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' scripts/bundle.sh`，未设置时仍使用 ad-hoc 签名。main CI 与正式发布会从 Actions Secrets 向临时钥匙串导入同一证书，强制校验团队及代码身份并在结束时清理；缺失配置直接失败。PR 构建不读取证书。正式发布还会读取 `MACOS_NOTARY_KEY_P8_BASE64`、`MACOS_NOTARY_KEY_ID` 和 `MACOS_NOTARY_ISSUER_ID` 三个 Actions Secrets 完成 Apple 公证与装订。配置约定与脚本复用 [Home 发布签名与公证配置](https://github.com/YunLeFun/home/blob/main/apps/macos/docs/release-signing.md#notarization)。首次从 ad-hoc 切换时可能需选择“始终允许”，以后使用同一签名身份才能保持信任。不要放宽钥匙串项目为“允许所有应用访问”。
 
@@ -83,7 +83,7 @@ open build/CuteAC.app
 
 打包显式使用 Xcode 构建后端，并用相同后端的 `--show-bin-path` 定位文件，使资源从 App 的 `Contents/Resources` 加载，不依赖构建机器的目录。CI 不运行 Blender，直接使用仓库里的 USDZ 模型。
 
-CI 和发布工作流将 `YunLeFun/home` 的 Home 0.2.0 提交 `cfc81f3aa1c981e4dc44d64aedc83f7662519299` 检出到 `.deps/home`，并设置 `HOME_DEVICE_KIT_PATH`。该提交提供共享绑定目录与设备集合 API。跨仓库发布时先推送 Home 的这笔提交，再推送或发布 CuteAC，确保 CI 可以获取依赖；本机开发仍可使用相邻仓库的源码。
+CI 和发布工作流将 `YunLeFun/home` 的 Home 0.2.2 提交 `932bb3a1ad908097586631ad3bd641443a2c81ca` 检出到 `.deps/home`，并设置 `HOME_DEVICE_KIT_PATH`。该提交提供共享绑定目录与跨刷新/跨设备缓存 API。跨仓库发布时先推送 Home 的这笔提交，再推送或发布 CuteAC，确保 CI 可以获取依赖；本机开发仍可使用相邻仓库的源码。
 
 调试参数：
 

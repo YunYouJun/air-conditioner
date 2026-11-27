@@ -26,7 +26,8 @@ import '@yunlefun-home/air-conditioner/style.css'
 样式表使用包内相对路径加载数码管字体，现代构建工具会自动处理，无需手动复制。完整 Widget 的音效与默认 Logo 仍需放到宿主项目的静态资源目录：
 
 ```bash
-cp -r node_modules/@yunlefun-home/air-conditioner/dist/assets public/assets
+mkdir -p public/assets
+cp -r node_modules/@yunlefun-home/air-conditioner/dist/assets/. public/assets/
 cp node_modules/@yunlefun-home/air-conditioner/dist/yun-logo.svg public/yun-logo.svg
 ```
 
@@ -48,8 +49,8 @@ import '@yunlefun-home/air-conditioner/style.css'
 
 更多用法（Props、手动组合、暗黑模式、音效接入、组合式 API）见文档：
 
-📖 <https://github.com/YunYouJun/air-conditioner/blob/dev/docs/guide/vue.md>
+📖 <https://github.com/YunYouJun/air-conditioner/blob/main/docs/guide/vue.md>
 
 ## License
 
-[MIT](https://github.com/YunYouJun/air-conditioner/blob/dev/LICENSE)
+[MIT](https://github.com/YunYouJun/air-conditioner/blob/main/LICENSE)

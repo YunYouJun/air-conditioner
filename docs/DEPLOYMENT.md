@@ -5,17 +5,19 @@
 ## Pages Git 集成设置（待确认后配置）
 
 - 仓库：`YunYouJun/air-conditioner`。
-- 使用独立的文档 Pages 项目，项目名称由账号管理员确认，不假定已有项目。
+- 使用独立的文档 Pages 项目（例如 `air-conditioner-docs`），项目名称由账号管理员确认，不假定已有项目。当前 Cloudflare 账号（`Me@yunyoujun.cn`）内仅存在主站项目 `air-conditioner`（`air-conditioner-eut.pages.dev`，绑定 `ac.yunyoujun.cn` / `ac.yyj.moe`）与历史项目 `air-conditioner-adsense`，尚无文档 Pages 项目及 `docs.ac.yunyoujun.cn` DNS 记录。
 - 根目录：仓库根目录（留空），不要设为 `docs`，因为文档引用 workspace 的 core / widget 源码。
-- 框架预设：VitePress 或 None，以以下显式配置为准。
+- 构建系统：使用 Cloudflare Pages 构建镜像 v3；框架预设为 VitePress 或 None，以以下显式配置为准。
 - 构建命令：`pnpm install --frozen-lockfile && pnpm docs:build`。
 - 输出目录：`docs/.vitepress/dist`。
-- Node.js：使用项目 CI 相同的受支持 LTS 版本；建议显式设置 `NODE_VERSION=24`。
-- pnpm：设置 `PNPM_VERSION=12.11.2`，与根目录 `packageManager` 一致。
+- 环境变量（Production 与 Preview 建议一致）：
+  - `NODE_VERSION=24`（受支持 LTS 版本；注意 GitHub Actions 的 `lts/*` 随新 LTS 推进，如需对齐主版本可统一调整）
+  - `PNPM_VERSION=12.11.2`（与根目录 `packageManager` 一致）
+  - `SKIP_DEPENDENCY_INSTALL=1`（跳过平台预装阶段的重复/旧版安装，由显式 `build_command` 执行 `pnpm install --frozen-lockfile`）
 - 文档不需要 API key、服务端 Functions、运行时环境变量或 `VITE_BASE`。独立域名使用 VitePress 默认根路径 `/`。
 - 生产分支计划为 `main`；预览可使用 PR 分支。首次创建项目或接入 Git 可能自动部署，必须先确认。
 
-若平台自动安装依赖已启用，上述显式 frozen-lockfile 安装仍用于验证锁文件一致性。不要修改仓库的 packageManager 来迁就平台默认版本。
+如未设置 `SKIP_DEPENDENCY_INSTALL=1` 且平台自动安装依赖已启用，上述显式 frozen-lockfile 安装仍用于验证锁文件一致性。不要修改仓库的 packageManager 来迁就平台默认版本。
 
 ## 本地 / CI 验证
 

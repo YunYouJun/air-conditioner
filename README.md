@@ -119,20 +119,23 @@ const widget = mountAirConditioner(document.body, {
 ## Dev
 
 ```bash
-# 开发预览
-# yarn dev
-yarn start
-# http://localhost:3000/
+# 安装依赖
+pnpm install --frozen-lockfile
 
-# 构建项目
-yarn build
-# ./build
+# 开发预览（React 主站）
+pnpm react:dev
+
+# 构建主站（输出至 packages/react/dist）
+pnpm react:build
+
+# 运行全部检查（lint / typecheck / test / build）
+pnpm run check
 ```
 
 ### 环境变量
 
 ```bash
-cp .env.example .env
+cp .env.example packages/react/.env
 ```
 
 ```bash
@@ -156,7 +159,7 @@ pnpm release
 
 首次使用前，需要在 npmjs.com 三个包的 Settings → Trusted publishing 中添加 GitHub Actions：仓库 `YunYouJun/air-conditioner`，工作流 `release.yml`。
 
-`v*` Tag 的 Release 还会把 Yun Home 设备插件 `air-conditioner.yunplugin` 及其 SHA-256 上传到 GitHub Release。插件由 [`packages/home-plugin`](packages/home-plugin) 构建：`state.js` 直接打包 core 的 reducer，在 Yun Home 的沙箱中运行，控件以 `controls.json` 声明，由宿主原生渲染。本地构建：
+`v*` Tag 的 Release 还会将 Yun Home 设备插件 `air-conditioner.yunplugin`（及其 SHA-256）以及经过 Developer ID 签名、Apple 公证并装订票据的 `CuteAC-<version>.zip` 附带到 GitHub Release，待全部产物就绪后再公开。插件由 [`packages/home-plugin`](packages/home-plugin) 构建：`state.js` 直接打包 core 的 reducer，在 Yun Home 的沙箱中运行，控件以 `controls.json` 声明，由宿主原生渲染。发版并确认 npm 包可访问后，记得同步更新 README 与文档中固定版本的 CDN 脚本示例。本地构建插件：
 
 ```bash
 pnpm -C packages/home-plugin build

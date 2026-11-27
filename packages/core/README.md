@@ -21,4 +21,4 @@ store.dispatch({ type: 'update', payload: { temperature: 26 } })
 
 ## License
 
-[MIT](https://github.com/YunYouJun/air-conditioner/blob/dev/LICENSE)
+[MIT](https://github.com/YunYouJun/air-conditioner/blob/main/LICENSE)

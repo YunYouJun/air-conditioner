@@ -28,10 +28,11 @@ import '@yunlefun-home/air-conditioner/style.css'
 组件依赖一组音效与数码管字体，需要由宿主项目托管在静态资源目录下。从包内拷贝到你的 `public/`：
 
 ```bash
-cp -r node_modules/@yunlefun-home/air-conditioner/dist/assets public/assets
+mkdir -p public/assets
+cp -r node_modules/@yunlefun-home/air-conditioner/dist/assets/. public/assets/
 ```
 
-> 若你的项目没有把这些文件打进 `dist`，可直接从仓库的 [`packages/vue/public/assets`](https://github.com/YunYouJun/air-conditioner/tree/dev/packages/vue/public) 取用。
+> 若你的项目没有把这些文件打进 `dist`，可直接从仓库的 [`packages/vue/public/assets`](https://github.com/YunYouJun/air-conditioner/tree/main/packages/vue/public/assets) 取用。
 
 默认目录结构：
 

@@ -2,9 +2,50 @@ version = 1
 name = "air-conditioner"
 
 [setup]
-script = ""
+script = "pnpm install --frozen-lockfile"
 
 [[actions]]
 name = "Run"
 icon = "run"
 command = "./script/build_and_run.sh"
+platform = "darwin"
+
+[[actions]]
+name = "Debug CuteAC"
+icon = "debug"
+command = "./script/build_and_run.sh --logs"
+platform = "darwin"
+
+[[actions]]
+name = "React site"
+icon = "run"
+command = "pnpm react:dev --port 5193 --strictPort"
+
+[[actions]]
+name = "Vue demo"
+icon = "run"
+command = "pnpm vue:dev --port 5192 --strictPort"
+
+[[actions]]
+name = "Docs"
+icon = "run"
+command = "pnpm docs:dev --port 5194 --strictPort"
+
+[[actions]]
+name = "Check"
+icon = "test"
+command = "pnpm run check && pnpm docs:build"
+
+[[actions]]
+name = "Test macOS"
+icon = "test"
+command = '''
+if [ -z "${HOME_DEVICE_KIT_PATH:-}" ] && [ ! -f ../home/Package.swift ] && [ ! -f ../../YunLeFun/home/Package.swift ]; then
+  main_repo="$(cd "$(git rev-parse --git-common-dir)/.." && pwd)"
+  for candidate in "$main_repo/../home" "$main_repo/../../YunLeFun/home"; do
+    if [ -f "$candidate/Package.swift" ]; then export HOME_DEVICE_KIT_PATH="$(cd "$candidate" && pwd)"; break; fi
+  done
+fi
+swift test && swift test --package-path apps/macos
+'''
+platform = "darwin"
