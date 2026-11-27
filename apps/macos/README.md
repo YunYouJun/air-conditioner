@@ -62,9 +62,9 @@ Home 是绑定目录的维护方：`~/Library/Application Support/YunHome/ha-bin
 
 CuteAC 和 npm 包共用仓库版本号（bumpp 同步各个 `package.json`），`scripts/bundle.sh` 把它写进 `CFBundleShortVersionString`。推送 `v*` 标签后，[Release 工作流](../../.github/workflows/release.yml)会在 macOS 上测试共享包、打包 `CuteAC.app`，压缩成 `CuteAC-<版本>.zip` 上传到同名 GitHub Release，应用的检查更新读的就是这里。
 
-从 0.4.2 起发布包使用 Developer ID 签名，尚未进行 Apple 公证；若系统提示无法验证，按 macOS 的“隐私与安全性”界面确认来源后打开。
+0.4.2–0.4.3 的发布包使用 Developer ID 签名但尚未进行 Apple 公证；0.4.3 之后的版本启用 Hardened Runtime（`--options runtime`），并在 [Release 工作流](../../.github/workflows/release.yml) 中通过 `scripts/notarize.sh` 完成 Apple 公证与票据装订，下载后可直接打开而不会触发 Gatekeeper 拦截。若使用 0.4.3 及更早的未经公证版本，按 macOS 的“隐私与安全性”界面确认来源后打开。
 
-减少升级钥匙串提示需要持续使用同一 Developer ID 身份和 Bundle ID。打包支持 `CODE_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' scripts/bundle.sh`，未设置时仍使用 ad-hoc 签名。main CI 与正式发布会从 Actions Secrets 向临时钥匙串导入同一证书，强制校验团队及代码身份并在结束时清理；缺失配置直接失败。PR 构建不读取证书。配置约定与脚本复用 [Home 发布签名配置](https://github.com/YunLeFun/home/blob/main/apps/macos/docs/release-signing.md)。首次从 ad-hoc 切换时可能需选择“始终允许”，以后使用同一签名身份才能保持信任。不要放宽钥匙串项目为“允许所有应用访问”。此签名选项不执行公证。
+减少升级钥匙串提示需要持续使用同一 Developer ID 身份和 Bundle ID。打包支持 `CODE_SIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' scripts/bundle.sh`，未设置时仍使用 ad-hoc 签名。main CI 与正式发布会从 Actions Secrets 向临时钥匙串导入同一证书，强制校验团队及代码身份并在结束时清理；缺失配置直接失败。PR 构建不读取证书。正式发布还会读取 `MACOS_NOTARY_KEY_P8_BASE64`、`MACOS_NOTARY_KEY_ID` 和 `MACOS_NOTARY_ISSUER_ID` 三个 Actions Secrets 完成 Apple 公证与装订。配置约定与脚本复用 [Home 发布签名与公证配置](https://github.com/YunLeFun/home/blob/main/apps/macos/docs/release-signing.md#notarization)。首次从 ad-hoc 切换时可能需选择“始终允许”，以后使用同一签名身份才能保持信任。不要放宽钥匙串项目为“允许所有应用访问”。
 
 ## 运行
 
@@ -151,5 +151,5 @@ gifsicle -O3 --lossy=35 --colors 128 /tmp/cute-ac/demo.gif -o ../../docs/public/
 
 - 为沙箱版本配置 App Group 与 Keychain Access Group；当前共享绑定用于同一 macOS 用户下的非沙箱 App。
 - WidgetKit 小组件：每种状态用一张 `Model/renders` 里的预渲染图片。
-- 签名、公证并发布 Release。
+- 签名、公证并发布自动化已接入 Release 工作流（待仓库配置 `MACOS_NOTARY_*` Secrets 后随下一版生效）。
 - 渲染器暂时继续用 SceneKit。为什么不现在迁到 RealityKit、什么时候迁，见 [RealityKit 迁移评估与渲染器选型](docs/realitykit-spike.md)。

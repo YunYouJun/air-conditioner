@@ -6,7 +6,8 @@ name: Release
 # on npmjs.com.
 #
 # Tag pushes also attach the Yun Home plugin and the CuteAC app
-# (CuteAC-<version>.zip) to the GitHub Release, which the app's update check reads.
+# (CuteAC-<version>.zip, Developer ID signed, notarized and stapled) to the
+# GitHub Release, which the app's update check reads.
 
 on:
   push:
@@ -182,8 +183,12 @@ jobs:
         if: always() && env.MACOS_SIGNING_DIR != ''
         run: python3 .deps/home/apps/macos/scripts/ci-signing.py cleanup
 
-      - name: Zip
-        run: ditto -c -k --keepParent apps/macos/build/CuteAC.app "CuteAC-${GITHUB_REF_NAME#v}.zip"
+      - name: Notarize, staple and zip
+        env:
+          NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: bash apps/macos/scripts/notarize.sh apps/macos/build/CuteAC.app "CuteAC-${GITHUB_REF_NAME#v}.zip"
 
       # The plugin job may create the release first; either order works.
       - name: Upload to GitHub Release

@@ -49,7 +49,8 @@ if [[ -n "${CODE_SIGN_KEYCHAIN:-}" ]]; then
   SIGN_ARGS+=(--keychain "$CODE_SIGN_KEYCHAIN")
 fi
 if [[ "$SIGN_IDENTITY" != - ]]; then
-  SIGN_ARGS+=(--timestamp)
+  # Notarization requires a secure timestamp and the hardened runtime.
+  SIGN_ARGS+=(--timestamp --options runtime)
 else
   printf 'Ad-hoc signing: upgrades may require Keychain authorization again.\n' >&2
 fi
