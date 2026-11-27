@@ -47,3 +47,7 @@ dist-ssr
 .build/
 .swiftpm/
 .deps/
+
+# Python cache
+__pycache__/
+*.py[cod]

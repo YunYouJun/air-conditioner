@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
   /// Daily GitHub Releases check; tags are `v<version>` with a `CuteAC-<version>.zip` asset.
   private let updates = UpdateMonitor(
     checker: ReleaseChecker(repository: "YunYouJun/air-conditioner", tagPrefix: "v", assetPrefix: "CuteAC-"),
+    currentVersion: (Bundle.main.object(forInfoDictionaryKey: "CuteACVersion") as? String) ?? AppVersion.current,
     keyPrefix: "cute-ac"
   )
   private lazy var sceneController = ACSceneController(form: settings.form)

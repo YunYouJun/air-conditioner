@@ -8,7 +8,8 @@ const packages = [
 ]
 
 export default defineConfig({
-  all: true,
+  all: false,
+  noGitCheck: false,
   files: [
     'package.json',
     ...packages.map(name => `packages/${name}/package.json`),

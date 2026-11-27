@@ -3,7 +3,6 @@
   "type": "module",
   "version": "0.1.3",
   "private": true,
-  "packageManager": "pnpm@10.13.1",
   "description": "云空调，便携小空调",
   "author": {
     "url": "https://www.yunyoujun.cn",

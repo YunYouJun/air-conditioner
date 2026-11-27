@@ -172,7 +172,7 @@ struct PopoverView: View {
         .buttonStyle(.link)
         .font(.caption)
         .disabled(updates.status == .checking)
-        .help(AppVersion.current.map { "当前版本 v\($0)" } ?? "开发版本")
+        .help(updates.currentVersion.map { "当前版本 v\($0)" } ?? "开发版本")
     }
   }
 

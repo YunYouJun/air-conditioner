@@ -48,11 +48,13 @@ except Exception:
         print(log.read_text(errors="replace")[-8000:], file=sys.stderr)
     raise
 finally:
-    # This pattern can match only the unique temporary verification app.
-    subprocess.run(["pkill", "-TERM", "-f", "^" + re.escape(str(staged / "Contents/MacOS/CuteAC")) + r"(\s|$)"], check=False)
-    if process is not None and process.poll() is None:
-        process.terminate()
-        process.wait(timeout=10)
-    if moved:
-        hidden.rename(build)
+    try:
+        # This pattern can match only the unique temporary verification app.
+        subprocess.run(["pkill", "-TERM", "-f", "^" + re.escape(str(staged / "Contents/MacOS/CuteAC")) + r"(\s|$)"], check=False)
+        if process is not None and process.poll() is None:
+            process.terminate()
+            process.wait(timeout=10)
+    finally:
+        if moved:
+            hidden.rename(build)
 

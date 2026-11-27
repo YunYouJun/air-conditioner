@@ -19,6 +19,9 @@ cp -R "$BIN_DIR"/*.bundle "$APP/Contents/Resources/"
 # The app shares the repository version (bumpp keeps package.json files in
 # sync), so a v0.4.0 tag ships CuteAC 0.4.0 and the update check can compare.
 VERSION="${VERSION:-$(sed -n 's/^  "version": "\(.*\)",$/\1/p' ../../package.json)}"
+# Apple requires CFBundleShortVersionString and CFBundleVersion to stay numeric
+# (e.g. 0.4.4 even when building from a 0.4.4-beta.1 prerelease tag).
+BUNDLE_VERSION="${VERSION%%-*}"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -30,8 +33,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>CuteAC</string>
   <key>CFBundleDisplayName</key><string>云空调</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>$VERSION</string>
-  <key>CFBundleVersion</key><string>$VERSION</string>
+  <key>CFBundleShortVersionString</key><string>$BUNDLE_VERSION</string>
+  <key>CFBundleVersion</key><string>$BUNDLE_VERSION</string>
+  <key>CuteACVersion</key><string>$VERSION</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>

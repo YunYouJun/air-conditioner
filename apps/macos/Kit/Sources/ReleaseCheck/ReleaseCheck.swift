@@ -154,7 +154,7 @@ public final class UpdateMonitor: ObservableObject {
   }
 
   private let checker: ReleaseChecker
-  private let currentVersion: String?
+  public let currentVersion: String?
   private let defaults: UserDefaults
   private let keyPrefix: String
   private let interval: TimeInterval

@@ -86,9 +86,9 @@ jobs:
             npm publish "$tarball" --access public --tag "$dist_tag"
           done
 
-  # Attach the Yun Home plugin package to the GitHub Release for this tag.
+  # Build the Yun Home plugin package; tag pushes pass it to the release job.
   plugin:
-    if: github.ref_type == 'tag' || inputs.release_tag != ''
+    if: (github.event_name == 'push' && github.ref_type == 'tag') || inputs.release_tag != ''
     needs: publish
     runs-on: ubuntu-latest
     permissions:
@@ -109,36 +109,37 @@ jobs:
           pnpm -C packages/core run build
           pnpm -C packages/home-plugin run build
 
-      - name: Upload to GitHub Release
+      - name: Upload artifact for release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        uses: actions/upload-artifact@v7
+        with:
+          name: yunplugin
+          path: |
+            packages/home-plugin/dist/air-conditioner.yunplugin
+            packages/home-plugin/dist/air-conditioner.yunplugin.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload to existing GitHub Release
+        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
-            gh release view "$RELEASE_TAG" >/dev/null
-          fi
-          notes=(--generate-notes)
-          if [ -f "docs/releases/$RELEASE_TAG.md" ]; then
-            notes=(--notes-file "docs/releases/$RELEASE_TAG.md")
-          fi
-          gh release view "$RELEASE_TAG" >/dev/null 2>&1 \
-            || gh release create "$RELEASE_TAG" --verify-tag "${notes[@]}" --title "云空调 CuteAC ${RELEASE_TAG#v}" \
-            || gh release view "$RELEASE_TAG" >/dev/null
+          gh release view "$RELEASE_TAG" >/dev/null
           gh release upload "$RELEASE_TAG" --clobber \
             packages/home-plugin/dist/air-conditioner.yunplugin \
             packages/home-plugin/dist/air-conditioner.yunplugin.sha256
 
-  # Attach the CuteAC menu bar app to the GitHub Release for this tag. The app
-  # reads releases tagged v* and links to CuteAC-<version>.zip.
+  # Build, sign and notarize the CuteAC menu bar app on tag pushes.
   cuteac:
-    if: github.ref_type == 'tag'
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: publish
     runs-on: macos-latest
     timeout-minutes: 30
     env:
       HOME_DEVICE_KIT_PATH: ${{ github.workspace }}/.deps/home
       MACOS_SIGNING_IDENTITY: ${{ vars.MACOS_SIGNING_IDENTITY }}
       MACOS_SIGNING_TEAM_ID: ${{ vars.MACOS_SIGNING_TEAM_ID }}
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v6
 
@@ -188,18 +189,72 @@ jobs:
           NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
           NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+          NOTARY_TIMEOUT: 20m
         run: bash apps/macos/scripts/notarize.sh apps/macos/build/CuteAC.app "CuteAC-${GITHUB_REF_NAME#v}.zip"
 
-      # The plugin job may create the release first; either order works.
-      - name: Upload to GitHub Release
+      - name: Upload artifact for release
+        uses: actions/upload-artifact@v7
+        with:
+          name: cuteac-app
+          path: CuteAC-*.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  # Publish the GitHub Release only after npm packages, Home plugin and notarized CuteAC all succeed.
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [publish, plugin, cuteac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download release assets
+        uses: actions/download-artifact@v8
+        with:
+          path: ${{ runner.temp }}/release-assets
+          merge-multiple: true
+
+      - name: Create and publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          version="${GITHUB_REF_NAME#v}"
+          assets_dir="${RUNNER_TEMP}/release-assets"
+          files=(
+            "$assets_dir/air-conditioner.yunplugin"
+            "$assets_dir/air-conditioner.yunplugin.sha256"
+            "$assets_dir/CuteAC-${version}.zip"
+          )
+          for file in "${files[@]}"; do
+            test -f "$file" || { echo "::error::Missing release asset: $file"; exit 1; }
+          done
+
+          prerelease=false
+          if [[ "$version" == *-* ]]; then
+            prerelease=true
+          fi
+
           notes=(--generate-notes)
           if [ -f "docs/releases/$GITHUB_REF_NAME.md" ]; then
             notes=(--notes-file "docs/releases/$GITHUB_REF_NAME.md")
           fi
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
-            || gh release create "$GITHUB_REF_NAME" --verify-tag "${notes[@]}" --title "云空调 CuteAC ${GITHUB_REF_NAME#v}" \
-            || gh release view "$GITHUB_REF_NAME" >/dev/null
-          gh release upload "$GITHUB_REF_NAME" --clobber "CuteAC-${GITHUB_REF_NAME#v}.zip"
+
+          is_draft="$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq '.isDraft' 2>/dev/null || echo true)"
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            create_flags=(--draft --verify-tag "${notes[@]}" --title "云空调 CuteAC ${version}")
+            if [ "$prerelease" = true ]; then
+              create_flags+=(--prerelease --latest=false)
+            fi
+            gh release create "$GITHUB_REF_NAME" "${create_flags[@]}"
+          fi
+
+          gh release upload "$GITHUB_REF_NAME" --clobber "${files[@]}"
+          if [ "$is_draft" = true ]; then
+            if [ "$prerelease" = true ]; then
+              gh release edit "$GITHUB_REF_NAME" --draft=false --prerelease
+            else
+              gh release edit "$GITHUB_REF_NAME" --draft=false --latest
+            fi
+          fi
