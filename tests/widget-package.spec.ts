@@ -19,17 +19,29 @@ let origin: string
 test.beforeAll(async () => {
   test.setTimeout(120_000)
   output = await mkdtemp(resolve(tmpdir(), 'ac-widget-package-'))
-  // Pack the real public package, including prepack and workspace range rewriting.
-  await exec('pnpm', ['-C', 'packages/core', 'build'])
+  // Pack the real public packages, including prepack and workspace range rewriting.
+  await exec('pnpm', ['-C', 'packages/core', 'pack', '--pack-destination', output])
   await exec('pnpm', ['-C', 'packages/widget', 'pack', '--pack-destination', output])
-  const tarball = (await readdir(output)).find(file => file.endsWith('.tgz'))!
-  await writeFile(resolve(output, 'package.json'), JSON.stringify({ private: true, type: 'module' }))
-  await exec('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--package-lock=false', '--registry=https://registry.npmjs.org/', resolve(output, tarball)], { cwd: output })
+  const tarballs = await readdir(output)
+  const coreTarball = tarballs.find(file => file.includes('air-conditioner-core-') && file.endsWith('.tgz'))
+  const widgetTarball = tarballs.find(file => file.includes('air-conditioner-widget-') && file.endsWith('.tgz'))
+  if (!coreTarball || !widgetTarball)
+    throw new Error(`Missing packed tarballs in ${output}: ${tarballs.join(', ')}`)
+  await writeFile(resolve(output, 'package.json'), JSON.stringify({
+    private: true,
+    type: 'module',
+    overrides: {
+      '@yunlefun-home/air-conditioner-core': `file:${resolve(output, coreTarball)}`,
+    },
+  }))
+  await exec('npm', ['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--package-lock=false', resolve(output, widgetTarball)], { cwd: output })
 
   const installed = resolve(output, 'node_modules', name)
   const manifest = JSON.parse(await readFile(resolve(installed, 'package.json'), 'utf8'))
   expect(manifest.version).toBe(version)
   expect(manifest.dependencies['@yunlefun-home/air-conditioner-core']).toBe(version)
+  const coreManifest = JSON.parse(await readFile(resolve(output, 'node_modules/@yunlefun-home/air-conditioner-core/package.json'), 'utf8'))
+  expect(coreManifest.version).toBe(version)
   // ESM and CommonJS imports are safe without browser globals, including SSR.
   for (const expression of [`await import('${name}')`, `require('${name}')`]) {
     const esm = expression.startsWith('await')
