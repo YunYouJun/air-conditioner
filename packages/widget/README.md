@@ -34,7 +34,7 @@ You can also call `defineAirConditionerElement({ ...cdnAssets, enableAudio: fals
 Add this exact-version URL to a site's shared header or footer:
 
 ```html
-<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js" data-placement="top-right"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.4/dist/embed/embed.js" data-placement="top-right"></script>
 ```
 
 Use `data-placement="top-left"` for the left corner, `data-audio="true"` for audio, and `data-storage-key="my-blog:ac"` for a local storage key. Audio is disabled by default in the script installer. The remote opens on click, touch, Enter, or Space and closes with Escape. Loading the script twice keeps a single widget.

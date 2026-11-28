@@ -71,7 +71,7 @@ const widget = mountAirConditioner(document.body, {
 把下面的脚本放到博客或网站的全局模板中：
 
 ```html
-<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js" data-placement="top-right"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.4/dist/embed/embed.js" data-placement="top-right"></script>
 ```
 
 机身固定在右上角，遥控器在右下角点击展开；支持触屏、键盘和 `Esc` 收起。改为 `data-placement="top-left"` 可安装在左侧，加上 `data-audio="true"` 可启用音效。字体与音频随脚本加载，无需 npm 包。

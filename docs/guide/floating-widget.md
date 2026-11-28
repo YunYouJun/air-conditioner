@@ -60,7 +60,7 @@ const widget = mountAirConditioner(document.body, {
 ```html
 <script
   defer
-  src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js"
+  src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.4/dist/embed/embed.js"
   data-placement="top-right"
 ></script>
 ```

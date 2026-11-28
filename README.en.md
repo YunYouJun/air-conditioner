@@ -67,7 +67,7 @@ const widget = mountAirConditioner(document.body, {
 Add this script to your site's shared header or footer:
 
 ```html
-<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.3/dist/embed/embed.js" data-placement="top-right"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@yunlefun-home/air-conditioner-widget@0.4.4/dist/embed/embed.js" data-placement="top-right"></script>
 ```
 
 The unit sits in the top corner with a collapsible remote below. Use touch, click, or the keyboard to open it, and Escape to close it. Set `data-placement="top-left"` for the left corner or `data-audio="true"` to enable audio. Fonts and audio load alongside the script; no npm package is required.
