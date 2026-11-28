@@ -25,6 +25,7 @@ Air Conditioner
 | --- | --- | --- |
 | 裸机 | main | [ac.yunyoujun.cn](https://ac.yunyoujun.cn) |
 | 备用机 | main | [ac.yyj.moe](https://ac.yyj.moe) |
+| 文档站 | docs | [docs.ac.yunyoujun.cn](https://docs.ac.yunyoujun.cn) |
 | 样板房 | 空调房 | [https://www.yunyoujun.cn/air-conditioner-room/](https://www.yunyoujun.cn/air-conditioner-room/) |
 
 ## Features
@@ -114,7 +115,7 @@ const widget = mountAirConditioner(document.body, {
 
 说明书位于 [`docs`](./docs)，使用 VitePress 与 `vitepress-theme-yunlefun`。本地运行 `pnpm docs:dev`，独立构建运行 `pnpm docs:build`。
 
-计划通过独立 Cloudflare Pages 项目使用 `docs.ac.yunyoujun.cn`，目前尚未确认绑定或上线；配置步骤见 [文档部署说明](./docs/DEPLOYMENT.md)。主站部署保持不变。
+已通过独立 Cloudflare Pages 项目部署上线：[docs.ac.yunyoujun.cn](https://docs.ac.yunyoujun.cn)；配置细节见 [文档部署说明](./docs/DEPLOYMENT.md)。主站部署保持不变。
 
 ## Dev
 

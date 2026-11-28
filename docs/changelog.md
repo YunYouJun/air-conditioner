@@ -2,19 +2,19 @@
 
 这里记录用得到、看得见的变化。开发细节见 [GitHub 提交记录](https://github.com/YunYouJun/air-conditioner/commits/main)。
 
-## 未发布
+## v0.4.4（2026-11-28）
 
 ### 网页挂件与部署
 
 - **角落悬浮小挂件**：新增独立挂件包 `@yunlefun-home/air-conditioner-widget`，支持右下角可收起遥控器、独立浏览器安装演示页，以及无需构建的固定版本 CDN `<script>` / npm 安装方式。（[#186](https://github.com/YunYouJun/air-conditioner/pull/186)、[#187](https://github.com/YunYouJun/air-conditioner/pull/187)、[#188](https://github.com/YunYouJun/air-conditioner/pull/188)）
 - **挂件交互与性能优化**：DOM 重新挂载时保留空调状态；优化重连动效、音频懒加载与复用缓存、暗色小纸条及冷雾渲染。（[#191](https://github.com/YunYouJun/air-conditioner/pull/191)、[#192](https://github.com/YunYouJun/air-conditioner/pull/192)）
 - **按键音效与 3D 切换**：遥控器按键改用 Web Audio 立即响应并修复 Docker 镜像的 pnpm 构建；减少 3D 模式下切换挂机与柜机时的画布闪烁。（[#189](https://github.com/YunYouJun/air-conditioner/pull/189)、[#190](https://github.com/YunYouJun/air-conditioner/pull/190)）
-- **网站构建**：修复 Vercel 上的 monorepo 网站构建配置。（[#185](https://github.com/YunYouJun/air-conditioner/pull/185)）
+- **文档站与网站构建**：上线独立 VitePress 文档站 [docs.ac.yunyoujun.cn](https://docs.ac.yunyoujun.cn)，并修复 Vercel 上的 monorepo 网站构建配置。（[#185](https://github.com/YunYouJun/air-conditioner/pull/185)）
 
 ### macOS 菜单栏小空调（CuteAC）
 
 - **不可用状态提示**：当已绑定的 Home Assistant 空调暂时不可用时，弹窗与读数区域会清晰显示不可用状态。
-- **签名与公证流程**：Developer ID 构建开启 Hardened Runtime，Release 工作流接入 Apple 自动公证、票据装订与压缩包校验，并在全部产物就绪后发布 Release（配置公证密钥后随下次发版生效）。
+- **签名与 Apple 公证**：Developer ID 构建开启 Hardened Runtime，Release 工作流启用 Apple 自动公证、票据装订与压缩包校验，并在全部产物就绪后统一发布 Release，解压后可直接通过系统校验打开。
 
 ## v0.4.3（2026-10-18）
 
